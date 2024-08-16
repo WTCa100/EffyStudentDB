@@ -1,0 +1,1 @@
+add_library(Student STATIC student.hpp student.cpp)

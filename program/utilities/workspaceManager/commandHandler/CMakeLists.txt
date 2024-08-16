@@ -1,0 +1,6 @@
+add_library(CommandHandler STATIC commandHandler.cpp commandHandler.hpp)
+
+add_subdirectory(createCommand)
+add_subdirectory(verifyCommand)
+
+target_link_libraries(CommandHandler PUBLIC CreateCommand VerifyCommand)

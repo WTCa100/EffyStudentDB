@@ -1,0 +1,1 @@
+add_library(VerifyCommand STATIC verifyCommand.cpp verifyCommand.hpp)

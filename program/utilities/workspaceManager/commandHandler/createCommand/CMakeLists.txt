@@ -1,0 +1,1 @@
+add_library(CreateCommand STATIC createCommand.cpp createCommand.hpp)

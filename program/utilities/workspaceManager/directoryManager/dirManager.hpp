@@ -25,6 +25,7 @@ namespace Utilities::Workspace
         inline std::string getAppRootStr() const { return appRoot_.string(); }
         bool createDirectory(std::string catalogName, std::optional<std::string> subPath = std::nullopt);
         bool removeDirectory(std::string catalogName, std::optional<std::string> subPath = std::nullopt);
+        static bool isPathGood(std::string path);
         bool isDirectoryValid(std::string path);
         void getDirectoryContent(std::filesystem::path target);
         // Maybe add std::string/std::vector<std::string> getContent?

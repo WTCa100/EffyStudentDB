@@ -44,14 +44,10 @@ namespace Utilities::Workspace
             isPresent = isDirectoryValid(fullPath);
             ++tryCount;
         }
-
-        isPresent ? std::cout << "Could not delete folder: "    << fullPath << "\n" 
-                  : std::cout << "Successfuly deleted folder: " << fullPath << "\n"; 
-
         return !isPresent;
     }
 
-    bool DirectoryManager::isDirectoryValid(std::string path)
+    bool DirectoryManager::isPathGood(std::string path)
     {
         // Check for illeagal characters (Linux-wise)
         // The backward slash
@@ -60,6 +56,13 @@ namespace Utilities::Workspace
             std::cout << "Found invalid character \"\\\"\n";
             return false;
         }
+        return true;
+    }
+
+
+    bool DirectoryManager::isDirectoryValid(std::string path)
+    {
+        if(!isPathGood(path)) return false;
 
         setCommandHandler(std::make_unique<verifyCommand>(path));
         return comHandler_->execute();

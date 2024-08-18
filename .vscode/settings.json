@@ -61,6 +61,8 @@
         "cinttypes": "cpp",
         "source_location": "cpp",
         "cstring": "cpp",
-        "filesystem": "cpp"
-    }
+        "filesystem": "cpp",
+        "ranges": "cpp"
+    },
+    "C_Cpp.default.compilerPath": "/usr/bin/clang++"
 }

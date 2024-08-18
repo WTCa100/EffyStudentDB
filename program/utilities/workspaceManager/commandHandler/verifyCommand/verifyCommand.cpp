@@ -4,15 +4,11 @@
 
 namespace Utilities::Command
 {
-    std::string verifyCommand::prepareCommand()
+    bool verifyCommand::execute()
     {
-        std::string path = std::filesystem::path().string();
-        if(subPath_.has_value())
-        {
-            path += subPath_.value().string() + "/";
-        }
-        path += target_;
-        return "[ -d " + path + " ]";
+        std::string fullPath = assambleFullPath(target_, subPath_, std::filesystem::current_path().string());
+        std::cout << "Looking for: " << fullPath << "\n";
+        return std::filesystem::exists(fullPath);
     }
 
 } // namespace Utilities::Command

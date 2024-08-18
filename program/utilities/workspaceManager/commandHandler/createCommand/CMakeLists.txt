@@ -1,1 +1,3 @@
 add_library(CreateCommand STATIC createCommand.cpp createCommand.hpp)
+
+target_link_libraries(CreateCommand PUBLIC CommandHandler)

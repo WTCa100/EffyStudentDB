@@ -14,10 +14,10 @@ namespace Utilities::Command
         std::string target_;
         targetType type_;
         std::optional<std::filesystem::path> subPath_;
-        std::string prepareCommand() override;
     public:
         CreateCommand(std::string target, targetType type, std::optional<std::filesystem::path> subPath = std::nullopt) : target_(target), type_(type), subPath_(subPath) {}
-        virtual ~CreateCommand() = default;
+        ~CreateCommand() = default;
+        bool execute() override;
     };    
 } // namespace Utilities::Command
 

@@ -1,0 +1,1 @@
+add_library(RemoveCommand STATIC removeCommand.hpp removeCommand.cpp)

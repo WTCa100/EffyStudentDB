@@ -5,37 +5,50 @@
 
 #include "../commandHandler/createCommand/createCommand.hpp"
 #include "../commandHandler/verifyCommand/verifyCommand.hpp"
+#include "../commandHandler/removeCommand/removeCommand.hpp"
 
 using namespace Utilities::Command;
 namespace Utilities::Workspace
 {
 
-    DirectoryManager::DirectoryManager(std::string rootPath) : appRoot_(std::filesystem::path(rootPath))
+    DirectoryManager::DirectoryManager(std::string rootPath) : appRoot_(std::filesystem::path(rootPath)), cwd_(appRoot_)
     {
-        std::cout << "DirManager :ctor: appRoot_=" << appRoot_ << " (from specialized ctor)\n";
+        std::cout << "DirManager :ctor: appRoot_=" << appRoot_.string() << " (from specialized ctor)\n";
     }
 
-    DirectoryManager::DirectoryManager() : appRoot_(std::filesystem::current_path())
-    {
-        std::cout << "DirManager :ctor: appRoot_= " << appRoot_.c_str() << "\n";
-    }
+    DirectoryManager::DirectoryManager() : DirectoryManager(std::filesystem::current_path()) {}
 
-    bool DirectoryManager::createDirectory(std::string catalogName)
+    bool DirectoryManager::createDirectory(std::string catalogName, std::optional<std::string> subPath)
     {
-        setCommandHandler(std::make_unique<CreateCommand>(catalogName, targetType::directory));
+        setCommandHandler(std::make_unique<CreateCommand>(catalogName, targetType::directory, subPath));
         return comHandler_->execute();
     }
 
-    bool DirectoryManager::removeDirectory(std::string catalogName)
+    bool DirectoryManager::removeDirectory(std::string catalogName, std::optional<std::string> subPath)
     {
         unsigned char tryCount = 0;
-        bool isPresent = true;
-        do
-        {
-            // First check the directory - perhaps it doesn't exist!
-            // isPresent = isDirectoryValid();
 
-        } while(tryCount <= 3 || isPresent);
+        std::string fullPath = "";
+        if(subPath.has_value())
+        {
+            fullPath += subPath.value() + "/";
+        }
+        fullPath += catalogName;
+    
+        bool isPresent = isDirectoryValid(fullPath);
+        setCommandHandler(std::make_unique<RemoveCommand>(catalogName, targetType::directory, subPath));
+        
+        while(isPresent && tryCount < 3)
+        {
+            comHandler_->execute();
+            isPresent = isDirectoryValid(fullPath);
+            ++tryCount;
+        }
+
+        isPresent ? std::cout << "Could not delete folder: "    << fullPath << "\n" 
+                  : std::cout << "Successfuly deleted folder: " << fullPath << "\n"; 
+
+        return !isPresent;
     }
 
     bool DirectoryManager::isDirectoryValid(std::string path)
@@ -51,6 +64,4 @@ namespace Utilities::Workspace
         setCommandHandler(std::make_unique<verifyCommand>(path));
         return comHandler_->execute();
     }
-
-    DirectoryManager::~DirectoryManager() {}
 } // namespace Utilities::Workspace

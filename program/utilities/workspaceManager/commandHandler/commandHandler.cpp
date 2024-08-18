@@ -2,10 +2,22 @@
 
 namespace Utilities::Command
 {
-    bool CommandHandler::execute()
+    std::string CommandHandler::assambleFullPath(std::string target, 
+                                                 std::optional<std::string> subPath,
+                                                 std::optional<std::string> cwd)
     {
-        command_ = prepareCommand();
-        std::cout << "Running shell command: " << command_ << "\n";
-        return system(command_.c_str()) == 0 ? true : false;
+        std::string fullPath = "";
+        if(cwd.has_value())
+        {
+            fullPath += cwd.value() + "/";
+        }
+
+        if(subPath.has_value())
+        {
+            fullPath += subPath.value() + "/";
+        }
+
+        fullPath += target;
+        return fullPath;
     }
 } // namespace Utilities::Command

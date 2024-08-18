@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-
+#include <optional>
 
 namespace Utilities::Command
 {
@@ -15,11 +15,12 @@ namespace Utilities::Command
     {
     protected:
         std::string command_;
-        virtual std::string prepareCommand() = 0;
     public:
         CommandHandler() : command_("") {}
-        bool execute();
+        virtual bool execute() = 0;
+        static std::string assambleFullPath(std::string target, 
+                                            std::optional<std::string> subPath = std::nullopt,
+                                            std::optional<std::string> cwd     = std::nullopt);
         virtual ~CommandHandler() {}
-        // static bool isDirectoryGood(); // Verify command
     };
 } // namespace Utilities::Command

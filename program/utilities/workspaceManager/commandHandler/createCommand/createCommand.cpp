@@ -1,31 +1,38 @@
 #include "createCommand.hpp"
 
 #include <filesystem>
+#include <fstream>
 
 namespace Utilities::Command
 {
-    std::string CreateCommand::prepareCommand()
+    bool CreateCommand::execute()
     {
-        std::string path = std::filesystem::current_path().string() + "/";
-        if(subPath_.has_value())
-        {
-            path += subPath_.value().string() + "/";
-        }
-        path += target_;
+        std::string fullPath = assambleFullPath(target_, subPath_, std::filesystem::current_path().string());
 
         switch (type_)
         {
-            case targetType::directory:
+        case targetType::directory:
+        {
+            std::cout << "Creating directory: " << target_ << "\n";
+            if(subPath_.has_value())
             {
-                return "mkdir --verbose " + path;
+                std::cout << "Sub-path = " << subPath_.value() << "\n";
             }
-            case targetType::file:
+            std::filesystem::create_directory(fullPath);
+            return true;
+        }
+        case targetType::file:
+        {
+            std::cout << "Creating file: " << target_ << "\n";
+            if(subPath_.has_value())
             {
-                return "touch " + path;
+                std::cout << "Sub-path = " << subPath_.value() << "\n";
             }
-            default:
-                std::cout << "Uknown target type!\n";
-                return "";
+            std::ofstream fileOut(fullPath);
+            return true;
+        }
+        default:
+            return false;
         }
     }
 } // namespace Utilities::Command

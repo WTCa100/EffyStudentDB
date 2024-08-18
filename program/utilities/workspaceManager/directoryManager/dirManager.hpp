@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <filesystem>
+#include <optional>
 #include <memory>
 
 #include "../commandHandler/commandHandler.hpp"
@@ -13,19 +14,20 @@ namespace Utilities::Workspace
         private:
         std::unique_ptr<CommandHandler> comHandler_;
         const std::filesystem::path appRoot_;
-        const std::string           appRootStr_;
+        std::string cwd_;
         
         void setCommandHandler(std::unique_ptr<CommandHandler> newCommandHandler) { comHandler_ = std::move(newCommandHandler); }
         public:
         DirectoryManager(std::string rootPath);
         DirectoryManager();
-        ~DirectoryManager();
+        ~DirectoryManager() = default;
         inline std::filesystem::path getAppRoot() const { return appRoot_; }
         inline std::string getAppRootStr() const { return appRoot_.string(); }
-        bool createDirectory(std::string catalogName);
-        bool removeDirectory(std::string catalogName);
+        bool createDirectory(std::string catalogName, std::optional<std::string> subPath = std::nullopt);
+        bool removeDirectory(std::string catalogName, std::optional<std::string> subPath = std::nullopt);
         bool isDirectoryValid(std::string path);
-        void showContent(std::filesystem::path target);
+        void getDirectoryContent(std::filesystem::path target);
+        // Maybe add std::string/std::vector<std::string> getContent?
 
     };
     

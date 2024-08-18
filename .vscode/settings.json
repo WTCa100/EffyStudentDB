@@ -60,6 +60,7 @@
         "thread": "cpp",
         "cinttypes": "cpp",
         "source_location": "cpp",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "filesystem": "cpp"
     }
 }

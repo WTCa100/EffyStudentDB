@@ -7,7 +7,6 @@ namespace Utilities::Command
     bool verifyCommand::execute()
     {
         std::string fullPath = assambleFullPath(target_, subPath_, std::filesystem::current_path().string());
-        std::cout << "Looking for: " << fullPath << "\n";
         return std::filesystem::exists(fullPath);
     }
 

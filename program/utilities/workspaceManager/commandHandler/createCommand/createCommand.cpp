@@ -13,21 +13,11 @@ namespace Utilities::Command
         {
         case targetType::directory:
         {
-            std::cout << "Creating directory: " << target_ << "\n";
-            if(subPath_.has_value())
-            {
-                std::cout << "Sub-path = " << subPath_.value() << "\n";
-            }
             std::filesystem::create_directory(fullPath);
             return true;
         }
         case targetType::file:
         {
-            std::cout << "Creating file: " << target_ << "\n";
-            if(subPath_.has_value())
-            {
-                std::cout << "Sub-path = " << subPath_.value() << "\n";
-            }
             std::ofstream fileOut(fullPath);
             return true;
         }

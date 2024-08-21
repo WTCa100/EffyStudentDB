@@ -18,33 +18,20 @@ namespace Utilities::Workspace
 
     DirectoryManager::DirectoryManager() : DirectoryManager(std::filesystem::current_path()) {}
 
-    bool DirectoryManager::createDirectory(std::string catalogName, std::optional<std::string> subPath)
+    bool DirectoryManager::createDirectory(std::string directoryName, std::optional<std::string> subPath)
     {
-        setCommandHandler(std::make_unique<CreateCommand>(catalogName, targetType::directory, subPath));
+        setCommandHandler(std::make_unique<CreateCommand>(directoryName, targetType::directory, subPath));
         return comHandler_->execute();
     }
 
-    bool DirectoryManager::removeDirectory(std::string catalogName, std::optional<std::string> subPath)
+    bool DirectoryManager::deleteDirectory(std::string directoryName, std::optional<std::string> subPath)
     {
-        unsigned char tryCount = 0;
-
-        std::string fullPath = "";
-        if(subPath.has_value())
+        setCommandHandler(std::make_unique<RemoveCommand>(directoryName, targetType::directory, subPath));
+        if(!comHandler_->execute())
         {
-            fullPath += subPath.value() + "/";
+            return false;
         }
-        fullPath += catalogName;
-    
-        bool isPresent = isDirectoryValid(fullPath);
-        setCommandHandler(std::make_unique<RemoveCommand>(catalogName, targetType::directory, subPath));
-        
-        while(isPresent && tryCount < 3)
-        {
-            comHandler_->execute();
-            isPresent = isDirectoryValid(fullPath);
-            ++tryCount;
-        }
-        return !isPresent;
+        return !exist(directoryName, subPath);
     }
 
     bool DirectoryManager::isPathGood(std::string path)
@@ -60,11 +47,11 @@ namespace Utilities::Workspace
     }
 
 
-    bool DirectoryManager::isDirectoryValid(std::string path)
+    bool DirectoryManager::exist(std::string directoryName, std::optional<std::string> subPath)
     {
-        if(!isPathGood(path)) return false;
+        if(!isPathGood(directoryName)) return false;
 
-        setCommandHandler(std::make_unique<verifyCommand>(path));
+        setCommandHandler(std::make_unique<verifyCommand>(directoryName, subPath));
         return comHandler_->execute();
     }
 } // namespace Utilities::Workspace

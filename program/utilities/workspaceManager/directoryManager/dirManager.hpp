@@ -23,10 +23,10 @@ namespace Utilities::Workspace
         ~DirectoryManager() = default;
         inline std::filesystem::path getAppRoot() const { return appRoot_; }
         inline std::string getAppRootStr() const { return appRoot_.string(); }
-        bool createDirectory(std::string catalogName, std::optional<std::string> subPath = std::nullopt);
-        bool removeDirectory(std::string catalogName, std::optional<std::string> subPath = std::nullopt);
+        bool createDirectory(std::string directoryName, std::optional<std::string> subPath = std::nullopt);
+        bool deleteDirectory(std::string directoryName, std::optional<std::string> subPath = std::nullopt);
         static bool isPathGood(std::string path);
-        bool isDirectoryValid(std::string path);
+        bool exist(std::string directoryName, std::optional<std::string> subPath = std::nullopt);
         void getDirectoryContent(std::filesystem::path target);
         // Maybe add std::string/std::vector<std::string> getContent?
 

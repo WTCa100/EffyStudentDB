@@ -20,12 +20,19 @@ namespace Utilities
         bool initializeDatabase();
 
     public:
-        WsManager(std::string workingDir_);
+        WsManager(std::string workingDir_); // For now there is no handling for different working path then this cwd - and probably never will be
         WsManager() : WsManager(std::filesystem::current_path().string()) {}
         ~WsManager() = default;
 
 
         bool createFile(std::string fileName, std::optional<std::filesystem::path> subPath = std::nullopt);
-        bool creatFolder(std::string catalogName);
+        bool deleteFile(std::string fileName, std::optional<std::filesystem::path> subPath = std::nullopt, bool prompt = true);
+
+        bool fileExists(std::string fileName, std::optional<std::filesystem::path> subPath = std::nullopt);
+        bool directoryExists(std::string directoryName, std::optional<std::filesystem::path> subPath = std::nullopt);
+
+        bool createDirectory(std::string directoryName, std::optional<std::filesystem::path> subPath = std::nullopt);
+        bool deleteDirectory(std::string directoryName, std::optional<std::filesystem::path> subPath = std::nullopt, bool prompt = true);
+
     };
 } // namespace Utilities

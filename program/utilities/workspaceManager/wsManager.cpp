@@ -2,8 +2,9 @@
 
 namespace Utilities
 {
-    WsManager::WsManager(std::string workingDir_)
+    WsManager::WsManager(std::string workingDir_) : logger_(std::make_shared<Utilities::Logger>())
     {
+        // First check if exists
         bool useDefault = false;
 
         // Check if there are forbidden characters in the provided path
@@ -21,11 +22,13 @@ namespace Utilities
         workingDir_ = (useDefault ? std::filesystem::current_path() : std::filesystem::path(workingDir_));
         dManager_ = std::make_unique<Workspace::DirectoryManager>(workingDir_);
         fManager_ = std::make_unique<Workspace::FileManager>(workingDir_);
+        LOG((*logger_), "WsManager :ctor: specialized - with working directory: ", workingDir_);
         std::cout << "WsManager :ctor: specialized - with working directory: " << workingDir_ << "\n";
     }
 
     bool WsManager::createFile(std::string name, std::optional<std::filesystem::path> subPath)
     {
+        LOG((*logger_), "fileName=", name, " subPath=", subPath.has_value() ? subPath.value() : "nullopt");
         // Check if file exists
         // If file exists ask to override
         if(fManager_->exist(name, subPath))
@@ -89,6 +92,7 @@ namespace Utilities
     bool WsManager::createDirectory(std::string directoryName, std::optional<std::filesystem::path> subPath)
     {
         std::cout << "Creating directory: " << directoryName << "\n";
+        LOG((*logger_), "Creating directory: directoryName=", directoryName, " subPath=", (subPath.has_value() ? subPath.value() : "nullopt"));
         // Check for folder
         if(dManager_->exist(directoryName, subPath))
         {
@@ -104,7 +108,7 @@ namespace Utilities
     {
         std::cout << "Looking for the directory: " << directoryName << "...\n";
         bool rc = dManager_->exist(directoryName, subPath);
-
+    
         std::cout << rc ? ("File: " + directoryName + " was found!\n") 
                         : ("Could not find file: " + directoryName + "\n");
 
@@ -149,5 +153,4 @@ namespace Utilities
         std::cout << hasDeleted ? ("Directory " + directoryName + " was deleted\n") : ("Could not delete directory " + directoryName + ".\n");
         return hasDeleted;
     }
-
 }

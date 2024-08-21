@@ -3,6 +3,9 @@
 #include <iostream>
 #include <filesystem>
 #include <fstream>
+#include <optional>
+
+#define LOG(logger, ...) logger.log(__FILE__, __LINE__, __VA_ARGS__);
 
 namespace Utilities
 {
@@ -21,7 +24,18 @@ namespace Utilities
 
         public:
         Logger(std::string logPath = "./");
-        const std::string createCurrentTimestamp(); 
+        
+        const std::tm createCurrentTimestamp(); 
+        std::string getFileTimestamp(const std::tm& ts);
+        std::string getLogEntryTimestamp(const std::tm& ts);
+        
+        template<typename... Args>
+        void log(const char* file, const int line, Args&&... args)
+       {
+	    // @TODO - switch timestamp from YYYYMMDD_hhmmss -> [YYYY/MM/DD HH:mm:ss]
+            filePtr_ << getLogEntryTimestamp(createCurrentTimestamp()) << ": " << file << ":" << std::to_string(line) << ": ";
+            (filePtr_ << ... << args) << "\n";
+        }
 
         ~Logger();
 

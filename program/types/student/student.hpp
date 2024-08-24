@@ -9,6 +9,7 @@
 
 struct Student
 {
+    uint16_t id_;
     std::string firstName_;
     std::optional<std::string> secondName_;
     std::string lastName_;

@@ -24,7 +24,6 @@ namespace Utilities::Workspace
         ~FileManager() = default;
 
         std::filesystem::path getAppRoot_() const { return appRoot_; }
-        std::string getAppRootStr_() const { return appRoot_.string(); }
 
         bool createFile(std::string fileName, std::optional<std::filesystem::path> subPath = std::nullopt);
         bool deleteFile(std::string fileName, std::optional<std::filesystem::path> subPath = std::nullopt);

@@ -7,4 +7,5 @@ target_link_libraries(${PROJECT_NAME}
     #TMP
     DirectoryManager
     FileManager
+    SqlManager
     )

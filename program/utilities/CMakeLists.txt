@@ -1,2 +1,3 @@
 add_subdirectory(logger)
 add_subdirectory(workspaceManager)
+add_subdirectory(sqlite3)

@@ -2,33 +2,48 @@
 
 namespace Utilities
 {
-    WsManager::WsManager(std::string workingDir_) : logger_(std::make_shared<Utilities::Logger>())
+    WsManager::WsManager(std::string workingDir) : workingDir_(std::filesystem::path(workingDir))
     {
-        // First check if exists
-        bool useDefault = false;
-
-        // Check if there are forbidden characters in the provided path
-        if(!Workspace::DirectoryManager::isPathGood(workingDir_))
-        {
-            useDefault = true;
-        }
-
-        // Check if given folder exists
-        if(!std::filesystem::exists(workingDir_))
-        {
-            useDefault = true;
-        }
-
-        workingDir_ = (useDefault ? std::filesystem::current_path() : std::filesystem::path(workingDir_));
         dManager_ = std::make_unique<Workspace::DirectoryManager>(workingDir_);
         fManager_ = std::make_unique<Workspace::FileManager>(workingDir_);
+
+        if(isInitializationNeeded())
+        {
+            initializeDatabase();
+        }
+
+        logger_ = std::make_shared<Logger>("logs");        
         LOG((*logger_), "WsManager :ctor: specialized - with working directory: ", workingDir_);
         std::cout << "WsManager :ctor: specialized - with working directory: " << workingDir_ << "\n";
     }
 
+    void WsManager::initializeDatabase()
+    {
+        // First - handle directories
+        createDirectory("logs");
+        createDirectory("database");
+        createDirectory("schemas", "database");
+        createDirectory("init", "database/schemas");
+
+        // Second - handle files 
+        createFile("base.sql", "database/schemas/init");
+    }
+
+    bool WsManager::isInitializationNeeded()
+    {
+        if(!dManager_->exist("database") ||
+           !dManager_->exist("schemas", "database") ||
+           !fManager_->exist("base.sql", "database/schemas/init"))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     bool WsManager::createFile(std::string name, std::optional<std::filesystem::path> subPath)
     {
-        LOG((*logger_), "fileName=", name, " subPath=", subPath.has_value() ? subPath.value() : "nullopt");
+        if (logger_) LOG((*logger_), "fileName=", name, " subPath=", subPath.has_value() ? subPath.value() : "nullopt");
         // Check if file exists
         // If file exists ask to override
         if(fManager_->exist(name, subPath))
@@ -53,7 +68,8 @@ namespace Utilities
         std::cout << "\n";
 
         // For now - will make this prettier later
-        return fManager_->createFile(name, subPath);
+        bool rc = fManager_->createFile(name, subPath);
+        return rc;
     }
 
     bool WsManager::fileExists(std::string fileName, std::optional<std::filesystem::path> subPath)
@@ -77,14 +93,15 @@ namespace Utilities
             std::cout << "Are you sure you want to continue and delete " << fileName << "?\n";
             std::string tmp;
             std::getline(std::cin, tmp);
-            if(tmp != "yes")
+            if(tolower(tmp[0]) != 'y')
             {
                 std::cout << "Aborting...\n";
                 return false;
             }
         }
 
-        return fManager_->deleteFile(fileName, subPath);
+        bool rc = fManager_->deleteFile(fileName, subPath);
+        return rc;
 
     }
 
@@ -92,7 +109,7 @@ namespace Utilities
     bool WsManager::createDirectory(std::string directoryName, std::optional<std::filesystem::path> subPath)
     {
         std::cout << "Creating directory: " << directoryName << "\n";
-        LOG((*logger_), "Creating directory: directoryName=", directoryName, " subPath=", (subPath.has_value() ? subPath.value() : "nullopt"));
+        if (logger_) LOG((*logger_), "Creating directory: directoryName=", directoryName, " subPath=", (subPath.has_value() ? subPath.value() : "nullopt"));
         // Check for folder
         if(dManager_->exist(directoryName, subPath))
         {
@@ -100,8 +117,8 @@ namespace Utilities
             return false;
         }
 
-        // For now - will make this prettier later
-        return dManager_->createDirectory(directoryName, subPath);
+        bool rc = dManager_->createDirectory(directoryName, subPath);
+        return rc;
     }
 
     bool WsManager::directoryExists(std::string directoryName, std::optional<std::filesystem::path> subPath)
@@ -131,7 +148,7 @@ namespace Utilities
             std::cout << "Are you sure you want to continue and delete " << directoryName << "?\n";
             std::string tmp;
             std::getline(std::cin, tmp);
-            if(tmp != "yes")
+            if(tolower(tmp[0]) != 'y')
             {
                 std::cout << "Aborting...\n";
                 return false;
@@ -143,14 +160,12 @@ namespace Utilities
         bool hasDeleted = false;
         do
         {
-            ++tryCount;
-            std::cout << "Try " << tryCount << " result:";
+            ++tryCount;                
             hasDeleted = dManager_->deleteDirectory(directoryName, subPath);
-            std::cout << (hasDeleted ? " File was deleted\n" : "Could not delete file\n");
+            std::cout << (hasDeleted ? "File was deleted\n" : "Could not delete file\n");
         } while (!hasDeleted && tryCount <= 3);
-        
 
-        std::cout << hasDeleted ? ("Directory " + directoryName + " was deleted\n") : ("Could not delete directory " + directoryName + ".\n");
+        std::cout << (hasDeleted ? ("Directory " + directoryName + " was deleted\n") : ("Could not delete directory " + directoryName + ".\n"));
         return hasDeleted;
     }
 }

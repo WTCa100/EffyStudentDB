@@ -7,6 +7,8 @@ namespace Utilities
 {
     Logger::Logger(std::string logPath)
     {
+        if(logPath.at(logPath.size() - 1) != '/') logPath += '/';
+
         fileName_ = "EffyStudentDb-" + getFileTimestamp(createCurrentTimestamp());
         if(!touch((std::filesystem::path(logPath)), fileName_))
         {

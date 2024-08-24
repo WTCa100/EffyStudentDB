@@ -62,7 +62,9 @@
         "source_location": "cpp",
         "cstring": "cpp",
         "filesystem": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "set": "cpp",
+        "unordered_set": "cpp"
     },
     "C_Cpp.default.compilerPath": "/usr/bin/clang++"
 }

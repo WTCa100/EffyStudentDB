@@ -9,6 +9,8 @@
 #include "../../../types/school/school.hpp"
 #include "../../../types/subject/subject.hpp"
 #include "../../../types/student/student.hpp"
+#include "types/attribute/attribute.hpp"
+#include "types/table/table.hpp"
 
 #include <sqlite3.h>
 
@@ -24,14 +26,20 @@ namespace Utilities::Workspace
         std::map<uint16_t, School> schoolList_;
         // Map of all studnets
         std::map<uint16_t, Student> studentList_;
-        // Map of all grades
+
+        std::map<std::string, Sql::Types::SqlTable> tables_;
+
         void initialValuesLoad();
         sqlite3* currentDb_;
+        std::filesystem::path dbPath_;
 
     public:
+        bool addInitialSchema(std::fstream* fPtr);
+        bool initializeDatabase(std::fstream* fPtr);
         SqlManager(std::filesystem::path dbPath);
         ~SqlManager();
-        bool createSchemaFile();
+        bool openDb();
+        void closeDb();
         bool createTable();
         std::vector<std::string> getEntriesFromTable(std::string tableName, std::vector<std::string> attributes = {});
         bool addEntryToTable(std::string tableName /*, Entry*/);

@@ -7,4 +7,5 @@ add_subdirectory(commandHandler)
 target_link_libraries(WorkspaceManager PUBLIC 
     FileManager
     DirectoryManager
+    SqlManager
     Logger)

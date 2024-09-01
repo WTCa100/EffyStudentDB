@@ -1,15 +1,90 @@
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 #include "sqlManager.hpp"
 
 namespace Utilities::Workspace
 {
-    SqlManager::SqlManager(std::filesystem::path dbPath)
+    using namespace Sql::Types;
+    bool SqlManager::addInitialSchema(std::fstream* fPtr)
     {
-        std::cout << "SQL Manager :ctor:\n";
-        sqlite3_open_v2(dbPath.c_str(), &currentDb_, SQLITE_OPEN_READWRITE, nullptr);
-        initialValuesLoad();
+        if(!fPtr)
+        {
+            std::cout << "fPtr is NULL!\n";
+            return false;
+        }
+
+        if(!fPtr->is_open())
+        {
+            std::cout << "fPtr shall point to a open file!\n";
+            return false;
+        }
+
+        std::cout << "Writting header\n";
+        *fPtr << "-- Effy.db - this file has been generated automatically\n";
+
+        std::cout << "Handling Schools table...\n";
+        Sql::Types::SqlTable schoolTbl("Schools");
+        schoolTbl.addToSchema({"id", "INTEGER", {AttributeFlag::PRIMARY_KEY}});
+        schoolTbl.addToSchema({"name", "TEXT", {AttributeFlag::NOT_NULL, AttributeFlag::UNIQUE}});
+        *fPtr << schoolTbl.makeFormula();
+
+        std::cout << "Handling Students table...\n";
+        Sql::Types::SqlTable studentTbl("Students");
+        studentTbl.addToSchema({"id", "INTEGER", {AttributeFlag::PRIMARY_KEY}});
+        studentTbl.addToSchema({"firstName", "TEXT", {AttributeFlag::NOT_NULL}});
+        studentTbl.addToSchema({"secondName", "TEXT", {}});
+        studentTbl.addToSchema({"lastName", "TEXT", {AttributeFlag::NOT_NULL}});
+        studentTbl.addToSchema({"schoolId", "INTEGER", {AttributeFlag::NOT_NULL}});
+        // Assign school as a secondary key here
+        *fPtr << studentTbl.makeFormula();
+
+        std::cout << "Handling Subject table...\n";
+        Sql::Types::SqlTable subjectTbl("Subjects");
+        subjectTbl.addToSchema({"id", "INTEGER", {AttributeFlag::PRIMARY_KEY}});
+        subjectTbl.addToSchema({"name", "TEXT", {AttributeFlag::NOT_NULL, AttributeFlag::UNIQUE}});
+        *fPtr << subjectTbl.makeFormula();
+
+        std::cout << "Handling Grade table...\n";
+        Sql::Types::SqlTable gradeTbl("Grades");
+        subjectTbl.addToSchema({"id", "INTEGER", {AttributeFlag::PRIMARY_KEY}});
+        subjectTbl.addToSchema({"studentId", "INTEGER", {AttributeFlag::NOT_NULL}});
+        subjectTbl.addToSchema({"subjectId", "INTEGER", {AttributeFlag::NOT_NULL}});
+        subjectTbl.addToSchema({"grade", "FLOAT", {AttributeFlag::NOT_NULL}});
+        // Assign student as a secondary key
+        // Assign subject as a secondary key
+        *fPtr << subjectTbl.makeFormula();
+
+
+        std::cout << "Done writting initial schema.\n";
+        return true;
+    }
+
+    bool SqlManager::initializeDatabase(std::fstream* fPtr)
+    {
+        return true;
+    }
+
+    SqlManager::SqlManager(std::filesystem::path dbPath) : subjectList_({}), schoolList_({}), studentList_({}), dbPath_(dbPath) {}
+
+    bool SqlManager::openDb()
+    {
+        int rc = sqlite3_open_v2(dbPath_.c_str(), &currentDb_, SQLITE_OPEN_READWRITE, nullptr);
+        
+        if(rc != SQLITE_OK)
+        {
+            std::cout << "Sqlite failed to opend a db with error code " << rc << "\n";
+        }
+        return rc == SQLITE_OK;
+    }
+
+    void SqlManager::closeDb()
+    {
+        if(currentDb_ == SQLITE_OK)
+        {
+            sqlite3_close_v2(currentDb_);
+        }
     }
 
     void SqlManager::initialValuesLoad()
@@ -150,10 +225,7 @@ namespace Utilities::Workspace
     SqlManager::~SqlManager()
     {
         std::cout << "SqlManager :dtor:\n";
-        if(currentDb_)
-        {
-            sqlite3_close_v2(currentDb_);
-        }
+        closeDb();
     }
 
     std::vector<std::string> SqlManager::tokenize(std::string rawRow)

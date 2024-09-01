@@ -1,0 +1,1 @@
+add_library(SqlAttribute STATIC attribute.cpp attribute.hpp)

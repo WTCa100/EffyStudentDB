@@ -2,6 +2,7 @@
 
 #include "directoryManager/dirManager.hpp"
 #include "fileManager/fManager.hpp"
+#include "../sqlite3/sqlManager/sqlManager.hpp"
 #include "commandHandler/commandHandler.hpp"
 #include "../logger/logger.hpp"
 #include <filesystem>
@@ -18,6 +19,7 @@ namespace Utilities
         std::filesystem::path workingDir_ {std::filesystem::current_path()};
         std::unique_ptr<Workspace::DirectoryManager> dManager_;
         std::unique_ptr<Workspace::FileManager>      fManager_;
+        std::unique_ptr<Workspace::SqlManager>       sManager_;
         void initializeDatabase();
         bool isInitializationNeeded();
 

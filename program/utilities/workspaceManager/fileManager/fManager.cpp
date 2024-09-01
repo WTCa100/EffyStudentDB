@@ -30,6 +30,31 @@ namespace Utilities::Workspace
         return comHandler_->execute();
     }
 
+    std::unique_ptr<std::fstream> FileManager::getFile(std::string fileName, std::optional<std::filesystem::path> subPath)
+    {
+        if(!exist(fileName, subPath))
+        {
+            return nullptr;
+        }
+        std::unique_ptr<std::fstream> ptrRet = std::make_unique<std::fstream>();
+        ptrRet->open(CommandHandler::assambleFullPath(fileName, subPath));
+        return ptrRet;
+    }
+
+    std::vector<std::string> FileManager::getFileContent(std::string fileName, std::optional<std::filesystem::path> subPath)
+    {
+        std::vector<std::string> content;
+        std::ifstream fPtr;
+        std::string line;
+
+        while(std::getline(fPtr, line))
+        {
+            std::cout << line << "\n";
+            content.push_back(line);
+        }
+        return content;
+    }
+
     bool FileManager::exist(std::string fileName, std::optional<std::filesystem::path> subPath)
     {
         setCommandHandler(std::make_unique<verifyCommand>(fileName, subPath));

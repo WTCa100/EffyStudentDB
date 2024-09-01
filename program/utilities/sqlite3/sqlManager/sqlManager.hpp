@@ -19,6 +19,7 @@ namespace Utilities::Workspace
     class SqlManager
     {
     private:
+        // @Todo move the data lists to a core/dataManagment.hpp/.cpp
         /* data */
         // Map of all subjects
         std::map<uint16_t, subject> subjectList_; 
@@ -26,27 +27,28 @@ namespace Utilities::Workspace
         std::map<uint16_t, School> schoolList_;
         // Map of all studnets
         std::map<uint16_t, Student> studentList_;
-
-        std::map<std::string, Sql::Types::SqlTable> tables_;
-
-        void initialValuesLoad();
+        std::map<std::string, Sql::Types::Table> tables_;
         sqlite3* currentDb_;
         std::filesystem::path dbPath_;
-
+        void initialValuesLoad();
     public:
         bool addInitialSchema(std::fstream* fPtr);
-        bool initializeDatabase(std::fstream* fPtr);
+        bool initializeDatabase();
+
+        inline void addTable(const Sql::Types::Table& newTbl) { tables_.insert(std::make_pair(newTbl.getName(), newTbl)); }
+        bool insertTable(const Sql::Types::Table& newTbl);
+        std::vector<std::string> getEntriesFromTable(std::string tableName, std::vector<std::string> attributes = {});
+        // Sql::Types::Table getTableSchema(std::string tableName);
+        // bool addEntryToTable(std::string tableName /*, Entry*/);
+        
         SqlManager(std::filesystem::path dbPath);
         ~SqlManager();
+
+        static std::vector<std::string> tokenize(std::string rawFormat);
+
         bool openDb();
         void closeDb();
-        bool createTable();
-        std::vector<std::string> getEntriesFromTable(std::string tableName, std::vector<std::string> attributes = {});
-        bool addEntryToTable(std::string tableName /*, Entry*/);
 
-        static std::vector<std::string> tokenize(std::string rawRow);
-
-        void printSchools();
 
     };
     

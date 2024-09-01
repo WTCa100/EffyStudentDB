@@ -4,6 +4,8 @@
 
 #include "sqlManager.hpp"
 
+// @TODO Make a univeresal Sql Call to DB, that would just execute a given command
+
 namespace Utilities::Workspace
 {
     using namespace Sql::Types;
@@ -25,13 +27,14 @@ namespace Utilities::Workspace
         *fPtr << "-- Effy.db - this file has been generated automatically\n";
 
         std::cout << "Handling Schools table...\n";
-        Sql::Types::SqlTable schoolTbl("Schools");
+        Sql::Types::Table schoolTbl("Schools");
         schoolTbl.addToSchema({"id", "INTEGER", {AttributeFlag::PRIMARY_KEY}});
         schoolTbl.addToSchema({"name", "TEXT", {AttributeFlag::NOT_NULL, AttributeFlag::UNIQUE}});
         *fPtr << schoolTbl.makeFormula();
+        tables_.insert(std::make_pair(schoolTbl.getName(), schoolTbl));
 
         std::cout << "Handling Students table...\n";
-        Sql::Types::SqlTable studentTbl("Students");
+        Sql::Types::Table studentTbl("Students");
         studentTbl.addToSchema({"id", "INTEGER", {AttributeFlag::PRIMARY_KEY}});
         studentTbl.addToSchema({"firstName", "TEXT", {AttributeFlag::NOT_NULL}});
         studentTbl.addToSchema({"secondName", "TEXT", {}});
@@ -39,34 +42,70 @@ namespace Utilities::Workspace
         studentTbl.addToSchema({"schoolId", "INTEGER", {AttributeFlag::NOT_NULL}});
         // Assign school as a secondary key here
         *fPtr << studentTbl.makeFormula();
+        tables_.insert(std::make_pair(studentTbl.getName(), studentTbl));
 
         std::cout << "Handling Subject table...\n";
-        Sql::Types::SqlTable subjectTbl("Subjects");
+        Sql::Types::Table subjectTbl("Subjects");
         subjectTbl.addToSchema({"id", "INTEGER", {AttributeFlag::PRIMARY_KEY}});
         subjectTbl.addToSchema({"name", "TEXT", {AttributeFlag::NOT_NULL, AttributeFlag::UNIQUE}});
         *fPtr << subjectTbl.makeFormula();
+        tables_.insert(std::make_pair(subjectTbl.getName(), subjectTbl));
 
         std::cout << "Handling Grade table...\n";
-        Sql::Types::SqlTable gradeTbl("Grades");
-        subjectTbl.addToSchema({"id", "INTEGER", {AttributeFlag::PRIMARY_KEY}});
-        subjectTbl.addToSchema({"studentId", "INTEGER", {AttributeFlag::NOT_NULL}});
-        subjectTbl.addToSchema({"subjectId", "INTEGER", {AttributeFlag::NOT_NULL}});
-        subjectTbl.addToSchema({"grade", "FLOAT", {AttributeFlag::NOT_NULL}});
+        Sql::Types::Table gradeTbl("Grades");
+        gradeTbl.addToSchema({"id", "INTEGER", {AttributeFlag::PRIMARY_KEY}});
+        gradeTbl.addToSchema({"studentId", "INTEGER", {AttributeFlag::NOT_NULL}});
+        gradeTbl.addToSchema({"subjectId", "INTEGER", {AttributeFlag::NOT_NULL}});
+        gradeTbl.addToSchema({"grade", "FLOAT", {AttributeFlag::NOT_NULL}});
         // Assign student as a secondary key
         // Assign subject as a secondary key
-        *fPtr << subjectTbl.makeFormula();
-
+        *fPtr << gradeTbl.makeFormula();
+        tables_.insert(std::make_pair(gradeTbl.getName(), gradeTbl));
 
         std::cout << "Done writting initial schema.\n";
         return true;
     }
 
-    bool SqlManager::initializeDatabase(std::fstream* fPtr)
+    bool SqlManager::initializeDatabase()
     {
+        std::cout << "Initializing database file...\n";
+        for(const auto& table: tables_)
+        {
+            std::cout << "Adding table: " << table.first << "\n";
+            if(!insertTable(table.second))
+            {
+                return false;
+            }
+        }
+
         return true;
     }
 
-    SqlManager::SqlManager(std::filesystem::path dbPath) : subjectList_({}), schoolList_({}), studentList_({}), dbPath_(dbPath) {}
+    bool SqlManager::insertTable(const Table& newTbl)
+    {
+        const std::string formula = newTbl.makeFormula();
+        sqlite3_stmt *result;
+        std::cout << "Executing command: " << formula << "\n";
+        int rc = sqlite3_prepare_v2(currentDb_, formula.c_str(), formula.length(), &result, nullptr);
+        if(rc != SQLITE_OK)
+        {
+            std::cout << "Could not add " << newTbl.getName() << " as a table. Return Code: " << rc << "\n";
+            sqlite3_finalize(result);
+            return false;
+        }
+
+        if((rc = sqlite3_step(result)) == SQLITE_DONE)
+        {
+            std::cout << "Successfuly added " << newTbl.getName() << " as a table!\n";
+            sqlite3_finalize(result);
+            return true; 
+        }
+        std::cout << "Could not add " << newTbl.getName() << " as a table. Return Code: " << rc << "\n";
+        sqlite3_finalize(result);
+        return false;
+    }
+
+    SqlManager::SqlManager(std::filesystem::path dbPath) : subjectList_({}), schoolList_({}), studentList_({}), currentDb_(), dbPath_(dbPath) {}
 
     bool SqlManager::openDb()
     {
@@ -222,45 +261,27 @@ namespace Utilities::Workspace
         return output;
     }
 
+
+
     SqlManager::~SqlManager()
     {
         std::cout << "SqlManager :dtor:\n";
         closeDb();
     }
 
-    std::vector<std::string> SqlManager::tokenize(std::string rawRow)
+    // Candidate to moving into common
+    std::vector<std::string> SqlManager::tokenize(std::string rawFormat)
     {
         std::vector<std::string> tokens;
         const char delim = '|';
         std::string token;
-        std::istringstream iss(rawRow);
+        std::istringstream iss(rawFormat);
 
         while(std::getline(iss, token, delim))
         {
             tokens.push_back(token);
         }
         return tokens;
-    }
-
-    void SqlManager::printSchools()
-    {
-        std::cout << "Showing schools:\n";
-        for(auto s : schoolList_)
-        {
-            std::cout << s.first << ": " << s.second.name_ << "\n";
-            std::cout << "Student List:\n";
-            if(s.second.students_.empty())
-            {
-                std::cout << "None!\n";
-            }
-            else
-            {
-                for(auto student : s.second.students_)
-                {
-                    std::cout << student.firstName_ << " " << student.lastName_ << "\n";
-                }
-            }
-        }
     }
 
 } // namespace Utilities::Sql

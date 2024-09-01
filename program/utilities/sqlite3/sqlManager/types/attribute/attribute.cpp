@@ -1,5 +1,7 @@
 #include "attribute.hpp"
 
+#include <sstream>
+
 namespace Utilities::Workspace::Sql::Types
 {
     std::string attrFlagToString(const AttributeFlag& flag)
@@ -20,4 +22,5 @@ namespace Utilities::Workspace::Sql::Types
             return "";
         }
     }
+
 } // namespace Utilities::Workspace::Sql::Types

@@ -9,17 +9,17 @@
 // @TODO Implement a way to handle Foreign key and References (like adding ON DELETE SET NULL etc.)
 
 namespace Utilities::Workspace::Sql::Types
-{    
+{   
     using refKeys = std::vector<std::pair<Attribute, Attribute>>;
-    class SqlTable
+    class Table
     {
     private:
         std::string name_;
         std::map<std::string, Attribute> schema_;
         refKeys foreignKeys_;
     public:
-        SqlTable(std::string name);
-        ~SqlTable() = default;
+        Table(std::string name);
+        ~Table() = default;
 
         std::string getName() const { return name_; }
         void setName(std::string name) { name_ = name; }
@@ -30,5 +30,13 @@ namespace Utilities::Workspace::Sql::Types
         void addToSchema(const Attribute& atr);
         void linkAttributes(Attribute src, Attribute dest);
     };
-} // namespace namespace Utilities::Workspace
+
+     
+    Types::Table defaultSchoolsTable();
+    Types::Table defaultStudentsTable();
+    Types::Table defaultSubjectsTable();
+    Types::Table defaultGradesTable();
+
+    
+} //namespace Utilities::Workspace::Sql::Types
 

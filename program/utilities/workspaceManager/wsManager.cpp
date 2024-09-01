@@ -1,22 +1,22 @@
 #include "wsManager.hpp"
-
+#include "constants.hpp"
 namespace Utilities
 {
     WsManager::WsManager(std::string workingDir) : workingDir_(std::filesystem::path(workingDir))
     {
         dManager_ = std::make_unique<Workspace::DirectoryManager>(workingDir_);
         fManager_ = std::make_unique<Workspace::FileManager>(workingDir_);
-        sManager_ = std::make_unique<Workspace::SqlManager>("database/Effy.db");
+        sManager_ = std::make_unique<Workspace::SqlManager>(fileDatabaseSubdir + "/" + fileDatabase);
 
         if(isInitializationNeeded())
         {
-            dManager_->createDirectory("logs");
-            logger_ = std::make_shared<Logger>("logs");        
+            dManager_->createDirectory(directoryLogs);
+            logger_ = std::make_shared<Logger>(directoryLogs);        
             initializeDatabase();
         }
         else
         {
-            logger_ = std::make_shared<Logger>("logs");        
+            logger_ = std::make_shared<Logger>(directoryLogs);        
         }
 
         LOG((*logger_), "WsManager :ctor: specialized - with working directory: ", workingDir_);
@@ -26,14 +26,14 @@ namespace Utilities
     void WsManager::initializeDatabase()
     {
         // First - handle directories
-        createDirectory("database");
-        createDirectory("schemas", "database");
+        createDirectory(directoryDatabase);
+        createDirectory(directorySchemas, directorySchemasSubdir);
 
         // Second - handle files 
-        if(createFile("base.sql", "database/schemas/"))
+        if(createFile(fileBase, fileBaseSubdir))
         {
             // Create base schema file - this is just 
-            std::unique_ptr<std::fstream> dbPtr = fManager_->getFile("base.sql", "database/schemas");
+            std::unique_ptr<std::fstream> dbPtr = fManager_->getFile(fileBase, fileBaseSubdir);
             if(!sManager_->addInitialSchema(dbPtr.get()))
             {
                 LOG((*logger_), "Unable to write schema to a file!");
@@ -42,21 +42,20 @@ namespace Utilities
             dbPtr->close();
 
             LOG((*logger_), "Initial schema was written into ", "base.sql");
-            createFile("Effy.db", "database");
+            createFile(fileDatabase, fileDatabaseSubdir);
             sManager_->openDb();
-            dbPtr = fManager_->getFile("Effy.db", "database");
-            sManager_->initializeDatabase(dbPtr.get());
+            sManager_->initializeDatabase();
             dbPtr->close();
         }
     }
 
     bool WsManager::isInitializationNeeded()
     {
-        return(!dManager_->exist("logs") ||
-               !dManager_->exist("database") ||
-               !dManager_->exist("schemas", "database") ||
-               !fManager_->exist("base.sql", "database/schemas") ||
-               !fManager_->exist("Effy.db", "database/"));
+        return(!dManager_->exist(directoryLogs) ||
+               !dManager_->exist(directoryDatabase) ||
+               !dManager_->exist(directorySchemas, directorySchemasSubdir) ||
+               !fManager_->exist(fileBase, fileBaseSubdir) ||
+               !fManager_->exist(fileDatabase, fileDatabaseSubdir));
     }
 
     bool WsManager::createFile(std::string name, std::optional<std::filesystem::path> subPath)

@@ -8,4 +8,6 @@ target_link_libraries(WorkspaceManager PUBLIC
     FileManager
     DirectoryManager
     SqlManager
-    Logger)
+    Logger
+    SqlTable
+    SqlAttribute)

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <filesystem>
 
 // Get types
@@ -27,20 +28,34 @@ namespace Utilities::Workspace
         std::map<uint16_t, School> schoolList_;
         // Map of all studnets
         std::map<uint16_t, Student> studentList_;
-        std::map<std::string, Sql::Types::Table> tables_;
-        sqlite3* currentDb_;
+        std::unordered_map<std::string, Sql::Types::Table> tables_;
+        
         std::filesystem::path dbPath_;
+        sqlite3* currentDb_;
+        bool isDbOpen_;
+        
         void initialValuesLoad();
     public:
-        bool addInitialSchema(std::fstream* fPtr);
-        bool initializeDatabase();
+        void initialTablesLoad(std::fstream& schemaPtr);
+
+        // Split calling here
+        // Query with vector as a return
+        std::vector<std::string> executeIn(const std::string& sqlQuery);
+        bool executeOut(const std::string& sqlQuery);
+
+        bool moveSchemasToDatabase();
+        bool moveSchemaToDatabase(const Sql::Types::Table& table);
 
         inline void addTable(const Sql::Types::Table& newTbl) { tables_.insert(std::make_pair(newTbl.getName(), newTbl)); }
         bool insertTable(const Sql::Types::Table& newTbl);
-        std::vector<std::string> getEntriesFromTable(std::string tableName, std::vector<std::string> attributes = {});
-        // Sql::Types::Table getTableSchema(std::string tableName);
+        std::vector<std::string> getEntriesFromTable(std::string tableName, std::vector<std::string> attributes = {}, std::string filter = "");
+        Sql::Types::Table getTableSchema(std::string tableName);
+        bool isTableInDatabase(const Sql::Types::Table& table);
+        bool isTableInDatabase(const std::string& tableName);
+
+
         // bool addEntryToTable(std::string tableName /*, Entry*/);
-        
+
         SqlManager(std::filesystem::path dbPath);
         ~SqlManager();
 
@@ -48,6 +63,7 @@ namespace Utilities::Workspace
 
         bool openDb();
         void closeDb();
+        bool isDbOpen() const { return isDbOpen_; }
 
 
     };

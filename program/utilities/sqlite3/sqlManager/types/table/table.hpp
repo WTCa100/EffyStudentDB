@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 #include "../attribute/attribute.hpp"
@@ -15,7 +15,7 @@ namespace Utilities::Workspace::Sql::Types
     {
     private:
         std::string name_;
-        std::map<std::string, Attribute> schema_;
+        std::unordered_map<std::string, Attribute> schema_;
         refKeys foreignKeys_;
     public:
         Table(std::string name);
@@ -23,12 +23,14 @@ namespace Utilities::Workspace::Sql::Types
 
         std::string getName() const { return name_; }
         void setName(std::string name) { name_ = name; }
-        std::map<std::string, Attribute> getSchema() const { return schema_; } 
+        std::unordered_map<std::string, Attribute> getSchema() const { return schema_; } 
         refKeys getForeignKeys() const { return foreignKeys_; }
         std::string makeFormula() const;
         // void printTable(std::ostream& stream) const;
         void addToSchema(const Attribute& atr);
-        void linkAttributes(Attribute src, Attribute dest);
+        void linkAttributes(Attribute src, std::string refferencedTblName, std::string refferencedAttrName);
+        bool isValid() const { return !schema_.empty(); } // Later it will be checked if at least one primary key is present
+        // void linkAttributes(Attribute src, Attribute dest);
     };
 
      
@@ -36,7 +38,5 @@ namespace Utilities::Workspace::Sql::Types
     Types::Table defaultStudentsTable();
     Types::Table defaultSubjectsTable();
     Types::Table defaultGradesTable();
-
-    
 } //namespace Utilities::Workspace::Sql::Types
 

@@ -3,129 +3,140 @@
 #include <fstream>
 
 #include "sqlManager.hpp"
+#include "../../common/stringManip.hpp"
 
 // @TODO Make a univeresal Sql Call to DB, that would just execute a given command
 
 namespace Utilities::Workspace
 {
     using namespace Sql::Types;
-    bool SqlManager::addInitialSchema(std::fstream* fPtr)
+
+    std::vector<std::string> SqlManager::executeIn(const std::string& sqlQuery)
     {
-        if(!fPtr)
+        sqlite3_stmt *result;
+        std::cout << "Executing query: \"" << sqlQuery << "\n"; 
+        if(int rc = !sqlite3_prepare_v2(currentDb_, sqlQuery.c_str(), sqlQuery.size(), &result, nullptr) == SQLITE_OK)
         {
-            std::cout << "fPtr is NULL!\n";
-            return false;
+            std::cout << "Command failed with exit code: " << rc << "\n";
+            return {};
+        }
+        std::cout << "Command prepared without any errors!\n";
+
+        std::vector<std::string> output;
+        while(sqlite3_step(result) == SQLITE_ROW)
+        {
+            std::string rowContent = "";
+            for(int i = 0; i < sqlite3_column_count(result); i++)
+            {
+                
+                const unsigned char *columnInfo = sqlite3_column_text(result, i);
+
+                rowContent += (columnInfo ? reinterpret_cast<const char*>(columnInfo) : "NULL");
+
+                if(i < sqlite3_column_count(result) - 1)
+                {
+                    rowContent += "|";
+                }
+            }
+            output.push_back(rowContent);
         }
 
-        if(!fPtr->is_open())
-        {
-            std::cout << "fPtr shall point to a open file!\n";
-            return false;
-        }
+        sqlite3_finalize(result);
+        return output;
+    }
 
-        std::cout << "Writting header\n";
-        *fPtr << "-- Effy.db - this file has been generated automatically\n";
-
-        std::cout << "Handling Schools table...\n";
-        Sql::Types::Table schoolTbl("Schools");
-        schoolTbl.addToSchema({"id", "INTEGER", {AttributeFlag::PRIMARY_KEY}});
-        schoolTbl.addToSchema({"name", "TEXT", {AttributeFlag::NOT_NULL, AttributeFlag::UNIQUE}});
-        *fPtr << schoolTbl.makeFormula();
-        tables_.insert(std::make_pair(schoolTbl.getName(), schoolTbl));
-
-        std::cout << "Handling Students table...\n";
-        Sql::Types::Table studentTbl("Students");
-        studentTbl.addToSchema({"id", "INTEGER", {AttributeFlag::PRIMARY_KEY}});
-        studentTbl.addToSchema({"firstName", "TEXT", {AttributeFlag::NOT_NULL}});
-        studentTbl.addToSchema({"secondName", "TEXT", {}});
-        studentTbl.addToSchema({"lastName", "TEXT", {AttributeFlag::NOT_NULL}});
-        studentTbl.addToSchema({"schoolId", "INTEGER", {AttributeFlag::NOT_NULL}});
-        // Assign school as a secondary key here
-        *fPtr << studentTbl.makeFormula();
-        tables_.insert(std::make_pair(studentTbl.getName(), studentTbl));
-
-        std::cout << "Handling Subject table...\n";
-        Sql::Types::Table subjectTbl("Subjects");
-        subjectTbl.addToSchema({"id", "INTEGER", {AttributeFlag::PRIMARY_KEY}});
-        subjectTbl.addToSchema({"name", "TEXT", {AttributeFlag::NOT_NULL, AttributeFlag::UNIQUE}});
-        *fPtr << subjectTbl.makeFormula();
-        tables_.insert(std::make_pair(subjectTbl.getName(), subjectTbl));
-
-        std::cout << "Handling Grade table...\n";
-        Sql::Types::Table gradeTbl("Grades");
-        gradeTbl.addToSchema({"id", "INTEGER", {AttributeFlag::PRIMARY_KEY}});
-        gradeTbl.addToSchema({"studentId", "INTEGER", {AttributeFlag::NOT_NULL}});
-        gradeTbl.addToSchema({"subjectId", "INTEGER", {AttributeFlag::NOT_NULL}});
-        gradeTbl.addToSchema({"grade", "FLOAT", {AttributeFlag::NOT_NULL}});
-        // Assign student as a secondary key
-        // Assign subject as a secondary key
-        *fPtr << gradeTbl.makeFormula();
-        tables_.insert(std::make_pair(gradeTbl.getName(), gradeTbl));
-
-        std::cout << "Done writting initial schema.\n";
+    bool SqlManager::executeOut(const std::string& sqlCommand)
+    {
         return true;
     }
 
-    bool SqlManager::initializeDatabase()
+    bool SqlManager::isTableInDatabase(const Sql::Types::Table& table)
     {
-        std::cout << "Initializing database file...\n";
-        for(const auto& table: tables_)
+        return isTableInDatabase(table.getName());
+    }
+
+    bool SqlManager::isTableInDatabase(const std::string& tableName)
+    {
+        std::vector<std::string> presentTables = getEntriesFromTable("sqlite_master", {"name"}, "type = 'table'");
+        for(size_t i = 0; i < presentTables.size(); ++i)
         {
-            std::cout << "Adding table: " << table.first << "\n";
-            if(!insertTable(table.second))
+            if(presentTables.at(i) == tableName)
             {
-                return false;
+                return true;
             }
         }
+        return false;
+    }
 
+    bool SqlManager::moveSchemasToDatabase()
+    {
+        bool isEverythingInserted = false;
+        for(const auto& tbl : tables_)
+        {
+            isEverythingInserted = moveSchemaToDatabase(tbl.second);
+        }
+        return isEverythingInserted;
+    }
+
+    bool SqlManager::moveSchemaToDatabase(const Sql::Types::Table& table)
+    {
+        std::cout << "Adding table: " << table.getName() << "\n";
+        // Check if a given table exist in the tables map
+        if(!tables_.contains(table.getName()))
+        {
+            addTable(table);
+        }
+
+        // @todo check if a given table is already inside .db file
+
+        if(!insertTable(table))
+        {
+            return false;
+        }
         return true;
     }
 
     bool SqlManager::insertTable(const Table& newTbl)
     {
         const std::string formula = newTbl.makeFormula();
-        sqlite3_stmt *result;
-        std::cout << "Executing command: " << formula << "\n";
-        int rc = sqlite3_prepare_v2(currentDb_, formula.c_str(), formula.length(), &result, nullptr);
-        if(rc != SQLITE_OK)
-        {
-            std::cout << "Could not add " << newTbl.getName() << " as a table. Return Code: " << rc << "\n";
-            sqlite3_finalize(result);
-            return false;
-        }
-
-        if((rc = sqlite3_step(result)) == SQLITE_DONE)
-        {
-            std::cout << "Successfuly added " << newTbl.getName() << " as a table!\n";
-            sqlite3_finalize(result);
-            return true; 
-        }
-        std::cout << "Could not add " << newTbl.getName() << " as a table. Return Code: " << rc << "\n";
-        sqlite3_finalize(result);
-        return false;
+        return executeOut(formula);
     }
 
-    SqlManager::SqlManager(std::filesystem::path dbPath) : subjectList_({}), schoolList_({}), studentList_({}), currentDb_(), dbPath_(dbPath) {}
+    SqlManager::SqlManager(std::filesystem::path dbPath) : subjectList_({}), schoolList_({}), studentList_({}),dbPath_(dbPath), currentDb_(), isDbOpen_(false) {}
 
     bool SqlManager::openDb()
     {
+        if(isDbOpen_)
+        {
+            std::cout << "Database is already open\n";
+            return true;
+        }
+
         int rc = sqlite3_open_v2(dbPath_.c_str(), &currentDb_, SQLITE_OPEN_READWRITE, nullptr);
         
         if(rc != SQLITE_OK)
         {
             std::cout << "Sqlite failed to opend a db with error code " << rc << "\n";
         }
+        else
+        {
+            isDbOpen_ = true;
+        }
         return rc == SQLITE_OK;
     }
 
     void SqlManager::closeDb()
     {
-        if(currentDb_ == SQLITE_OK)
+        if(isDbOpen_)
         {
             sqlite3_close_v2(currentDb_);
+            isDbOpen_ = false;
         }
     }
 
+    // This has to be deleted from the sql manager and moved into a either data manager/data organizer OR
+    // into a SQL Adapter. Generaly all of the data will be inside the core functionality and will as WsManager
+    // to get entires from a given table.
     void SqlManager::initialValuesLoad()
     {
         // Handle Subjects
@@ -133,7 +144,7 @@ namespace Utilities::Workspace
             std::vector<std::string> initialSchools = getEntriesFromTable("Subjects");
             for(const auto& subjectRaw : initialSchools)
             {
-                std::vector<std::string> processedEntry = tokenize(subjectRaw);
+                std::vector<std::string> processedEntry = Utilities::Common::tokenize(subjectRaw, '|');
                 // Id
                 auto subjectId = static_cast<uint16_t>(std::stoi(processedEntry.at(0)));
                 // Name
@@ -146,7 +157,7 @@ namespace Utilities::Workspace
             std::vector<std::string> initialSchools = getEntriesFromTable("Schools");
             for(const auto& schoolRow : initialSchools)
             {
-                std::vector<std::string> processedEntry = tokenize(schoolRow);
+                std::vector<std::string> processedEntry = Utilities::Common::tokenize(schoolRow, '|');
                 // Id
                 auto schoolId = static_cast<uint16_t>(std::stoi(processedEntry.at(0)));
                 // Name
@@ -160,7 +171,7 @@ namespace Utilities::Workspace
             std::vector<std::string> initialStudents = getEntriesFromTable("Students");
             for(const auto& studentRow : initialStudents)
             {
-                std::vector<std::string> processedEntry = tokenize(studentRow);
+                std::vector<std::string> processedEntry = Utilities::Common::tokenize(studentRow, '|');
                 // Id
                 auto studentId = static_cast<uint16_t>(std::stoi(processedEntry.at(0)));
 
@@ -208,7 +219,20 @@ namespace Utilities::Workspace
         // }
     }
 
-    std::vector<std::string> SqlManager::getEntriesFromTable(std::string tableName, std::vector<std::string> attributes)
+    void SqlManager::initialTablesLoad(std::fstream& schemaPtr)
+    {
+        std::cout << "Loading all tables into the memory...\n";
+        // Get all table names from the DB
+        std::vector<std::string> tableNames = getEntriesFromTable("sqlite_master", {"name"}, "type = 'table'");
+
+        std::cout << "Got the following names:\n";
+        for(auto name : tableNames)
+        {
+            getTableSchema(name);
+        }
+    }
+
+    std::vector<std::string> SqlManager::getEntriesFromTable(std::string tableName, std::vector<std::string> attributes, std::string filter)
     {
         std::string selectWhat = "";
         std::string sqlFormat = "SELECT ";
@@ -228,60 +252,41 @@ namespace Utilities::Workspace
             }
         }
 
-        sqlite3_stmt *result;
-        sqlFormat += selectWhat + " FROM " + tableName + ";";
-        std::cout << "Executing command: \"" << sqlFormat << "\n"; 
-        if(int rc = !sqlite3_prepare_v2(currentDb_, sqlFormat.c_str(), sqlFormat.size(), &result, nullptr) == SQLITE_OK)
+        sqlFormat += selectWhat + " FROM " + tableName;
+
+        if(!filter.empty())
         {
-            std::cout << "Command failed with exit code: " << rc << "\n";
-            return {};
+            sqlFormat += " WHERE " + filter;
         }
-        std::cout << "Command prepared without any errors!\n";
+        sqlFormat += ";";
 
-        std::vector<std::string> output;
-        while(sqlite3_step(result) == SQLITE_ROW)
-        {
-            std::string rowContent = "";
-            for(int i = 0; i < sqlite3_column_count(result); i++)
-            {
-                
-                const unsigned char *columnInfo = sqlite3_column_text(result, i);
-
-                rowContent += (columnInfo ? reinterpret_cast<const char*>(columnInfo) : "NULL");
-
-                if(i < sqlite3_column_count(result) - 1)
-                {
-                    rowContent += "|";
-                }
-            }
-            output.push_back(rowContent);
-        }
-
-        sqlite3_finalize(result);
-        return output;
+        return executeIn(sqlFormat);
     }
 
+    Sql::Types::Table SqlManager::getTableSchema(std::string tableName)
+    {
+        // The output of this pragma is cid|name|type|notnull|dflt_value|pk
+        std::string commandAttr = "PRAGMA table_info(" + tableName + ");";
+        // The output of this pragma is id|seq|table|from|to|on_update|on_delete|match
+        std::string commandForKey = "PRAGMA foreign_key_list(" + tableName + ");";
+        
+        Table resultTbl(tableName);
+        
+        std::vector<std::string> outputAttr = executeIn(commandAttr);
+        std::vector<std::string> outputFkeys = executeIn(commandForKey);
 
+        for(const auto& entry : outputAttr)
+        {
+            std::cout << entry << "\n";
+        }
+
+        return resultTbl;
+    }
 
     SqlManager::~SqlManager()
     {
         std::cout << "SqlManager :dtor:\n";
         closeDb();
-    }
-
-    // Candidate to moving into common
-    std::vector<std::string> SqlManager::tokenize(std::string rawFormat)
-    {
-        std::vector<std::string> tokens;
-        const char delim = '|';
-        std::string token;
-        std::istringstream iss(rawFormat);
-
-        while(std::getline(iss, token, delim))
-        {
-            tokens.push_back(token);
-        }
-        return tokens;
     }
 
 } // namespace Utilities::Sql

@@ -12,11 +12,16 @@ namespace Utilities
         {
             dManager_->createDirectory(directoryLogs);
             logger_ = std::make_shared<Logger>(directoryLogs);        
+            LOG((*logger_), "Initialization required.");
             initializeDatabase();
         }
         else
         {
-            logger_ = std::make_shared<Logger>(directoryLogs);        
+            logger_ = std::make_shared<Logger>(directoryLogs);  
+            LOG((*logger_), "Initialization not required. Will extract data from existing files");
+            auto schemaPtr = fManager_->getFile(fileBase, fileBaseSubdir);
+            sManager_->openDb();
+            sManager_->initialTablesLoad(*schemaPtr);
         }
 
         LOG((*logger_), "WsManager :ctor: specialized - with working directory: ", workingDir_);
@@ -32,22 +37,68 @@ namespace Utilities
         // Second - handle files 
         if(createFile(fileBase, fileBaseSubdir))
         {
-            // Create base schema file - this is just 
-            std::unique_ptr<std::fstream> dbPtr = fManager_->getFile(fileBase, fileBaseSubdir);
-            if(!sManager_->addInitialSchema(dbPtr.get()))
+            if(!createInitialSchema())
             {
-                LOG((*logger_), "Unable to write schema to a file!");
-                throw std::runtime_error("Cannot proceed with no initial schema!");
+                LOG((*logger_), "Unable to create initial schema file!");
+                throw std::runtime_error("Unable to create initial schema file!");
             }
-            dbPtr->close();
 
-            LOG((*logger_), "Initial schema was written into ", "base.sql");
-            createFile(fileDatabase, fileDatabaseSubdir);
-            sManager_->openDb();
-            sManager_->initializeDatabase();
-            dbPtr->close();
+            if(!fileExists(fileDatabase, fileDatabaseSubdir))
+            {
+                if(!createFile(fileDatabase, fileDatabaseSubdir))
+                {
+                    LOG((*logger_), "Unable to create initial database file!");
+                    throw std::runtime_error("Unable to create initial database file!");
+                }
+
+                sManager_->openDb();
+                // Get all schemas into the .db
+                if(!sManager_->moveSchemasToDatabase())
+                {
+                    LOG((*logger_), "Could not add inital schemas into the database!");
+                }
+                else
+                {
+                    LOG((*logger_), "All schemas have been moved into the database!");
+                }
+            }
         }
+        LOG((*logger_), "Initial start-up done! Ready to operate.");
     }
+
+    bool WsManager::createInitialSchema()
+    {
+        LOG((*logger_), "Creating the initial schema file with default tables");
+        std::unique_ptr<std::fstream> schemaPtr = fManager_->getFile(fileBase, fileBaseSubdir);
+        if(!schemaPtr->is_open())
+        {
+            LOG((*logger_), "Could not open file: ", fileDatabase, " with subdir: ", fileDatabaseSubdir);
+            return false;
+        }
+
+        // Fill the base schema file
+        Table schoolsTbl = defaultSchoolsTable();
+        Table studentsTbl = defaultStudentsTable();
+        Table subjectsTbl = defaultSubjectsTable();
+        Table gradesTbl = defaultGradesTable();
+
+        *schemaPtr  << "-- Effy.db - this file has been generated automatically\n";
+        *schemaPtr << schoolsTbl.makeFormula();
+        *schemaPtr << studentsTbl.makeFormula(); 
+        *schemaPtr << subjectsTbl.makeFormula(); 
+        *schemaPtr << gradesTbl.makeFormula(); 
+
+        // To make the boot up faster, insert the intial tables into the sql manager
+        sManager_->addTable(schoolsTbl);
+        sManager_->addTable(studentsTbl);
+        sManager_->addTable(subjectsTbl);
+        sManager_->addTable(gradesTbl);
+
+        LOG((*logger_), "Initial schema was written into ", "base.sql");
+        schemaPtr->close();
+        return true;
+    }
+
 
     bool WsManager::isInitializationNeeded()
     {
@@ -94,8 +145,8 @@ namespace Utilities
         std::cout << "Looking for the file " << fileName << "\n";
         bool rc = fManager_->exist(fileName, subPath);
 
-        std::cout << rc ? ("File: " + fileName + " was found!\n") 
-                        : ("Could not find file: " + fileName + "\n");
+        std::cout << (rc ? ("File: " + fileName + " was found!\n") 
+                        : ("Could not find file: " + fileName + "\n"));
         return rc;
     }
 

@@ -1,0 +1,1 @@
+add_library(StringManip STATIC stringManip.cpp stringManip.hpp)

@@ -1,17 +1,24 @@
 #pragma once
 
+#include <filesystem>
+#include <memory>
+#include <optional>
+
+// Managers
 #include "directoryManager/dirManager.hpp"
 #include "fileManager/fManager.hpp"
 #include "../sqlite3/sqlManager/sqlManager.hpp"
 #include "commandHandler/commandHandler.hpp"
 #include "../logger/logger.hpp"
-#include <filesystem>
-#include <memory>
-#include <optional>
+
+// Types
+#include "../sqlite3/sqlManager/types/attribute/attribute.hpp"
+#include "../sqlite3/sqlManager/types/table/table.hpp"
 
 namespace Utilities
 {
 
+    using namespace Utilities::Workspace::Sql::Types;
     class WsManager
     {
     private:
@@ -21,6 +28,7 @@ namespace Utilities
         std::unique_ptr<Workspace::FileManager>      fManager_;
         std::unique_ptr<Workspace::SqlManager>       sManager_;
         void initializeDatabase();
+        bool createInitialSchema();
         bool isInitializationNeeded();
 
     public:

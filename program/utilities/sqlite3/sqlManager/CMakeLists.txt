@@ -7,4 +7,5 @@ target_link_libraries(SqlManager PUBLIC
     Student 
     SqlTable
     SqlAttribute
+    StringManip
     )

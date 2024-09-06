@@ -47,7 +47,20 @@ namespace Utilities::Workspace
 
     bool SqlManager::executeOut(const std::string& sqlCommand)
     {
-        return true;
+        sqlite3_stmt *result;
+        std::cout << "Executing query: \"" << sqlCommand << "\"\n"; 
+        int rc = !sqlite3_prepare_v2(currentDb_, sqlCommand.c_str(), sqlCommand.size(), &result, nullptr);
+        if(rc == SQLITE_OK)
+        {
+            std::cout << "Command failed with exit code: " << rc << "\n";
+            return false;
+        }
+        std::cout << "Command prepared without any errors!\n";
+
+        rc = sqlite3_step(result);
+        std::cout << "Command exited with code " << rc << "\n";
+
+        return rc == SQLITE_OK;
     }
 
     bool SqlManager::isTableInDatabase(const Sql::Types::Table& table)
@@ -287,6 +300,20 @@ namespace Utilities::Workspace
     {
         std::cout << "SqlManager :dtor:\n";
         closeDb();
+    }
+
+    void SqlManager::printTables()
+    {
+        if(tables_.empty())
+        {
+            std::cout << "No tables present\n";
+            return;
+        }
+
+        for(const auto& tbl : tables_)
+        {
+            std::cout << tbl.second.makeFormula() << "\n";
+        }
     }
 
 } // namespace Utilities::Sql

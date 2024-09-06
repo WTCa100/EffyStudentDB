@@ -59,11 +59,12 @@ namespace Utilities::Workspace
         SqlManager(std::filesystem::path dbPath);
         ~SqlManager();
 
-        static std::vector<std::string> tokenize(std::string rawFormat);
-
         bool openDb();
         void closeDb();
         bool isDbOpen() const { return isDbOpen_; }
+
+
+        void printTables();
 
 
     };

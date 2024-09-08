@@ -50,7 +50,7 @@ namespace Utilities::Workspace
         sqlite3_stmt *result;
         std::cout << "Executing query: \"" << sqlCommand << "\"\n"; 
         int rc = !sqlite3_prepare_v2(currentDb_, sqlCommand.c_str(), sqlCommand.size(), &result, nullptr);
-        if(rc == SQLITE_OK)
+        if(rc != SQLITE_OK)
         {
             std::cout << "Command failed with exit code: " << rc << "\n";
             return false;
@@ -241,8 +241,9 @@ namespace Utilities::Workspace
         std::cout << "Got the following names:\n";
         for(auto name : tableNames)
         {
-            getTableSchema(name);
+            addTable(getTableSchema(name));
         }
+        std::cout << "Initial tables has been loaded\n";
     }
 
     std::vector<std::string> SqlManager::getEntriesFromTable(std::string tableName, std::vector<std::string> attributes, std::string filter)
@@ -288,11 +289,46 @@ namespace Utilities::Workspace
         std::vector<std::string> outputAttr = executeIn(commandAttr);
         std::vector<std::string> outputFkeys = executeIn(commandForKey);
 
-        for(const auto& entry : outputAttr)
-        {
-            std::cout << entry << "\n";
-        }
 
+        for(const auto& attr : outputAttr)
+        {
+            std::vector<std::string> tokenizedAttr = Common::tokenize(attr, '|');
+            Attribute finalAttr;
+            for(size_t elementId = 1; elementId < tokenizedAttr.size(); elementId++)
+            {
+                std::cout << elementId << " : " << tokenizedAttr.at(elementId) << "\n";
+                switch (static_cast<PragmaTableFormat>(elementId))
+                {
+                case PragmaTableFormat::name:
+                    finalAttr.name_ = tokenizedAttr.at(elementId);
+                    break;
+                case PragmaTableFormat::type:
+                    finalAttr.type_ = tokenizedAttr.at(elementId);
+                case PragmaTableFormat::notnull:
+                    if(tokenizedAttr.at(elementId) == "1")
+                    {
+                        finalAttr.flags_.push_back(AttributeFlag::NOT_NULL);
+                    }
+                    break;
+                case PragmaTableFormat::dflt_value:
+                    if(tokenizedAttr.at(elementId) != "NULL")
+                    {
+                        std::cout << "Default value is not supported yet - skipping.\n";
+                    }
+                    break;
+                case PragmaTableFormat::pk:
+                    if(tokenizedAttr.at(elementId) == "1")
+                    {
+                        finalAttr.flags_.push_back(AttributeFlag::PRIMARY_KEY);
+                    }
+                    break;
+                default:
+                    std::cout << "Unknown element id - skipping\n";
+                    break;
+                }
+            }
+            resultTbl.addToSchema(std::move(finalAttr));
+        }
         return resultTbl;
     }
 

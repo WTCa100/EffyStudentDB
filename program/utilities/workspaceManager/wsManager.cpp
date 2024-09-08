@@ -26,10 +26,6 @@ namespace Utilities
 
         LOG((*logger_), "WsManager :ctor: specialized - with working directory: ", workingDir_);
         std::cout << "WsManager :ctor: specialized - with working directory: " << workingDir_ << "\n";
-        sManager_->printTables();
-        auto t = sManager_->getTables().at("Schools");
-        auto a = t.getAttributeByName("name");
-        sManager_->addEntryToTable("Schools", {std::make_pair(a, std::string("Test"))});
     }
 
     void WsManager::initializeDatabase()

@@ -48,19 +48,26 @@ namespace Utilities::Workspace
     bool SqlManager::executeOut(const std::string& sqlCommand)
     {
         sqlite3_stmt *result;
-        std::cout << "Executing query: \"" << sqlCommand << "\"\n"; 
-        int rc = !sqlite3_prepare_v2(currentDb_, sqlCommand.c_str(), sqlCommand.size(), &result, nullptr);
+        std::cout << "Executing command: \"" << sqlCommand << "\"\n"; 
+        int rc = sqlite3_prepare_v2(currentDb_, sqlCommand.c_str(), sqlCommand.length(), &result, nullptr);
         if(rc != SQLITE_OK)
         {
             std::cout << "Command failed with exit code: " << rc << "\n";
+            sqlite3_finalize(result);
             return false;
         }
         std::cout << "Command prepared without any errors!\n";
 
         rc = sqlite3_step(result);
-        std::cout << "Command exited with code " << rc << "\n";
+        if(rc != SQLITE_DONE)
+        {
+            std::cout << "Command exited with code " << rc << "\n";
+            std::cout << "Details: " << sqlite3_errmsg(currentDb_) << "\n";
+        }
 
-        return rc == SQLITE_OK;
+        sqlite3_finalize(result);
+
+        return rc == SQLITE_DONE;
     }
 
     bool SqlManager::isTableInDatabase(const Sql::Types::Table& table)
@@ -86,7 +93,8 @@ namespace Utilities::Workspace
         bool isEverythingInserted = false;
         for(const auto& tbl : tables_)
         {
-            isEverythingInserted = moveSchemaToDatabase(tbl.second);
+            // THIS IS SO BAD FIX IT!!!
+            isEverythingInserted = (moveSchemaToDatabase(tbl.second) && isEverythingInserted);
         }
         return isEverythingInserted;
     }
@@ -133,6 +141,7 @@ namespace Utilities::Workspace
         }
         else
         {
+            std::cout << "Succesully opened DB at: " << dbPath_.string() << "\n";
             isDbOpen_ = true;
         }
         return rc == SQLITE_OK;
@@ -234,11 +243,39 @@ namespace Utilities::Workspace
 
     bool SqlManager::addEntryToTable(std::string tableName, entry newVals)
     {
-        std::cout << "Into table name: " << tableName << "\n";
-        auto targetAttr = newVals.at(0).first;
-        std::cout << "Adding to target attr: " << targetAttr.name_ << "\n";
-        std::cout << "Value: " << newVals.at(0).second << "\n";
-        return true;
+        std::stringstream ss;
+        ss << "INSERT INTO " << tableName << "(";
+        for(size_t pos = 0; pos < newVals.size(); ++pos)
+        {
+            const Attribute& attr = newVals.at(pos).first;
+            ss << attr.name_;
+            if(pos < newVals.size() - 1)
+            {
+                ss << ", ";
+            }
+        }
+        ss << ") VALUES (";
+        for(size_t pos = 0; pos < newVals.size(); ++pos)
+        {
+            const Attribute& attr = newVals.at(pos).first;
+            std::string val = newVals.at(pos).second;
+            if(attr.type_ == "TEXT")
+            {
+                ss << "'" << val << "'";
+            }
+            else
+            {
+                ss << val;
+            }
+
+            if(pos < newVals.size() - 1)
+            {
+                ss << ", ";
+            }
+        }
+        ss << ");";
+        // std::cout << ss.str() << "\n";
+        return executeOut(ss.str());
     }
 
     void SqlManager::initialTablesLoad(std::fstream& schemaPtr)
@@ -305,7 +342,6 @@ namespace Utilities::Workspace
             Attribute finalAttr;
             for(size_t elementId = 1; elementId < tokenizedAttr.size(); elementId++)
             {
-                std::cout << elementId << " : " << tokenizedAttr.at(elementId) << "\n";
                 switch (static_cast<PragmaTableFormat>(elementId))
                 {
                 case PragmaTableFormat::name:

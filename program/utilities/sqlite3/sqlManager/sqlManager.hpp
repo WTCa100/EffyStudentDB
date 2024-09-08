@@ -19,7 +19,7 @@
 namespace Utilities::Workspace
 {
 
-    typedef std::vector<std::pair<std::string, std::string>> entry;
+    typedef std::vector<std::pair<Utilities::Workspace::Sql::Types::Attribute, std::string>> entry;
     enum class PragmaTableFormat
     {
         cid        = 0,
@@ -58,7 +58,8 @@ namespace Utilities::Workspace
         bool moveSchemasToDatabase();
         bool moveSchemaToDatabase(const Sql::Types::Table& table);
         bool insertTable(const Sql::Types::Table& newTbl);
-        // bool addEntryToTable(std::string tableName, std::vector<AttributeValue>& newVals);
+        bool addEntryToTable(std::string tableName, entry newVals);
+        // 
 
         std::vector<std::string> getEntriesFromTable(std::string tableName, std::vector<std::string> attributes = {}, std::string filter = "");
         Sql::Types::Table getTableSchema(std::string tableName);

@@ -232,6 +232,15 @@ namespace Utilities::Workspace
         // }
     }
 
+    bool SqlManager::addEntryToTable(std::string tableName, entry newVals)
+    {
+        std::cout << "Into table name: " << tableName << "\n";
+        auto targetAttr = newVals.at(0).first;
+        std::cout << "Adding to target attr: " << targetAttr.name_ << "\n";
+        std::cout << "Value: " << newVals.at(0).second << "\n";
+        return true;
+    }
+
     void SqlManager::initialTablesLoad(std::fstream& schemaPtr)
     {
         std::cout << "Loading all tables into the memory...\n";

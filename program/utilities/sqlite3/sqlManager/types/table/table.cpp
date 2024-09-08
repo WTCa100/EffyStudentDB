@@ -17,6 +17,15 @@ namespace Utilities::Workspace::Sql::Types
         schema_.insert(std::make_pair(atr.name_, atr));
     }
 
+    Attribute Table::getAttributeByName(const std::string attrName)
+    {
+        if(schema_.contains(attrName))
+        {
+            return schema_.at(attrName);
+        }
+        return Attribute{""};
+    }
+
     std::string Table::makeFormula() const
     {
         std::stringstream ss;

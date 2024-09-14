@@ -29,6 +29,9 @@ namespace Utilities::Workspace::Sql::Types
         // void printTable(std::ostream& stream) const;
         void addToSchema(const Attribute& atr);
         void linkAttributes(Attribute src, std::string refferencedTblName, std::string refferencedAttrName);
+        
+        Attribute getAttributeByName(std::string name); 
+        
         bool isValid() const { return !schema_.empty(); } // Later it will be checked if at least one primary key is present
         // void linkAttributes(Attribute src, Attribute dest);
     };

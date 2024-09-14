@@ -45,5 +45,23 @@ namespace Utilities
         bool createDirectory(std::string directoryName, std::optional<std::filesystem::path> subPath = std::nullopt);
         bool deleteDirectory(std::string directoryName, std::optional<std::filesystem::path> subPath = std::nullopt, bool prompt = true);
 
+
+        // Contacting SQL DB
+        // Add school
+
+        // Get Schools
+
+        // Add student
+
+        // Get Students
+
+        // Add subject
+
+        // Get subjects
+
+        // Add grade
+
+        // Get grades
+
     };
 } // namespace Utilities

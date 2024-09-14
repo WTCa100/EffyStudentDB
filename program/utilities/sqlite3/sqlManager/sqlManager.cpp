@@ -23,7 +23,8 @@ namespace Utilities::Workspace
         std::cout << "Command prepared without any errors!\n";
 
         std::vector<std::string> output;
-        while(sqlite3_step(result) == SQLITE_ROW)
+        int sqlStep;
+        while((sqlStep = sqlite3_step(result)) == SQLITE_ROW)
         {
             std::string rowContent = "";
             for(int i = 0; i < sqlite3_column_count(result); i++)
@@ -41,6 +42,16 @@ namespace Utilities::Workspace
             output.push_back(rowContent);
         }
 
+        if(sqlStep != SQLITE_DONE)
+        {
+            std::cout << "Command failed with code " << sqlStep << "\n";
+            std::cout << "Details: " << sqlite3_errmsg(currentDb_) << "\n";
+        }
+        else
+        {
+            std::cout << "Command executed without any errores!\n";
+        }
+
         sqlite3_finalize(result);
         return output;
     }
@@ -48,19 +59,30 @@ namespace Utilities::Workspace
     bool SqlManager::executeOut(const std::string& sqlCommand)
     {
         sqlite3_stmt *result;
-        std::cout << "Executing query: \"" << sqlCommand << "\"\n"; 
-        int rc = !sqlite3_prepare_v2(currentDb_, sqlCommand.c_str(), sqlCommand.size(), &result, nullptr);
-        if(rc == SQLITE_OK)
+        std::cout << "Executing command: \"" << sqlCommand << "\"\n"; 
+        int rc = sqlite3_prepare_v2(currentDb_, sqlCommand.c_str(), sqlCommand.length(), &result, nullptr);
+        if(rc != SQLITE_OK)
         {
             std::cout << "Command failed with exit code: " << rc << "\n";
+            sqlite3_finalize(result);
             return false;
         }
         std::cout << "Command prepared without any errors!\n";
 
         rc = sqlite3_step(result);
-        std::cout << "Command exited with code " << rc << "\n";
+        if(rc != SQLITE_DONE)
+        {
+            std::cout << "Command failed with code " << rc << "\n";
+            std::cout << "Details: " << sqlite3_errmsg(currentDb_) << "\n";
+        }
+        else
+        {
+            std::cout << "Command executed without any errors!\n";
+        }
 
-        return rc == SQLITE_OK;
+        sqlite3_finalize(result);
+
+        return rc == SQLITE_DONE;
     }
 
     bool SqlManager::isTableInDatabase(const Sql::Types::Table& table)
@@ -86,7 +108,8 @@ namespace Utilities::Workspace
         bool isEverythingInserted = false;
         for(const auto& tbl : tables_)
         {
-            isEverythingInserted = moveSchemaToDatabase(tbl.second);
+            // THIS IS SO BAD FIX IT!!!
+            isEverythingInserted = (moveSchemaToDatabase(tbl.second) && isEverythingInserted);
         }
         return isEverythingInserted;
     }
@@ -133,6 +156,7 @@ namespace Utilities::Workspace
         }
         else
         {
+            std::cout << "Succesully opened DB at: " << dbPath_.string() << "\n";
             isDbOpen_ = true;
         }
         return rc == SQLITE_OK;
@@ -232,6 +256,51 @@ namespace Utilities::Workspace
         // }
     }
 
+    bool SqlManager::addEntryToTable(std::string tableName, entry newVals)
+    {
+        std::stringstream ss;
+        ss << "INSERT INTO " << tableName << "(";
+        for(size_t pos = 0; pos < newVals.size(); ++pos)
+        {
+            const Attribute& attr = newVals.at(pos).first;
+            ss << attr.name_;
+            if(pos < newVals.size() - 1)
+            {
+                ss << ", ";
+            }
+        }
+        ss << ") VALUES (";
+        for(size_t pos = 0; pos < newVals.size(); ++pos)
+        {
+            const Attribute& attr = newVals.at(pos).first;
+            std::string val = newVals.at(pos).second;
+            if(attr.type_ == "TEXT")
+            {
+                ss << "'" << val << "'";
+            }
+            else
+            {
+                ss << val;
+            }
+
+            if(pos < newVals.size() - 1)
+            {
+                ss << ", ";
+            }
+        }
+        ss << ");";
+        return executeOut(ss.str());
+    }
+
+    bool SqlManager::removeEntryFromTable(std::string tableName, uint16_t entryId)
+    {
+        std::string command =  "DELETE FROM " + tableName + " WHERE id = " + std::to_string(entryId) +";";
+        return executeOut(command);
+    }
+
+    // @TODO removeEntryFromTable with custom condition string
+    // removeEntryFromTable(string [tableName], string [condition])
+
     void SqlManager::initialTablesLoad(std::fstream& schemaPtr)
     {
         std::cout << "Loading all tables into the memory...\n";
@@ -241,8 +310,9 @@ namespace Utilities::Workspace
         std::cout << "Got the following names:\n";
         for(auto name : tableNames)
         {
-            getTableSchema(name);
+            addTable(getTableSchema(name));
         }
+        std::cout << "Initial tables has been loaded\n";
     }
 
     std::vector<std::string> SqlManager::getEntriesFromTable(std::string tableName, std::vector<std::string> attributes, std::string filter)
@@ -288,11 +358,45 @@ namespace Utilities::Workspace
         std::vector<std::string> outputAttr = executeIn(commandAttr);
         std::vector<std::string> outputFkeys = executeIn(commandForKey);
 
-        for(const auto& entry : outputAttr)
-        {
-            std::cout << entry << "\n";
-        }
 
+        for(const auto& attr : outputAttr)
+        {
+            std::vector<std::string> tokenizedAttr = Common::tokenize(attr, '|');
+            Attribute finalAttr;
+            for(size_t elementId = 1; elementId < tokenizedAttr.size(); elementId++)
+            {
+                switch (static_cast<PragmaTableFormat>(elementId))
+                {
+                case PragmaTableFormat::name:
+                    finalAttr.name_ = tokenizedAttr.at(elementId);
+                    break;
+                case PragmaTableFormat::type:
+                    finalAttr.type_ = tokenizedAttr.at(elementId);
+                case PragmaTableFormat::notnull:
+                    if(tokenizedAttr.at(elementId) == "1")
+                    {
+                        finalAttr.flags_.push_back(AttributeFlag::NOT_NULL);
+                    }
+                    break;
+                case PragmaTableFormat::dflt_value:
+                    if(tokenizedAttr.at(elementId) != "NULL")
+                    {
+                        std::cout << "Default value is not supported yet - skipping.\n";
+                    }
+                    break;
+                case PragmaTableFormat::pk:
+                    if(tokenizedAttr.at(elementId) == "1")
+                    {
+                        finalAttr.flags_.push_back(AttributeFlag::PRIMARY_KEY);
+                    }
+                    break;
+                default:
+                    std::cout << "Unknown element id - skipping\n";
+                    break;
+                }
+            }
+            resultTbl.addToSchema(std::move(finalAttr));
+        }
         return resultTbl;
     }
 

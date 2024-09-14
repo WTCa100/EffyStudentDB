@@ -23,7 +23,8 @@ namespace Utilities::Workspace
         std::cout << "Command prepared without any errors!\n";
 
         std::vector<std::string> output;
-        while(sqlite3_step(result) == SQLITE_ROW)
+        int sqlStep;
+        while((sqlStep = sqlite3_step(result)) == SQLITE_ROW)
         {
             std::string rowContent = "";
             for(int i = 0; i < sqlite3_column_count(result); i++)
@@ -39,6 +40,16 @@ namespace Utilities::Workspace
                 }
             }
             output.push_back(rowContent);
+        }
+
+        if(sqlStep != SQLITE_DONE)
+        {
+            std::cout << "Command failed with code " << sqlStep << "\n";
+            std::cout << "Details: " << sqlite3_errmsg(currentDb_) << "\n";
+        }
+        else
+        {
+            std::cout << "Command executed without any errores!\n";
         }
 
         sqlite3_finalize(result);
@@ -61,8 +72,12 @@ namespace Utilities::Workspace
         rc = sqlite3_step(result);
         if(rc != SQLITE_DONE)
         {
-            std::cout << "Command exited with code " << rc << "\n";
+            std::cout << "Command failed with code " << rc << "\n";
             std::cout << "Details: " << sqlite3_errmsg(currentDb_) << "\n";
+        }
+        else
+        {
+            std::cout << "Command executed without any errors!\n";
         }
 
         sqlite3_finalize(result);
@@ -274,9 +289,17 @@ namespace Utilities::Workspace
             }
         }
         ss << ");";
-        // std::cout << ss.str() << "\n";
         return executeOut(ss.str());
     }
+
+    bool SqlManager::removeEntryFromTable(std::string tableName, uint16_t entryId)
+    {
+        std::string command =  "DELETE FROM " + tableName + " WHERE id = " + std::to_string(entryId) +";";
+        return executeOut(command);
+    }
+
+    // @TODO removeEntryFromTable with custom condition string
+    // removeEntryFromTable(string [tableName], string [condition])
 
     void SqlManager::initialTablesLoad(std::fstream& schemaPtr)
     {

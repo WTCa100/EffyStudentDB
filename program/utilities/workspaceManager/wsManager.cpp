@@ -82,7 +82,8 @@ namespace Utilities
         Table subjectsTbl = defaultSubjectsTable();
         Table gradesTbl = defaultGradesTable();
 
-        *schemaPtr  << "-- Effy.db - this file has been generated automatically\n";
+        *schemaPtr << "-- Effy.db - this file has been generated automatically\n";
+        *schemaPtr << "Do not modify it!";
         *schemaPtr << schoolsTbl.makeFormula();
         *schemaPtr << studentsTbl.makeFormula(); 
         *schemaPtr << subjectsTbl.makeFormula(); 

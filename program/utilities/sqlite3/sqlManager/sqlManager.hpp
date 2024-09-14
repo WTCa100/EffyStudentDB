@@ -59,7 +59,7 @@ namespace Utilities::Workspace
         bool moveSchemaToDatabase(const Sql::Types::Table& table);
         bool insertTable(const Sql::Types::Table& newTbl);
         bool addEntryToTable(std::string tableName, entry newVals);
-        // 
+        bool removeEntryFromTable(std::string tableName, uint16_t entryId);
 
         std::vector<std::string> getEntriesFromTable(std::string tableName, std::vector<std::string> attributes = {}, std::string filter = "");
         Sql::Types::Table getTableSchema(std::string tableName);

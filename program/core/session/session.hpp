@@ -21,5 +21,5 @@ class Session
 
     public:
         Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logger);
-        ~Session();
+        ~Session() = default; // Just for now
 };

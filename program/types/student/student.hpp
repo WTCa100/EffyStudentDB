@@ -13,7 +13,7 @@ struct Student
     std::string firstName_;
     std::optional<std::string> secondName_;
     std::string lastName_;
-    std::map<subject, float> grades_;
+    std::map<Subject, float> grades_;
 };
 
 void showStudent(const Student& target);

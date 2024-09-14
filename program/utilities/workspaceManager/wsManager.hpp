@@ -45,6 +45,7 @@ namespace Utilities
         bool createDirectory(std::string directoryName, std::optional<std::filesystem::path> subPath = std::nullopt);
         bool deleteDirectory(std::string directoryName, std::optional<std::filesystem::path> subPath = std::nullopt, bool prompt = true);
 
+        std::shared_ptr<Logger> getLogger() const { return logger_; }
 
         // Contacting SQL DB
         // Add school

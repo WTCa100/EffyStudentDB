@@ -16,7 +16,7 @@ void showStudent(const Student& target)
         std::cout << "Grades: \n";
         for(const auto& g : target.grades_)
         {
-            std::cout << g.first << " : " << g.second << "\n";
+            std::cout << g.first.name_ << " : " << g.second << "\n";
         }
     }
     else

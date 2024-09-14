@@ -1,0 +1,1 @@
+add_library(Data STATIC data.cpp data.hpp)

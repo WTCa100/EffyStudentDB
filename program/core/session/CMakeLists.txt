@@ -1,0 +1,6 @@
+add_library(Session STATIC session.cpp session.hpp)
+
+target_link_libraries(Session PUBLIC 
+    WorkspaceManager
+    Logger
+    Data)

@@ -178,15 +178,15 @@ namespace Utilities::Workspace
     {
         // Handle Subjects
         {
-            std::vector<std::string> initialSchools = getEntriesFromTable("Subjects");
-            for(const auto& subjectRaw : initialSchools)
+            std::vector<std::string> initialSubjects = getEntriesFromTable("Subjects");
+            for(const auto& subjectRaw : initialSubjects)
             {
                 std::vector<std::string> processedEntry = Utilities::Common::tokenize(subjectRaw, '|');
                 // Id
                 auto subjectId = static_cast<uint16_t>(std::stoi(processedEntry.at(0)));
                 // Name
                 std::string subjectName = processedEntry.at(1);
-                subjectList_.insert(std::make_pair(subjectId, subjectName));
+                subjectList_.insert(std::make_pair(subjectId, Subject{subjectId, subjectName}));
             }
         }
         // Handle Schools

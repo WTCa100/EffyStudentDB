@@ -35,7 +35,7 @@ namespace Utilities::Workspace
         // @Todo move the data lists to a core/dataManagment.hpp/.cpp
         /* data */
         // Map of all subjects
-        std::map<uint16_t, subject> subjectList_; 
+        std::map<uint16_t, Subject> subjectList_; 
         // Map of all schools
         std::map<uint16_t, School> schoolList_;
         // Map of all studnets

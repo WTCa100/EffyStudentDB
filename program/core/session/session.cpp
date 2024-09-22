@@ -4,3 +4,8 @@ Session::Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logge
 {
     LOG((*logger_), "New session instanace created!");
 }
+
+Session::~Session()
+{
+    LOG((*logger_), "Session teardown!");
+}

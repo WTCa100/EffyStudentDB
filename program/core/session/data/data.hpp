@@ -6,6 +6,7 @@
 #include "../../../types/student/student.hpp"
 #include "../../../types/subject/subject.hpp"
 
+using Core::Types::School;
 class SessionData
 {
 private:

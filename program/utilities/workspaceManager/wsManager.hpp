@@ -14,6 +14,9 @@
 // Types
 #include "../sqlite3/sqlManager/types/attribute/attribute.hpp"
 #include "../sqlite3/sqlManager/types/table/table.hpp"
+#include "../../types/school/school.hpp"
+#include "../../types/student/student.hpp"
+#include "../../types/subject/subject.hpp"
 
 namespace Utilities
 {
@@ -48,21 +51,16 @@ namespace Utilities
         std::shared_ptr<Logger> getLogger() const { return logger_; }
 
         // Contacting SQL DB
-        // Add school
 
         // Get Schools
-
-        // Add student
-
+        std::vector<Core::Types::School> getSchools();
         // Get Students
-
-        // Add subject
-
         // Get subjects
-
-        // Add grade
-
         // Get grades
 
+        // Add school
+        // Add student
+        // Add subject
+        // Add grade
     };
 } // namespace Utilities

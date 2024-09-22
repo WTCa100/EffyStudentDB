@@ -1,5 +1,7 @@
 #include "wsManager.hpp"
 #include "constants.hpp"
+#include "../common/stringManip.hpp"
+
 namespace Utilities
 {
     WsManager::WsManager(std::string workingDir) : workingDir_(std::filesystem::path(workingDir))
@@ -237,4 +239,30 @@ namespace Utilities
         std::cout << (hasDeleted ? ("Directory " + directoryName + " was deleted\n") : ("Could not delete directory " + directoryName + ".\n"));
         return hasDeleted;
     }
+
+    std::vector<Core::Types::School> WsManager::getSchools()
+    {
+        std::vector<Core::Types::School> schools;
+        LOG((*logger_), "Fetching schools from the SQL DB");
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Schools");
+        if(rawEntries.empty())
+        {
+            LOG((*logger_), "Called schools, but got no entries!");
+            std::cout << "No schools! Either fail or sql has no schools\n";
+            return {};
+        }
+
+        LOG((*logger_), "Got n=", rawEntries.size(), " school entries");
+        for(auto e : rawEntries)
+        {
+            std::vector<std::string> tokenizedSchool = Utilities::Common::tokenize(e, '|');
+            // Tokens are:
+            // (0)NAME | (1)ID
+            std::cout << "THIS IS A TEST: " << tokenizedSchool.at(0) << "|" << tokenizedSchool.at(1) << "\n";
+            schools.push_back(Core::Types::School{static_cast<uint16_t>(std::stoul(tokenizedSchool.at(1))), tokenizedSchool.at(0), {}});
+        }
+        return schools;
+
+    }
+
 }

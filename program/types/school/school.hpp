@@ -5,9 +5,13 @@
 
 #include "../student/student.hpp"
 
-struct School
+namespace Core::Types
 {
-    uint16_t id_;
-    std::string name_;
-    std::vector<Student> students_;
-};
+    struct School
+    {
+        uint16_t id_;
+        std::string name_;
+        std::vector<Student> students_;
+    };
+} // namespace Core
+

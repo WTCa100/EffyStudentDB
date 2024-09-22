@@ -37,7 +37,7 @@ namespace Utilities::Workspace
         // Map of all subjects
         std::map<uint16_t, Subject> subjectList_; 
         // Map of all schools
-        std::map<uint16_t, School> schoolList_;
+        std::map<uint16_t, Core::Types::School> schoolList_;
         // Map of all studnets
         std::map<uint16_t, Student> studentList_;
         std::unordered_map<std::string, Sql::Types::Table> tables_;
@@ -46,7 +46,7 @@ namespace Utilities::Workspace
         sqlite3* currentDb_;
         bool isDbOpen_;
         
-        void initialValuesLoad();
+        // void initialValuesLoad();
     public:
         void initialTablesLoad(std::fstream& schemaPtr);
 

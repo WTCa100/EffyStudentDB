@@ -19,7 +19,13 @@ class Session
     std::shared_ptr<Logger> logger_;
     std::unique_ptr<SessionData> sesData_;
 
+    void fetchAll();
+    void fetchSchools();
+    void fetchStudents();
+    void fetchSubjects();
+    void fetchGrades();
+
     public:
-        Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logger);
-        ~Session();
+    Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logger);
+    ~Session();
 };

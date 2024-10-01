@@ -7,6 +7,9 @@
 #include "../../../types/subject/subject.hpp"
 
 using Core::Types::School;
+using Core::Types::Student;
+using Core::Types::Subject;
+
 class SessionData
 {
 private:
@@ -21,5 +24,10 @@ public:
     void addSchool(const School& newSchool);
     void addStudent(const Student& newStudent);
     void addSubject(const Subject& newSubject);
-    void addGrade(const Subject& targetSub, const Student& targetStudent, float value);
+    void addGrade(const uint16_t targetSubject, const uint16_t targetStudent, float value);
+
+    void showSchools() const;
+    void showStudents() const;
+    void showSubjects() const;
+    void showGrades() const;
 };

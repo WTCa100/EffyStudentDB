@@ -1,1 +1,1 @@
-add_library(Student STATIC student.hpp student.cpp)
+add_library(Student STATIC student.cpp student.hpp)

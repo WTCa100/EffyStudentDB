@@ -32,21 +32,11 @@ namespace Utilities::Workspace
     class SqlManager
     {
     private:
-        // @Todo move the data lists to a core/dataManagment.hpp/.cpp
-        /* data */
-        // Map of all subjects
-        std::map<uint16_t, Subject> subjectList_; 
-        // Map of all schools
-        std::map<uint16_t, Core::Types::School> schoolList_;
-        // Map of all studnets
-        std::map<uint16_t, Student> studentList_;
         std::unordered_map<std::string, Sql::Types::Table> tables_;
         
         std::filesystem::path dbPath_;
         sqlite3* currentDb_;
         bool isDbOpen_;
-        
-        // void initialValuesLoad();
     public:
         void initialTablesLoad(std::fstream& schemaPtr);
 

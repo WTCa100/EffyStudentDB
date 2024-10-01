@@ -1,26 +1,31 @@
 #include <iostream>
 #include "student.hpp"
 
-void showStudent(const Student& target)
+namespace Core::Types
 {
-    std::cout << "Student Display:\n";
-    std::cout << "First Name: " << target.firstName_ << "\n";
-    if(target.secondName_.has_value()) 
+    void showStudent(const Student& target, bool showGrades)
     {
-        std::cout << "Second Name: " << target.secondName_.value() << "\n";
-    }
-    std::cout << "Last Name: " << target.lastName_ << "\n";
-
-    if(!target.grades_.empty())
-    {
-        std::cout << "Grades: \n";
-        for(const auto& g : target.grades_)
+        std::cout << "First Name: " << target.firstName_ << " ";
+        if(target.secondName_.has_value()) 
         {
-            std::cout << g.first.name_ << " : " << g.second << "\n";
+            std::cout << "Second Name: " << target.secondName_.value() << " ";
+        }
+        std::cout << "Last Name: " << target.lastName_ << " ";
+
+        if(showGrades)
+        {
+            if(!target.grades_.empty())
+            {
+                std::cout << "Grades: \n";
+                for(const auto& g : target.grades_)
+                {
+                    std::cout << g.first << " : " << g.second << "\n";
+                }
+            }
+            else
+            {
+                std::cout << "No Grades!\n";
+            }
         }
     }
-    else
-    {
-        std::cout << "No Grades!\n";
-    }
-}
+} // namespace Core::Types

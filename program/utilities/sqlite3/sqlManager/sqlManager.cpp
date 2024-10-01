@@ -138,7 +138,7 @@ namespace Utilities::Workspace
         return executeOut(formula);
     }
 
-    SqlManager::SqlManager(std::filesystem::path dbPath) : subjectList_({}), schoolList_({}), studentList_({}),dbPath_(dbPath), currentDb_(), isDbOpen_(false) {}
+    SqlManager::SqlManager(std::filesystem::path dbPath) : dbPath_(dbPath), currentDb_(), isDbOpen_(false) {}
 
     bool SqlManager::openDb()
     {
@@ -170,92 +170,6 @@ namespace Utilities::Workspace
             isDbOpen_ = false;
         }
     }
-
-    // This has to be deleted from the sql manager and moved into a either data manager/data organizer OR
-    // into a SQL Adapter. Generaly all of the data will be inside the core functionality and will as WsManager
-    // to get entires from a given table.
-    // This will be moved to WS manager
-    // void SqlManager::initialValuesLoad()
-    // {
-    //     // Handle Subjects
-    //     {
-    //         std::vector<std::string> initialSubjects = getEntriesFromTable("Subjects");
-    //         for(const auto& subjectRaw : initialSubjects)
-    //         {
-    //             std::vector<std::string> processedEntry = Utilities::Common::tokenize(subjectRaw, '|');
-    //             // Id
-    //             auto subjectId = static_cast<uint16_t>(std::stoi(processedEntry.at(0)));
-    //             // Name
-    //             std::string subjectName = processedEntry.at(1);
-    //             subjectList_.insert(std::make_pair(subjectId, Subject{subjectId, subjectName}));
-    //         }
-    //     }
-    //     // Handle Schools
-    //     {
-    //         std::vector<std::string> initialSchools = getEntriesFromTable("Schools");
-    //         for(const auto& schoolRow : initialSchools)
-    //         {
-    //             std::vector<std::string> processedEntry = Utilities::Common::tokenize(schoolRow, '|');
-    //             // Id
-    //             auto schoolId = static_cast<uint16_t>(std::stoi(processedEntry.at(0)));
-    //             // Name
-    //             std::string schoolName = processedEntry.at(1);
-
-    //             schoolList_.insert(std::make_pair(schoolId, School{schoolId, schoolName, {}}));
-    //         }
-    //     }
-    //     // Handle Students
-    //     {
-    //         std::vector<std::string> initialStudents = getEntriesFromTable("Students");
-    //         for(const auto& studentRow : initialStudents)
-    //         {
-    //             std::vector<std::string> processedEntry = Utilities::Common::tokenize(studentRow, '|');
-    //             // Id
-    //             auto studentId = static_cast<uint16_t>(std::stoi(processedEntry.at(0)));
-
-    //             // First name
-    //             std::string firstName = processedEntry.at(1);
-
-    //             // Second name
-    //             std::optional<std::string> secondName;
-    //             std::string rawSndName = processedEntry.at(2);
-    //             if(rawSndName == "NONE")
-    //             {
-    //                 secondName = std::nullopt;
-    //             }
-    //             else
-    //             {
-    //                 secondName = rawSndName;
-    //             }
-
-    //             // Last name
-    //             std::string lastName = processedEntry.at(3);
-    //             Student finalEntry{studentId, firstName, secondName, lastName, {}};
-
-    //             studentList_.insert(std::make_pair(studentId, finalEntry));
-
-    //             // School - assigning given student to a school from the ID
-    //             auto schoolId = static_cast<uint16_t>(std::stoi(processedEntry.at(4)));
-    //             if(schoolList_.contains(schoolId))
-    //             {
-    //                 schoolList_.at(schoolId).students_.push_back(finalEntry);
-    //             }
-    //         }
-    //     }
-    //     // Handle Grades
-
-    //     // std::cout << "Showing subjects:\n";
-    //     // for(auto s : subjectList_)
-    //     // {
-    //     //     std::cout << "Subject : " << s.first << ":" << s.second << "\n";
-    //     // }
-
-    //     // std::cout << "Showing Students:\n";
-    //     // for(auto s : studentList_)
-    //     // {
-    //     //     std::cout << "Student: " << s.first << ": " << s.second.firstName_ << " " << s.second.lastName_ << "\n";
-    //     // }
-    // }
 
     const Sql::Types::Table SqlManager::getTable(const std::string& name) const
     {

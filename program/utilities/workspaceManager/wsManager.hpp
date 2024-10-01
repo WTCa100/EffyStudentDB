@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
+#include <map>
 
 // Managers
 #include "directoryManager/dirManager.hpp"
@@ -51,12 +52,10 @@ namespace Utilities
         std::shared_ptr<Logger> getLogger() const { return logger_; }
 
         // Contacting SQL DB
-
-        // Get Schools
-        std::vector<Core::Types::School> getSchools();
-        // Get Students
-        // Get subjects
-        // Get grades
+        std::vector<Core::Types::School>      getSchools();
+        std::vector<Core::Types::Student>     getStudents();
+        std::vector<Core::Types::Subject>     getSubjects();
+        std::vector<std::vector<std::string>> getGrades();
 
         // Add school
         // Add student

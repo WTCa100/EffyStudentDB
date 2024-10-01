@@ -1,3 +1,5 @@
+#include <optional>
+
 #include "wsManager.hpp"
 #include "constants.hpp"
 #include "../common/stringManip.hpp"
@@ -262,7 +264,83 @@ namespace Utilities
             schools.push_back(Core::Types::School{static_cast<uint16_t>(std::stoul(tokenizedSchool.at(1))), tokenizedSchool.at(0), {}});
         }
         return schools;
-
     }
 
+    std::vector<Core::Types::Student> WsManager::getStudents()
+    {
+        std::vector<Core::Types::Student> students;
+        LOG((*logger_), "Fetching students from the SQL DB");
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Students");
+        if(rawEntries.empty())
+        {
+            LOG((*logger_), "Called students, but got no entries!");
+            std::cout << "No students! Either fail or sql has no students\n";
+            return {};
+        }
+
+        LOG((*logger_), "Got n=", rawEntries.size(), " student entries");
+        for(auto e : rawEntries)
+        {
+            std::vector<std::string> tokenizedStudent = Utilities::Common::tokenize(e, '|');
+            // Tokens are:
+            // (0) ID | (1) SCHOOLID | (1)LASTNAME | (2) SECONDNAME | (3) FIRSTNAME | (4) ID
+            // Translates to:
+            // (0) ID | (1) FIRSTNAME | (2) SECONDNAME | (3) LASTNAME | (4) SCHOOLID 
+            
+            std::optional<std::string> secondName = std::nullopt;
+            if(tokenizedStudent.at(1) != "NULL") { secondName = tokenizedStudent.at(1); }
+            students.push_back(Core::Types::Student{static_cast<uint16_t>(std::stoul(tokenizedStudent.at(4))),
+                                                    tokenizedStudent.at(2),
+                                                    secondName,
+                                                    tokenizedStudent.at(0),
+                                                    {},
+                                                    static_cast<uint16_t>(std::stoul(tokenizedStudent.at(3)))});
+        }
+        return students;
+
+    }
+    
+    std::vector<Core::Types::Subject> WsManager::getSubjects()
+    {
+        std::vector<Core::Types::Subject> subjects;
+        LOG((*logger_), "Fetching subjects from the SQL DB");
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Subjects");
+        if(rawEntries.empty())
+        {
+            LOG((*logger_), "Called subjects, but got no entries!");
+            std::cout << "No subjects! Either fail or sql has no subjects\n";
+            return {};
+        }
+
+        LOG((*logger_), "Got n=", rawEntries.size(), " subjects entries");
+        for(auto e : rawEntries)
+        {
+            std::vector<std::string> tokenizedSubjects = Utilities::Common::tokenize(e, '|');
+            // Tokens are:
+            // (0)NAME | (1)ID
+            std::cout << "THIS IS A TEST: " << tokenizedSubjects.at(0) << "|" << tokenizedSubjects.at(1) << "\n";
+            subjects.push_back(Core::Types::Subject{static_cast<uint16_t>(std::stoul(tokenizedSubjects.at(1))), tokenizedSubjects.at(0)});
+        }
+        return subjects;
+    }
+
+    std::vector<std::vector<std::string>> WsManager::getGrades()
+    {
+        LOG((*logger_), "Fetching grades from the SQL DB");
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("grades");
+        if(rawEntries.empty())
+        {
+            LOG((*logger_), "Called grades, but got no entries!");
+            std::cout << "No grades! Either fail or sql has no grades\n";
+            return {};
+        }
+
+        std::vector<std::vector<std::string>> listOfGrades;
+        LOG((*logger_), "Got n=", rawEntries.size(), " grades entries");
+        for(auto e : rawEntries)
+        {
+            listOfGrades.push_back(Utilities::Common::tokenize(e, '|'));
+        }
+        return listOfGrades;
+    }
 }

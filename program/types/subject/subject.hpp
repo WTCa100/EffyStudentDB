@@ -2,8 +2,12 @@
 
 #include <string>
 
-struct Subject
+namespace Core::Types
 {
-    uint16_t    id_;
-    std::string name_;
-};
+    struct Subject
+    {
+        uint16_t    id_;
+        std::string name_;
+    };
+
+} // namespace Core::Types

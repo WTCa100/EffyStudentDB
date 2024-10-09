@@ -286,16 +286,18 @@ namespace Utilities
             // (0) EMAIL | (1)LASTNAME | (2) SECONDNAME | (3) FIRSTNAME | (4) SCHOOLID | (5) ID
             // Translates to:
             // (0) ID | (1) FIRSTNAME | (2) SECONDNAME | (3) LASTNAME | (4) EMAIL | (5) SCHOOLID 
-
             std::optional<std::string> secondName = std::nullopt;
             if(tokenizedStudent.at(2) != "NULL") { secondName = tokenizedStudent.at(1); }
-            students.push_back(Core::Types::Student{static_cast<uint16_t>(std::stoul(tokenizedStudent.at(5))),
-                                                    tokenizedStudent.at(3),
-                                                    secondName,
-                                                    tokenizedStudent.at(1),
-                                                    tokenizedStudent.at(4),
-                                                    {},
-                                                    static_cast<uint16_t>(std::stoul(tokenizedStudent.at(5)))});
+            
+            Core::Types::Student tmpStudent;
+            tmpStudent.id_         = std::stoul(tokenizedStudent.at(5));
+            tmpStudent.firstName_  = tokenizedStudent.at(3);
+            tmpStudent.secondName_ = secondName;
+            tmpStudent.lastName_   = tokenizedStudent.at(1);
+            tmpStudent.email_      = tokenizedStudent.at(0);
+            tmpStudent.grades_     = {};
+            tmpStudent.schoolId_   = std::stoul(tokenizedStudent.at(4));
+            students.push_back(tmpStudent);
         }
         return students;
     }
@@ -318,7 +320,6 @@ namespace Utilities
             std::vector<std::string> tokenizedSubjects = Utilities::Common::tokenize(e, '|');
             // Tokens are:
             // (0)NAME | (1)ID
-            std::cout << "THIS IS A TEST: " << tokenizedSubjects.at(0) << "|" << tokenizedSubjects.at(1) << "\n";
             subjects.push_back(Core::Types::Subject{static_cast<uint16_t>(std::stoul(tokenizedSubjects.at(1))), tokenizedSubjects.at(0)});
         }
         return subjects;

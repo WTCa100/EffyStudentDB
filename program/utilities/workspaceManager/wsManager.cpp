@@ -283,21 +283,21 @@ namespace Utilities
         {
             std::vector<std::string> tokenizedStudent = Utilities::Common::tokenize(e, '|');
             // Tokens are:
-            // (0) ID | (1) SCHOOLID | (1)LASTNAME | (2) SECONDNAME | (3) FIRSTNAME | (4) ID
+            // (0) EMAIL | (1)LASTNAME | (2) SECONDNAME | (3) FIRSTNAME | (4) SCHOOLID | (5) ID
             // Translates to:
-            // (0) ID | (1) FIRSTNAME | (2) SECONDNAME | (3) LASTNAME | (4) SCHOOLID 
-            
+            // (0) ID | (1) FIRSTNAME | (2) SECONDNAME | (3) LASTNAME | (4) EMAIL | (5) SCHOOLID 
+
             std::optional<std::string> secondName = std::nullopt;
-            if(tokenizedStudent.at(1) != "NULL") { secondName = tokenizedStudent.at(1); }
-            students.push_back(Core::Types::Student{static_cast<uint16_t>(std::stoul(tokenizedStudent.at(4))),
-                                                    tokenizedStudent.at(2),
+            if(tokenizedStudent.at(2) != "NULL") { secondName = tokenizedStudent.at(1); }
+            students.push_back(Core::Types::Student{static_cast<uint16_t>(std::stoul(tokenizedStudent.at(5))),
+                                                    tokenizedStudent.at(3),
                                                     secondName,
-                                                    tokenizedStudent.at(0),
+                                                    tokenizedStudent.at(1),
+                                                    tokenizedStudent.at(4),
                                                     {},
-                                                    static_cast<uint16_t>(std::stoul(tokenizedStudent.at(3)))});
+                                                    static_cast<uint16_t>(std::stoul(tokenizedStudent.at(5)))});
         }
         return students;
-
     }
     
     std::vector<Core::Types::Subject> WsManager::getSubjects()

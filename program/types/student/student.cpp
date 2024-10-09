@@ -11,7 +11,7 @@ namespace Core::Types
             std::cout << "Second Name: " << target.secondName_.value() << " ";
         }
         std::cout << "Last Name: " << target.lastName_ << " ";
-
+        std::cout << "Email: " << target.email_ << " "; 
         if(showGrades)
         {
             if(!target.grades_.empty())

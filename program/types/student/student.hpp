@@ -15,6 +15,7 @@ namespace Core::Types
         std::string firstName_;
         std::optional<std::string> secondName_;
         std::string lastName_;
+        std::string email_;
         std::map<std::string, float> grades_;
         uint16_t schoolId_;
     };

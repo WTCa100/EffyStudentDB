@@ -68,6 +68,7 @@ namespace Utilities::Workspace::Sql::Types
         studentTbl.addToSchema({"firstName", "TEXT", {Types::AttributeFlag::NOT_NULL}});
         studentTbl.addToSchema({"secondName", "TEXT", {}});
         studentTbl.addToSchema({"lastName", "TEXT", {Types::AttributeFlag::NOT_NULL}});
+        studentTbl.addToSchema({"email", "TEXT", {Types::AttributeFlag::NOT_NULL, Types::AttributeFlag::UNIQUE}});
         studentTbl.addToSchema({"schoolId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
         return studentTbl;
     }

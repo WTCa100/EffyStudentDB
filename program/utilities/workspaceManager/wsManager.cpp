@@ -373,4 +373,63 @@ namespace Utilities
         return true;
     }
 
+    bool WsManager::addStudent(Core::Types::Student& newStudent)
+    {
+        LOG((*logger_), "Adding new student \"", newStudent.email_, "\"");
+        // Check if given entry exists
+        // if(sManager_->) Check if entry already exists
+        // Prepare atributes
+        Table targetTable = sManager_->getTableSchema("Students");
+        sManager_->addEntryToTable(targetTable.getName(),
+            { std::make_pair(targetTable.getAttributeByName("firstName") , newStudent.firstName_),
+              std::make_pair(targetTable.getAttributeByName("secondName"), (newStudent.secondName_ ? newStudent.secondName_.value() : "" )),
+              std::make_pair(targetTable.getAttributeByName("lastName"), newStudent.lastName_),
+              std::make_pair(targetTable.getAttributeByName("email"), newStudent.email_),
+              std::make_pair(targetTable.getAttributeByName("schoolId"), std::to_string(newStudent.schoolId_))});
+        newStudent.id_ = getLatestIdFromTable(targetTable.getName());
+        return true;
+    }
+
+    bool WsManager::removeStudent(const Core::Types::Student& targetStudent)
+    {
+        LOG((*logger_), "Attempting to remove student \"", targetStudent.email_, "\"");
+        sManager_->removeEntryFromTable("Students", targetStudent.id_);
+        return true;
+    }
+
+    bool WsManager::addSubject(Core::Types::Subject& newSubject)
+    {
+        LOG((*logger_), "Adding new subject \"", newSubject.name_);
+        Table targetTable = sManager_->getTableSchema("Subjects");
+        sManager_->addEntryToTable(targetTable.getName(), 
+            {std::make_pair(targetTable.getAttributeByName("name"), newSubject.name_)});
+        newSubject.id_ = getLatestIdFromTable(targetTable.getName());
+        return true;
+    }
+
+    bool WsManager::removeSubject(const Core::Types::Subject& targetSubject)
+    {
+        LOG((*logger_), "Attempting to remove subject \"", targetSubject.name_, "\"");
+        sManager_->removeEntryFromTable("Subjects", targetSubject.id_);
+        return true;
+    }
+
+    bool WsManager::addGrade(Core::Types::Student& targetStudent, Core::Types::Subject& targetSubject, const float& grade)
+    {
+        LOG((*logger_), "Adding new grade from \"", targetSubject.name_, "\" to student ", targetStudent.firstName_ , " ", targetStudent.lastName_);
+        Table targetTable = sManager_->getTableSchema("Grades");
+        sManager_->addEntryToTable(targetTable.getName(),
+            {std::make_pair(targetTable.getAttributeByName("grade"),     std::to_string(grade)),
+             std::make_pair(targetTable.getAttributeByName("subjectId"), std::to_string(targetSubject.id_)),
+             std::make_pair(targetTable.getAttributeByName("studentId"), std::to_string(targetStudent.id_))});
+        return true;
+    }
+
+    bool WsManager::removeGrade(const Core::Types::Student& targetStudent, const Core::Types::Subject& targetSubject)
+    {
+        LOG((*logger_), "Attempting to remove grade from \"", targetSubject.name_, "\" from student ", targetStudent.firstName_ , " ", targetStudent.lastName_);
+        // TODO add handle + add new remove entry from table methods WITH condition not just id
+        return true;
+    }
+
 }

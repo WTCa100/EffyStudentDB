@@ -343,4 +343,34 @@ namespace Utilities
         }
         return listOfGrades;
     }
+
+    uint16_t WsManager::getLatestIdFromTable(std::string tblName)
+    {
+        LOG((*logger_), "Getting latest id from ", tblName);
+        std::vector<std::string> result = sManager_->getEntriesFromTable(tblName, {"MAX(id)"});
+        std::cout << "MAX ID: " << result.at(0) << "\n";
+        return static_cast<uint16_t>(std::stoul(result.at(0)));
+    }
+
+    bool WsManager::addSchool(Core::Types::School& newSchool)
+    {
+        LOG((*logger_), "Adding new school \"", newSchool.name_, "\"");
+        // Check if given entry exists
+        // if(sManager_->) Check if entry already exists
+        // Prepare atributes
+        Table targetTable = sManager_->getTableSchema("Schools");
+        sManager_->addEntryToTable(targetTable.getName(),
+            { std::make_pair(targetTable.getAttributeByName("name") , newSchool.name_)});
+        newSchool.id_ = getLatestIdFromTable(targetTable.getName());
+        return true;
+    }
+
+    bool WsManager::removeSchool(const Core::Types::School& removeSchool)
+    {
+        LOG((*logger_), "Attempting to remove school \"", removeSchool.name_, "\"");
+        // Check if exists - if not, nothing to delete and return true
+        sManager_->removeEntryFromTable("Schools", removeSchool.id_);
+        return true;
+    }
+
 }

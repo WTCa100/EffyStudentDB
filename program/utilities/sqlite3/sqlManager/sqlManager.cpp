@@ -108,7 +108,6 @@ namespace Utilities::Workspace
         bool isEverythingInserted = false;
         for(const auto& tbl : tables_)
         {
-            // THIS IS SO BAD FIX IT!!!
             isEverythingInserted = (moveSchemaToDatabase(tbl.second) && isEverythingInserted);
         }
         return isEverythingInserted;

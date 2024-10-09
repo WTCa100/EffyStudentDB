@@ -57,7 +57,12 @@ namespace Utilities
         std::vector<Core::Types::Subject>     getSubjects();
         std::vector<std::vector<std::string>> getGrades();
 
+        uint16_t getLatestIdFromTable(std::string tblName);
+
         // Add school
+        bool addSchool(Core::Types::School& newSchool);
+        bool removeSchool(const Core::Types::School& removeSchool);
+
         // Add student
         // Add subject
         // Add grade

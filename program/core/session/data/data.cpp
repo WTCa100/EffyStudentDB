@@ -10,6 +10,15 @@ void SessionData::addSchool(const School& newSchool)
     schoolList_.insert(std::make_pair(newSchool.id_, newSchool));
 }
 
+void SessionData::removeSchool(const School& targetSchool)
+{
+    if(!schoolList_.contains(targetSchool.id_))
+    {
+        return;
+    }
+    schoolList_.erase(targetSchool.id_);
+}
+
 void SessionData::addStudent(const Student& newStudnet)
 {
     if(studentList_.contains(newStudnet.id_))

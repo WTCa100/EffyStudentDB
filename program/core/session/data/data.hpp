@@ -22,6 +22,8 @@ public:
     ~SessionData() = default;
 
     void addSchool(const School& newSchool);
+    void removeSchool(const School& targetSchool);
+
     void addStudent(const Student& newStudent);
     void addSubject(const Subject& newSubject);
     void addGrade(const uint16_t targetSubject, const uint16_t targetStudent, float value);

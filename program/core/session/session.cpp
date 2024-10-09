@@ -5,24 +5,6 @@ Session::Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logge
     LOG((*logger_), "New session instanace created!");    
     LOG((*logger_), "Loading initial database entries");
     fetchAll();
-    School test{0, "Test School"};
-    addSchool(test);
-    test = School{0, "Test School 2"};
-    addSchool(test);
-    test = School{0, "ABDCDSDC"};
-    addSchool(test);
-
-    sesData_->showSchools();
-
-    test = School{1, "Whatever"};
-    removeSchool(test);
-
-
-    fetchSchools();
-    sesData_->showSchools();
-    test = School{0, "Whatever"};
-    addSchool(test);
-    sesData_->showSchools();
 }
 
 void Session::fetchAll()
@@ -74,9 +56,9 @@ void Session::fetchSubjects()
     }
 }
 
-bool Session::addSchool(School newSchool)
+bool Session::addSchool(School& newSchool)
 {
-    LOG((*logger_), "Adding new school");
+    LOG((*logger_), "Adding new school: \"", newSchool.name_, "\"");
     if(wsMgr_->addSchool(newSchool))
     {
         sesData_->addSchool(newSchool);
@@ -87,13 +69,35 @@ bool Session::addSchool(School newSchool)
 
 bool Session::removeSchool(School targetSchool)
 {
-    LOG((*logger_), "Removing existing school");
+    LOG((*logger_), "Removing existing school: \"", targetSchool.name_, "\"");
     if(wsMgr_->removeSchool(targetSchool))
     {
         sesData_->removeSchool(targetSchool);
         return true;
     }
+    LOG((*logger_), "No such school present!");
+    return false;
+}
 
+bool Session::addStudent(Student& newStudent)
+{
+    LOG((*logger_), "Adding new student: {", newStudent.firstName_, " ", newStudent.lastName_, " ", newStudent.email_, "}");
+    if(wsMgr_->addStudent(newStudent))
+    {
+        sesData_->addStudent(newStudent);
+        return true;
+    }
+    return false;
+}
+
+bool Session::removeStudent(Student targetStudent)
+{
+    LOG((*logger_), "Removing student: id=", targetStudent.id_);
+    if(wsMgr_->removeStudent(targetStudent))
+    {
+        sesData_->removeStudent(targetStudent);
+        return true;
+    }
     return false;
 }
 

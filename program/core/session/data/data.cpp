@@ -19,19 +19,34 @@ void SessionData::removeSchool(const School& targetSchool)
     schoolList_.erase(targetSchool.id_);
 }
 
-void SessionData::addStudent(const Student& newStudnet)
+void SessionData::addStudent(const Student& newStudent)
 {
-    if(studentList_.contains(newStudnet.id_))
+    if(studentList_.contains(newStudent.id_))
     {
         return;
     }
 
-    studentList_.insert(std::make_pair(newStudnet.id_, newStudnet));
+    studentList_.insert(std::make_pair(newStudent.id_, newStudent));
     // Assign a student to a school
-    if(schoolList_.contains(newStudnet.schoolId_))
+    if(schoolList_.contains(newStudent.schoolId_))
     {
-        schoolList_.at(newStudnet.schoolId_).students_.push_back(newStudnet);
+        schoolList_.at(newStudent.schoolId_).students_.insert(std::make_pair(newStudent.id_, &newStudent));
     }
+}
+
+void SessionData::removeStudent(const Student& targetStudent)
+{
+    if(!studentList_.contains(targetStudent.id_))
+    {
+        return;
+    }
+
+    // Remove student from School list
+    if(schoolList_.contains(targetStudent.schoolId_))
+    {
+        schoolList_.at(targetStudent.schoolId_).students_.erase(targetStudent.id_);
+    }
+    studentList_.erase(targetStudent.id_);
 }
 
 void SessionData::addSubject(const Subject& newSubject)
@@ -66,6 +81,7 @@ void SessionData::addGrade(const uint16_t targetSubject, const uint16_t targetSt
 void SessionData::showSchools() const
 {
     std::cout << "Showing schools:\n";
+    std::cout << "ID | SCHOOL NAME | STUDENT COUNT\n";
     for(const auto& school : schoolList_)
     {
         std::cout << school.first << ". " << school.second.name_ << ": " << school.second.students_.size() << " students.\n";

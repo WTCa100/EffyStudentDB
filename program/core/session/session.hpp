@@ -28,10 +28,10 @@ class Session
     public:
 
     // Adding
-    bool addSchool(School newSchool);
-    bool addStudent(Student newStudent);
-    bool addSubject(Subject newSubject);
-    bool addGrade(Subject targetSubject, Student targetStudent);
+    bool addSchool(School& newSchool);
+    bool addStudent(Student& newStudent);
+    bool addSubject(Subject& newSubject);
+    bool addGrade(Subject& targetSubject, Student& targetStudent);
 
     // Removing
     bool removeSchool(School targetSchool);

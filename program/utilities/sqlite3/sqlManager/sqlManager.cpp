@@ -217,7 +217,13 @@ namespace Utilities::Workspace
 
     bool SqlManager::removeEntryFromTable(std::string tableName, uint16_t entryId)
     {
-        std::string command =  "DELETE FROM " + tableName + " WHERE id = " + std::to_string(entryId) +";";
+        std::string idCondition = "id = " + std::to_string(entryId);
+        return removeEntryFromTable(tableName, idCondition);
+    }
+
+    bool SqlManager::removeEntryFromTable(std::string tableName, std::string condition)
+    {
+        std::string command = "DELETE FROM " + tableName + " WHERE " + condition + ";";
         return executeOut(command);
     }
 

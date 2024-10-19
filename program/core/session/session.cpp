@@ -2,7 +2,6 @@
 
 Session::Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logger) : wsMgr_(wsMgr), logger_(logger), sesData_(std::make_unique<SessionData>())
 {
-    LOG((*logger_), "New session instanace created!");    
     LOG((*logger_), "Loading initial database entries");
     fetchAll();
     School test{0, "Test School"};
@@ -23,6 +22,7 @@ Session::Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logge
     test = School{0, "Whatever"};
     addSchool(test);
     sesData_->showSchools();
+    LOG((*logger_), "New session instanace created!");
 }
 
 void Session::fetchAll()
@@ -102,13 +102,17 @@ void Session::fetchGrades()
     LOG((*logger_), "Fetching grades");
     std::vector<std::vector<std::string>> dbGrades = wsMgr_->getGrades();
     LOG((*logger_), "Got ", dbGrades.size() , " Entries");
-    for(auto& entry : dbGrades)
+    if(!dbGrades.empty())
     {
-        // (0) GRADE | (1) SUBID | (2) STUDENTID | (3) ID
-        float currentGrade = std::stof(entry.at(0));
-        uint16_t targetedStudent = std::stoul(entry.at(1));
-        uint16_t targetedSubject = std::stoul(entry.at(2));
-        sesData_->addGrade(targetedSubject, targetedStudent, currentGrade);
+        LOG((*logger_), "Linking grades")
+        for(auto& entry : dbGrades)
+        {
+            // (0) GRADE | (1) SUBID | (2) STUDENTID | (3) ID
+            float currentGrade = std::stof(entry.at(0));
+            uint16_t targetedStudent = std::stoul(entry.at(1));
+            uint16_t targetedSubject = std::stoul(entry.at(2));
+            sesData_->addGrade(targetedSubject, targetedStudent, currentGrade);
+        }
     }
 }
 

@@ -32,9 +32,11 @@ namespace Utilities
         template<typename... Args>
         void log(const char* file, const int line, Args&&... args)
        {
-	    // @TODO - switch timestamp from YYYYMMDD_hhmmss -> [YYYY/MM/DD HH:mm:ss]
-            filePtr_ << getLogEntryTimestamp(createCurrentTimestamp()) << ": " << file << ":" << std::to_string(line) << ": ";
-            (filePtr_ << ... << args) << "\n";
+            if(filePtr_.is_open())
+            {
+                filePtr_ << getLogEntryTimestamp(createCurrentTimestamp()) << ": " << file << ":" << std::to_string(line) << ": ";
+                (filePtr_ << ... << args) << "\n";
+            }
         }
 
         ~Logger();

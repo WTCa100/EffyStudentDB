@@ -33,10 +33,10 @@ namespace Utilities::Workspace
     {
     private:
         std::unordered_map<std::string, Sql::Types::Table> tables_;
-        
         std::filesystem::path dbPath_;
         sqlite3* currentDb_;
         bool isDbOpen_;
+        
     public:
         void initialTablesLoad(std::fstream& schemaPtr);
 
@@ -50,6 +50,7 @@ namespace Utilities::Workspace
         bool insertTable(const Sql::Types::Table& newTbl);
         bool addEntryToTable(std::string tableName, entry newVals);
         bool removeEntryFromTable(std::string tableName, uint16_t entryId);
+        bool removeEntryFromTable(std::string tableName, std::string condition);
 
         std::vector<std::string> getEntriesFromTable(std::string tableName, std::vector<std::string> attributes = {}, std::string filter = "");
         Sql::Types::Table getTableSchema(std::string tableName);

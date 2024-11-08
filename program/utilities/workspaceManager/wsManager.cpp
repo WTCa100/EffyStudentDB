@@ -81,23 +81,32 @@ namespace Utilities
         }
 
         // Fill the base schema file
-        Table schoolsTbl = defaultSchoolsTable();
-        Table studentsTbl = defaultStudentsTable();
-        Table subjectsTbl = defaultSubjectsTable();
-        Table gradesTbl = defaultGradesTable();
+        Table schoolsTbl       = defaultSchoolsTable();
+        Table studentsTbl      = defaultStudentsTable();
+        Table subjectsTbl      = defaultSubjectsTable();
+        Table gradesTbl        = defaultGradesTable();
+        Table coursesTbl       = defaultCoursesTable();
+        Table subjectWeightTbl = defaultSubjectToCourseWeightTable();
+        Table studentReqTbl    = defaultStudentRequestTable();
 
         *schemaPtr << "-- Effy.db - this file has been generated automatically\n";
-        *schemaPtr << "Do not modify it!";
+        *schemaPtr << "-- Do not modify it!\n";
         *schemaPtr << schoolsTbl.makeFormula();
         *schemaPtr << studentsTbl.makeFormula(); 
         *schemaPtr << subjectsTbl.makeFormula(); 
         *schemaPtr << gradesTbl.makeFormula(); 
+        *schemaPtr << coursesTbl.makeFormula();
+        *schemaPtr << subjectWeightTbl.makeFormula();
+        *schemaPtr << studentReqTbl.makeFormula();
 
         // To make the boot up faster, insert the intial tables into the sql manager
         sManager_->addTable(schoolsTbl);
         sManager_->addTable(studentsTbl);
         sManager_->addTable(subjectsTbl);
         sManager_->addTable(gradesTbl);
+        sManager_->addTable(coursesTbl);
+        sManager_->addTable(subjectWeightTbl);
+        sManager_->addTable(studentReqTbl);
 
         LOG((*logger_), "Initial schema was written into ", "base.sql");
         schemaPtr->close();

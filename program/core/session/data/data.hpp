@@ -5,10 +5,12 @@
 #include "../../../types/school/school.hpp"
 #include "../../../types/student/student.hpp"
 #include "../../../types/subject/subject.hpp"
+#include "../../../types/course/course.hpp"
 
 using Core::Types::School;
 using Core::Types::Student;
 using Core::Types::Subject;
+using Core::Types::Course;
 
 class SessionData
 {
@@ -16,6 +18,7 @@ private:
     std::map<uint16_t, School> schoolList_;
     std::map<uint16_t, Student> studentList_;
     std::map<uint16_t, Subject> subjectList_;
+    std::map<uint16_t, Course> courseList_;
 
 public:
     SessionData() : schoolList_({}), studentList_({}), subjectList_({}) {}

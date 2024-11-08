@@ -227,9 +227,6 @@ namespace Utilities::Workspace
         return executeOut(command);
     }
 
-    // @TODO removeEntryFromTable with custom condition string
-    // removeEntryFromTable(string [tableName], string [condition])
-
     void SqlManager::initialTablesLoad(std::fstream& schemaPtr)
     {
         std::cout << "Loading all tables into the memory...\n";
@@ -277,15 +274,22 @@ namespace Utilities::Workspace
 
     Sql::Types::Table SqlManager::getTableSchema(std::string tableName)
     {
+        // First check if we got the table already in memory.
+        if(tables_.contains(tableName))
+        {
+            std::cout << "Table " << tableName << " already loaded in memory.\n";
+            return tables_.at(tableName);
+        }
+
         // The output of this pragma is cid|name|type|notnull|dflt_value|pk
         std::string commandAttr = "PRAGMA table_info(" + tableName + ");";
         // The output of this pragma is id|seq|table|from|to|on_update|on_delete|match
-        std::string commandForKey = "PRAGMA foreign_key_list(" + tableName + ");";
+        std::string commandForKeys = "PRAGMA foreign_key_list(" + tableName + ");";
         
         Table resultTbl(tableName);
         
         std::vector<std::string> outputAttr = executeIn(commandAttr);
-        std::vector<std::string> outputFkeys = executeIn(commandForKey);
+        std::vector<std::string> outputFkeys = executeIn(commandForKeys);
 
 
         for(const auto& attr : outputAttr)
@@ -325,6 +329,22 @@ namespace Utilities::Workspace
                 }
             }
             resultTbl.addToSchema(std::move(finalAttr));
+        }
+
+        if(!outputFkeys.empty())
+        {
+            for(const auto& fKey : outputFkeys)
+            {
+                std::vector<std::string> tokenizedKeys = Common::tokenize(fKey, '|');
+                Attribute linkAttr = resultTbl.getAttributeByName(tokenizedKeys.at(3));
+                if(!linkAttr.isValid())
+                {
+                    std::cout << "No such attribute " << tokenizedKeys.at(3) << " in Table " << resultTbl.getName() << ". Skipping entry...\n";
+                    continue;
+                }
+                resultTbl.linkAttributes(linkAttr, tokenizedKeys.at(5), tokenizedKeys.at(4));
+            }
+
         }
         return resultTbl;
     }

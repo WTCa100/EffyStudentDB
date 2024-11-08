@@ -33,6 +33,8 @@ namespace Utilities::Workspace::Sql::Types
         ss << "CREATE TABLE " << name_ << "(\n";
         uint16_t targetAtrCount = schema_.size() - 1;
         uint16_t currentAtrCount = 0;
+        
+        // Attribute declarations
         for(const auto& attr : schema_)
         {
             // <attr-name> <attr-type> <attr-flags>
@@ -42,15 +44,29 @@ namespace Utilities::Workspace::Sql::Types
                 ss << Utilities::Workspace::Sql::Types::attrFlagToString(flag) << " ";
             }
 
-            if(currentAtrCount < targetAtrCount)
+            if(currentAtrCount < targetAtrCount || !foreignKeys_.empty())
             {
                 ss << ",";
             }
             ++currentAtrCount;
             ss << "\n";
         }
+
+
+        for(const auto& link : foreignKeys_)
+        {
+            ss << link << "\n";
+        }
+
         ss << ");\n";
         return ss.str();
+    }
+
+    void Table::linkAttributes(Attribute src, std::string refferencedTblName, std::string refferencedAttrName)
+    {
+        std::stringstream ss;
+        ss << "FOREIGN KEY (" << src.name_ << ") REFERENCES " << refferencedTblName << "(" << refferencedAttrName << ")";
+        foreignKeys_.push_back(ss.str());
     }
 
     Types::Table defaultSchoolsTable()
@@ -70,6 +86,7 @@ namespace Utilities::Workspace::Sql::Types
         studentTbl.addToSchema({"lastName", "TEXT", {Types::AttributeFlag::NOT_NULL}});
         studentTbl.addToSchema({"email", "TEXT", {Types::AttributeFlag::NOT_NULL, Types::AttributeFlag::UNIQUE}});
         studentTbl.addToSchema({"schoolId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
+        studentTbl.linkAttributes(studentTbl.getAttributeByName("schoolId"), "Schools", "id");
         return studentTbl;
     }
 
@@ -88,7 +105,42 @@ namespace Utilities::Workspace::Sql::Types
         gradeTbl.addToSchema({"studentId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
         gradeTbl.addToSchema({"subjectId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
         gradeTbl.addToSchema({"grade", "FLOAT", {Types::AttributeFlag::NOT_NULL}});
+        gradeTbl.linkAttributes(gradeTbl.getAttributeByName("studentId"), "Students", "id");
+        gradeTbl.linkAttributes(gradeTbl.getAttributeByName("subjectId"), "Subjects", "id");
         return gradeTbl;
     }    
+
+    Types::Table defaultCoursesTable()
+    {
+        Types::Table courseTbl("Courses");
+        courseTbl.addToSchema({"id", "INTEGER", {Types::AttributeFlag::PRIMARY_KEY}});
+        courseTbl.addToSchema({"name", "TEXT", {Types::AttributeFlag::NOT_NULL, Types::AttributeFlag::UNIQUE}});
+        courseTbl.addToSchema({"minStudents", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
+        courseTbl.addToSchema({"maxStudents", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
+        return courseTbl;
+    }
+
+    Types::Table defaultSubjectToCourseWeightTable()
+    {
+        Types::Table subjectWeightMap("CourseSubjectWeight");
+        subjectWeightMap.addToSchema({"id", "INTEGER", {Types::AttributeFlag::PRIMARY_KEY}});
+        subjectWeightMap.addToSchema({"courseId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
+        subjectWeightMap.addToSchema({"subjectId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
+        subjectWeightMap.addToSchema({"weight", "REAL", {Types::AttributeFlag::NOT_NULL}});
+        subjectWeightMap.linkAttributes(subjectWeightMap.getAttributeByName("subjectId") , "Subjects", "id");
+        subjectWeightMap.linkAttributes(subjectWeightMap.getAttributeByName("courseId") , "Courses", "id");
+        return subjectWeightMap;
+    }
+
+    Types::Table defaultStudentRequestTable()
+    {
+        Types::Table studentReq("StudentRequest");
+        studentReq.addToSchema({"id", "INTEGER", {Types::AttributeFlag::PRIMARY_KEY}});
+        studentReq.addToSchema({"studentId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
+        studentReq.addToSchema({"courseId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
+        studentReq.linkAttributes(studentReq.getAttributeByName("studentId"), "Students", "id");
+        studentReq.linkAttributes(studentReq.getAttributeByName("courseId"), "Courses", "id");
+        return studentReq;
+    }
 
 } // namespace Utilities::Workspace::Sql::Types

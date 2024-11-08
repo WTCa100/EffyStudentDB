@@ -4,24 +4,24 @@ Session::Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logge
 {
     LOG((*logger_), "Loading initial database entries");
     fetchAll();
-    School test{0, "Test School"};
-    addSchool(test);
-    test = School{0, "Test School 2"};
-    addSchool(test);
-    test = School{0, "ABDCDSDC"};
-    addSchool(test);
+    // School test{0, "Test School"};
+    // addSchool(test);
+    // test = School{0, "Test School 2"};
+    // addSchool(test);
+    // test = School{0, "ABDCDSDC"};
+    // addSchool(test);
 
-    sesData_->showSchools();
+    // sesData_->showSchools();
 
-    test = School{1, "Whatever"};
-    removeSchool(test);
+    // test = School{1, "Whatever"};
+    // removeSchool(test);
 
 
-    fetchSchools();
-    sesData_->showSchools();
-    test = School{0, "Whatever"};
-    addSchool(test);
-    sesData_->showSchools();
+    // fetchSchools();
+    // sesData_->showSchools();
+    // test = School{0, "Whatever"};
+    // addSchool(test);
+    // sesData_->showSchools();
     LOG((*logger_), "New session instanace created!");
 }
 

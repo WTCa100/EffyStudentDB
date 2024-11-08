@@ -8,6 +8,7 @@
 #include <filesystem>
 
 // Get types
+#include "../../../utilities/logger/logger.hpp"
 #include "../../../types/school/school.hpp"
 #include "../../../types/subject/subject.hpp"
 #include "../../../types/student/student.hpp"
@@ -33,6 +34,7 @@ namespace Utilities::Workspace
     {
     private:
         std::unordered_map<std::string, Sql::Types::Table> tables_;
+        std::shared_ptr<Logger> logger_;
         std::filesystem::path dbPath_;
         sqlite3* currentDb_;
         bool isDbOpen_;
@@ -67,7 +69,7 @@ namespace Utilities::Workspace
 
         // bool addEntryToTable(std::string tableName /*, Entry*/);
 
-        SqlManager(std::filesystem::path dbPath);
+        SqlManager(std::shared_ptr<Logger> extLogger, std::filesystem::path dbPath);
         ~SqlManager();
 
         bool openDb();
@@ -76,8 +78,6 @@ namespace Utilities::Workspace
 
 
         void printTables();
-
-
     };
     
 }

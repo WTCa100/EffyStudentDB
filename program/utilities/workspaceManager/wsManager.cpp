@@ -8,20 +8,27 @@ namespace Utilities
 {
     WsManager::WsManager(std::string workingDir) : workingDir_(std::filesystem::path(workingDir))
     {
+        // First handle non-logging objects
         dManager_ = std::make_unique<Workspace::DirectoryManager>(workingDir_);
         fManager_ = std::make_unique<Workspace::FileManager>(workingDir_);
-        sManager_ = std::make_unique<Workspace::SqlManager>(fileDatabaseSubdir + "/" + fileDatabase);
+        
+        // Handle log folder separately
+        if(!dManager_->exist(directoryLogs))
+        {
+            dManager_->createDirectory(directoryLogs);
+        }
+
+        // Handle logger and logging objects
+        logger_ = std::make_shared<Logger>(directoryLogs);
+        sManager_ = std::make_unique<Workspace::SqlManager>(logger_, fileDatabaseSubdir + "/" + fileDatabase);
 
         if(isInitializationNeeded())
         {
-            dManager_->createDirectory(directoryLogs);
-            logger_ = std::make_shared<Logger>(directoryLogs);        
             LOG((*logger_), "Initialization required.");
             initializeDatabase();
         }
         else
         {
-            logger_ = std::make_shared<Logger>(directoryLogs);  
             LOG((*logger_), "Initialization not required. Will extract data from existing files");
             auto schemaPtr = fManager_->getFile(fileBase, fileBaseSubdir);
             sManager_->openDb();
@@ -116,8 +123,7 @@ namespace Utilities
 
     bool WsManager::isInitializationNeeded()
     {
-        return(!dManager_->exist(directoryLogs) ||
-               !dManager_->exist(directoryDatabase) ||
+        return(!dManager_->exist(directoryDatabase) ||
                !dManager_->exist(directorySchemas, directorySchemasSubdir) ||
                !fManager_->exist(fileBase, fileBaseSubdir) ||
                !fManager_->exist(fileDatabase, fileDatabaseSubdir));

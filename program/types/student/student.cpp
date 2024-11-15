@@ -1,31 +1,34 @@
 #include <iostream>
+#include <sstream>
 #include "student.hpp"
 
 namespace Core::Types
 {
-    void showStudent(const Student& target, bool showGrades)
+    std::string Student::toString(bool showGrades) const
     {
-        std::cout << "First Name: " << target.firstName_ << " ";
-        if(target.secondName_.has_value()) 
+        std::stringstream ss("");
+        ss << "Id: " << id_ << ". First name: " << firstName_ << " ";
+        if(secondName_.has_value())
         {
-            std::cout << "Second Name: " << target.secondName_.value() << " ";
+            ss << "Second name: " << secondName_.value() << " ";
         }
-        std::cout << "Last Name: " << target.lastName_ << " ";
-        std::cout << "Email: " << target.email_ << " "; 
+        ss << "Last name " << lastName_ << " ";
+        ss << "Email " << email_ << " ";
         if(showGrades)
         {
-            if(!target.grades_.empty())
+            if(!grades_.empty())
             {
-                std::cout << "Grades: \n";
-                for(const auto& g : target.grades_)
+                ss << "Grades: \n";
+                for(const auto& grade : grades_)
                 {
-                    std::cout << g.first << " : " << g.second << "\n";
+                    ss << grade.first << ":" << grade.second << "\n";
                 }
             }
             else
             {
-                std::cout << "No Grades!\n";
+                ss << "No grades.";
             }
         }
+        return ss.str();
     }
 } // namespace Core::Types

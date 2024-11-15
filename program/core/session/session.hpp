@@ -32,12 +32,17 @@ class Session
     bool addStudent(Student newStudent);
     bool addSubject(Subject newSubject);
     bool addGrade(Subject targetSubject, Student targetStudent);
+    bool addCourse(Course newCourse);
+    bool addSrequest(Srequest newSrequest);
 
     // Removing
     bool removeSchool(School targetSchool);
     bool removeStudent(Student targetStudent);
     bool removeSubject(Subject targetSubject);
     bool removeGrade(Subject targetSubject, Student targetStudent);
+    bool removeCourse();
+    bool removeSrequest();
+
 
     Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logger);
     ~Session();

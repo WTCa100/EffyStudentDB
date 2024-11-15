@@ -1,0 +1,1 @@
+add_library(Srequest STATIC request.cpp request.hpp)

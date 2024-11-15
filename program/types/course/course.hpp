@@ -19,6 +19,8 @@ namespace Core::Types
         // Formula: [(1st subject grade * weight) + (2nd subject grade * weight) + (N-th subject grade * weight)] / N
         // Example: [(2 * math grade) + (1 * physics grade)] / 2
         std::vector<std::pair<uint16_t, uint16_t>> subjectWithWeight_;
+
+        std::string toString() const;
     };    
 } // namespace Core::Types
 

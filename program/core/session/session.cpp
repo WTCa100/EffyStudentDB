@@ -90,7 +90,7 @@ bool Session::removeSchool(School targetSchool)
     LOG((*logger_), "Removing existing school");
     if(wsMgr_->removeSchool(targetSchool))
     {
-        sesData_->removeSchool(targetSchool);
+        sesData_->removeSchool(targetSchool.id_);
         return true;
     }
 

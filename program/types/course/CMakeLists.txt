@@ -1,0 +1,1 @@
+add_library(Course STATIC course.cpp course.hpp)

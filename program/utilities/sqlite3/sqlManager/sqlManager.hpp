@@ -8,6 +8,7 @@
 #include <filesystem>
 
 // Get types
+#include "../../../utilities/logger/logger.hpp"
 #include "../../../types/school/school.hpp"
 #include "../../../types/subject/subject.hpp"
 #include "../../../types/student/student.hpp"
@@ -33,10 +34,11 @@ namespace Utilities::Workspace
     {
     private:
         std::unordered_map<std::string, Sql::Types::Table> tables_;
-        
+        std::shared_ptr<Logger> logger_;
         std::filesystem::path dbPath_;
         sqlite3* currentDb_;
         bool isDbOpen_;
+        
     public:
         void initialTablesLoad(std::fstream& schemaPtr);
 
@@ -50,6 +52,7 @@ namespace Utilities::Workspace
         bool insertTable(const Sql::Types::Table& newTbl);
         bool addEntryToTable(std::string tableName, entry newVals);
         bool removeEntryFromTable(std::string tableName, uint16_t entryId);
+        bool removeEntryFromTable(std::string tableName, std::string condition);
 
         std::vector<std::string> getEntriesFromTable(std::string tableName, std::vector<std::string> attributes = {}, std::string filter = "");
         Sql::Types::Table getTableSchema(std::string tableName);
@@ -66,7 +69,7 @@ namespace Utilities::Workspace
 
         // bool addEntryToTable(std::string tableName /*, Entry*/);
 
-        SqlManager(std::filesystem::path dbPath);
+        SqlManager(std::shared_ptr<Logger> extLogger, std::filesystem::path dbPath);
         ~SqlManager();
 
         bool openDb();
@@ -75,8 +78,6 @@ namespace Utilities::Workspace
 
 
         void printTables();
-
-
     };
     
 }

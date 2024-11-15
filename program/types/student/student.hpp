@@ -18,7 +18,6 @@ namespace Core::Types
         std::string email_;
         std::map<std::string, float> grades_;
         uint16_t schoolId_;
+        std::string toString(bool showGrades = false) const;
     };
-
-    void showStudent(const Student& target, bool showGrades = false);
 } // namespace Core::Types

@@ -3,26 +3,39 @@
 #include <memory>
 
 #include "../../utilities/logger/logger.hpp"
+#include "../../utilities/inputHandler/inputHandler.hpp"
 
-class Menu
+namespace Core::Display
 {
-private:
-    std::shared_ptr<Utilities::Logger> logger_;
-public:
-    Menu(std::shared_ptr<Utilities::Logger> logger);
-    void showMainMenu();
-    // Display main menu
-        // I.e. 
-        // 1. Add entry
-        // 2. Remove entry
-        // 3. Alter entry
-        // 4. Calculate students
-        // 5. Exit (1. are you sure prompt? 2. save prompt?)
-    // Display add menu
-        // Add school, student, grade, subject, course
-    // Display remove menu
-        // Remove school, student, grade, subject, course
-    // Display alter menu
-        // Alter school, student, grade, subject, course
-    ~Menu() = default;
-};
+
+    enum MainMenuOption
+    {
+        manageDb  = 1,
+        handleRqs    ,
+        exit
+    };
+
+    class Menu
+    {
+    private:
+        std::shared_ptr<Utilities::Logger> logger_;
+        std::unique_ptr<Utilities::InputHandler> inHandler_;
+    public:
+        Menu(std::shared_ptr<Utilities::Logger> logger);
+        void showMainMenu();
+        // Change in plan was made and now the display will a little bit differently to make it more readable for the client.
+        // Display main menu
+            // I.e. 
+            // 1. Show database
+            // 2. Handle requests
+            // 3. Exit (1. are you sure prompt? 2. save prompt?)
+        // The show database is a interactive menu that allows the user to search it (manually or automatically), add, remove and alter entries
+        // This would work as follow:
+        // User enters 1. -> Display changes to the show db. Then options are available by typping a command: "ADD/ALTER/REMOVE/FIND <type>"
+        // Aproporiate type builder will be handled after entering a command.
+        // ADD, REMOVE and ALTER will work on the local memory. Find will call a SQL query to obtain the id with given params.
+        ~Menu() = default;
+    };
+
+} // namespace core::display
+

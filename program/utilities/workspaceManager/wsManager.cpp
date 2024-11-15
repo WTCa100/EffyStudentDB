@@ -8,20 +8,27 @@ namespace Utilities
 {
     WsManager::WsManager(std::string workingDir) : workingDir_(std::filesystem::path(workingDir))
     {
+        // First handle non-logging objects
         dManager_ = std::make_unique<Workspace::DirectoryManager>(workingDir_);
         fManager_ = std::make_unique<Workspace::FileManager>(workingDir_);
-        sManager_ = std::make_unique<Workspace::SqlManager>(fileDatabaseSubdir + "/" + fileDatabase);
+        
+        // Handle log folder separately
+        if(!dManager_->exist(directoryLogs))
+        {
+            dManager_->createDirectory(directoryLogs);
+        }
+
+        // Handle logger and logging objects
+        logger_ = std::make_shared<Logger>(directoryLogs);
+        sManager_ = std::make_unique<Workspace::SqlManager>(logger_, fileDatabaseSubdir + "/" + fileDatabase);
 
         if(isInitializationNeeded())
         {
-            dManager_->createDirectory(directoryLogs);
-            logger_ = std::make_shared<Logger>(directoryLogs);        
             LOG((*logger_), "Initialization required.");
             initializeDatabase();
         }
         else
         {
-            logger_ = std::make_shared<Logger>(directoryLogs);  
             LOG((*logger_), "Initialization not required. Will extract data from existing files");
             auto schemaPtr = fManager_->getFile(fileBase, fileBaseSubdir);
             sManager_->openDb();
@@ -81,23 +88,32 @@ namespace Utilities
         }
 
         // Fill the base schema file
-        Table schoolsTbl = defaultSchoolsTable();
-        Table studentsTbl = defaultStudentsTable();
-        Table subjectsTbl = defaultSubjectsTable();
-        Table gradesTbl = defaultGradesTable();
+        Table schoolsTbl       = defaultSchoolsTable();
+        Table studentsTbl      = defaultStudentsTable();
+        Table subjectsTbl      = defaultSubjectsTable();
+        Table gradesTbl        = defaultGradesTable();
+        Table coursesTbl       = defaultCoursesTable();
+        Table subjectWeightTbl = defaultSubjectToCourseWeightTable();
+        Table studentReqTbl    = defaultStudentRequestTable();
 
         *schemaPtr << "-- Effy.db - this file has been generated automatically\n";
-        *schemaPtr << "Do not modify it!";
+        *schemaPtr << "-- Do not modify it!\n";
         *schemaPtr << schoolsTbl.makeFormula();
         *schemaPtr << studentsTbl.makeFormula(); 
         *schemaPtr << subjectsTbl.makeFormula(); 
         *schemaPtr << gradesTbl.makeFormula(); 
+        *schemaPtr << coursesTbl.makeFormula();
+        *schemaPtr << subjectWeightTbl.makeFormula();
+        *schemaPtr << studentReqTbl.makeFormula();
 
         // To make the boot up faster, insert the intial tables into the sql manager
         sManager_->addTable(schoolsTbl);
         sManager_->addTable(studentsTbl);
         sManager_->addTable(subjectsTbl);
         sManager_->addTable(gradesTbl);
+        sManager_->addTable(coursesTbl);
+        sManager_->addTable(subjectWeightTbl);
+        sManager_->addTable(studentReqTbl);
 
         LOG((*logger_), "Initial schema was written into ", "base.sql");
         schemaPtr->close();
@@ -107,8 +123,7 @@ namespace Utilities
 
     bool WsManager::isInitializationNeeded()
     {
-        return(!dManager_->exist(directoryLogs) ||
-               !dManager_->exist(directoryDatabase) ||
+        return(!dManager_->exist(directoryDatabase) ||
                !dManager_->exist(directorySchemas, directorySchemasSubdir) ||
                !fManager_->exist(fileBase, fileBaseSubdir) ||
                !fManager_->exist(fileDatabase, fileDatabaseSubdir));
@@ -184,14 +199,24 @@ namespace Utilities
         std::cout << "Creating directory: " << directoryName << "\n";
         LOG((*logger_), "Creating directory: directoryName=", directoryName, " subPath=", (subPath.has_value() ? subPath.value() : "nullopt"));
         // Check for folder
-        if(dManager_->exist(directoryName, subPath))
+        bool isCreated;
+        if((isCreated = dManager_->exist(directoryName, subPath)))
         {
             std::cout << "Folder already exists! Skipping...\n";
-            return false;
+            return isCreated;
         }
 
-        bool rc = dManager_->createDirectory(directoryName, subPath);
-        return rc;
+        isCreated = dManager_->createDirectory(directoryName, subPath);
+        if(isCreated)
+        {
+            LOG((*logger_), "Directory created without any issues!");
+        }
+        else
+        {
+            LOG((*logger_), "Could not create a given directory")
+        }
+
+        return isCreated;
     }
 
     bool WsManager::directoryExists(std::string directoryName, std::optional<std::filesystem::path> subPath)
@@ -199,15 +224,22 @@ namespace Utilities
         std::cout << "Looking for the directory: " << directoryName << "...\n";
         bool rc = dManager_->exist(directoryName, subPath);
     
-        std::cout << rc ? ("File: " + directoryName + " was found!\n") 
-                        : ("Could not find file: " + directoryName + "\n");
-
+        if(rc)
+        {
+            std::cout << "File: " + directoryName + " was found!\n";
+            LOG((*logger_), "Directory ", directoryName, "exists");
+        }
+        else
+        {
+            std::cout << "Could not find file: " + directoryName + "\n";
+            LOG((*logger_), "Directory ", directoryName, " does not exists");
+        }
         return rc;
     }
 
     bool WsManager::deleteDirectory(std::string directoryName, std::optional<std::filesystem::path> subPath, bool prompt)
     {
-
+        LOG((*logger_), "Attempting to delete directory: name=", directoryName, "subpath=", subPath.has_value() ? subPath.value().string() : "nullopt");
         // Check if a file exists - if there is no file, there is no need on doing anythin
         if(!dManager_->exist(directoryName, subPath))
         {
@@ -217,6 +249,7 @@ namespace Utilities
 
         if(prompt)
         {
+            LOG((*logger_), "Deletion confirmation prompt triggered");
             std::cout << "This function will permamently delete given folder and it's content. This cannot be undone!\n";
             std::cout << "Are you sure you want to continue and delete " << directoryName << "?\n";
             std::string tmp;
@@ -233,9 +266,9 @@ namespace Utilities
         bool hasDeleted = false;
         do
         {
-            ++tryCount;                
+            ++tryCount;
             hasDeleted = dManager_->deleteDirectory(directoryName, subPath);
-            std::cout << (hasDeleted ? "File was deleted\n" : "Could not delete file\n");
+            LOG((*logger_), "Deletion attempt: ", tryCount, " result=", hasDeleted ? "successful" : "unsuccessful");
         } while (!hasDeleted && tryCount <= 3);
 
         std::cout << (hasDeleted ? ("Directory " + directoryName + " was deleted\n") : ("Could not delete directory " + directoryName + ".\n"));
@@ -260,9 +293,9 @@ namespace Utilities
             std::vector<std::string> tokenizedSchool = Utilities::Common::tokenize(e, '|');
             // Tokens are:
             // (0)NAME | (1)ID
-            std::cout << "THIS IS A TEST: " << tokenizedSchool.at(0) << "|" << tokenizedSchool.at(1) << "\n";
             schools.push_back(Core::Types::School{static_cast<uint16_t>(std::stoul(tokenizedSchool.at(1))), tokenizedSchool.at(0), {}});
         }
+        LOG((*logger_), "Schools tokenized and pushed into the list. Final vector size = ", schools.size(), " Raw entries size = ", rawEntries.size());
         return schools;
     }
 
@@ -299,6 +332,7 @@ namespace Utilities
             tmpStudent.schoolId_   = std::stoul(tokenizedStudent.at(4));
             students.push_back(tmpStudent);
         }
+        LOG((*logger_), "Students tokenized and pushed into the list. Final vector size = ", students.size(), " Raw entries size = ", rawEntries.size());
         return students;
     }
     
@@ -322,6 +356,7 @@ namespace Utilities
             // (0)NAME | (1)ID
             subjects.push_back(Core::Types::Subject{static_cast<uint16_t>(std::stoul(tokenizedSubjects.at(1))), tokenizedSubjects.at(0)});
         }
+        LOG((*logger_), "Subjects tokenized and pushed into the list. Final vector size = ", subjects.size(), " Raw entries size = ", rawEntries.size());
         return subjects;
     }
 
@@ -342,6 +377,7 @@ namespace Utilities
         {
             listOfGrades.push_back(Utilities::Common::tokenize(e, '|'));
         }
+        LOG((*logger_), "Grades tokenized and pushed into the list. Final vector size = ", listOfGrades.size(), " Raw entries size = ", rawEntries.size());
         return listOfGrades;
     }
 
@@ -349,7 +385,8 @@ namespace Utilities
     {
         LOG((*logger_), "Getting latest id from ", tblName);
         std::vector<std::string> result = sManager_->getEntriesFromTable(tblName, {"MAX(id)"});
-        std::cout << "MAX ID: " << result.at(0) << "\n";
+        // Check if it's empty - such scenario would probably never occur?
+        LOG((*logger_), "Max ID from table = ", std::stoul(result.at(0)));
         return static_cast<uint16_t>(std::stoul(result.at(0)));
     }
 
@@ -360,17 +397,24 @@ namespace Utilities
         // if(sManager_->) Check if entry already exists
         // Prepare atributes
         Table targetTable = sManager_->getTableSchema("Schools");
-        sManager_->addEntryToTable(targetTable.getName(),
-            { std::make_pair(targetTable.getAttributeByName("name") , newSchool.name_)});
-        newSchool.id_ = getLatestIdFromTable(targetTable.getName());
-        return true;
+        if(sManager_->addEntryToTable(targetTable.getName(),
+            { std::make_pair(targetTable.getAttributeByName("name") , newSchool.name_)}))
+        {
+            newSchool.id_ = getLatestIdFromTable(targetTable.getName());
+            LOG((*logger_), "New school added. Name=", newSchool.name_, " id=", newSchool.id_);
+            return true;
+        }
+    
+        LOG((*logger_), "Could not add given school into the database. Name=", newSchool.name_);
+        return false;
     }
 
     bool WsManager::removeSchool(const Core::Types::School& removeSchool)
     {
         LOG((*logger_), "Attempting to remove school \"", removeSchool.name_, "\"");
-        // Check if exists - if not, nothing to delete and return true
-        sManager_->removeEntryFromTable("Schools", removeSchool.id_);
+        // TODO Check if exists - if not, nothing to delete and return true
+        sManager_->removeEntryFromTable("Schools", removeSchool.id_);\
+        // TODO verify
         return true;
     }
 
@@ -381,14 +425,19 @@ namespace Utilities
         // if(sManager_->) Check if entry already exists
         // Prepare atributes
         Table targetTable = sManager_->getTableSchema("Students");
-        sManager_->addEntryToTable(targetTable.getName(),
+        if(sManager_->addEntryToTable(targetTable.getName(),
             { std::make_pair(targetTable.getAttributeByName("firstName") , newStudent.firstName_),
               std::make_pair(targetTable.getAttributeByName("secondName"), (newStudent.secondName_ ? newStudent.secondName_.value() : "" )),
               std::make_pair(targetTable.getAttributeByName("lastName"), newStudent.lastName_),
               std::make_pair(targetTable.getAttributeByName("email"), newStudent.email_),
-              std::make_pair(targetTable.getAttributeByName("schoolId"), std::to_string(newStudent.schoolId_))});
-        newStudent.id_ = getLatestIdFromTable(targetTable.getName());
-        return true;
+              std::make_pair(targetTable.getAttributeByName("schoolId"), std::to_string(newStudent.schoolId_))}))
+        {
+            newStudent.id_ = getLatestIdFromTable(targetTable.getName());
+            LOG((*logger_), "New student added. Email=", newStudent.email_, " id=", newStudent.id_);
+            return true;
+        }
+        LOG((*logger_), "Could not add given student into the database. Name=", newStudent.firstName_, " ", newStudent.lastName_, " email=", newStudent.email_);
+        return false;
     }
 
     bool WsManager::removeStudent(const Core::Types::Student& targetStudent)
@@ -402,10 +451,15 @@ namespace Utilities
     {
         LOG((*logger_), "Adding new subject \"", newSubject.name_);
         Table targetTable = sManager_->getTableSchema("Subjects");
-        sManager_->addEntryToTable(targetTable.getName(), 
-            {std::make_pair(targetTable.getAttributeByName("name"), newSubject.name_)});
-        newSubject.id_ = getLatestIdFromTable(targetTable.getName());
-        return true;
+        if(sManager_->addEntryToTable(targetTable.getName(), 
+            {std::make_pair(targetTable.getAttributeByName("name"), newSubject.name_)}))
+        {
+            newSubject.id_ = getLatestIdFromTable(targetTable.getName());
+            LOG((*logger_), "New subject added. Name=", newSubject.name_, " id=", newSubject.id_);
+            return true;
+        }
+        LOG((*logger_), "Could not add given subject into the database. Name=", newSubject.name_);
+        return false;
     }
 
     bool WsManager::removeSubject(const Core::Types::Subject& targetSubject)
@@ -419,11 +473,16 @@ namespace Utilities
     {
         LOG((*logger_), "Adding new grade from \"", targetSubject.name_, "\" to student ", targetStudent.firstName_ , " ", targetStudent.lastName_);
         Table targetTable = sManager_->getTableSchema("Grades");
-        sManager_->addEntryToTable(targetTable.getName(),
+        if(sManager_->addEntryToTable(targetTable.getName(),
             {std::make_pair(targetTable.getAttributeByName("grade"),     std::to_string(grade)),
              std::make_pair(targetTable.getAttributeByName("subjectId"), std::to_string(targetSubject.id_)),
-             std::make_pair(targetTable.getAttributeByName("studentId"), std::to_string(targetStudent.id_))});
-        return true;
+             std::make_pair(targetTable.getAttributeByName("studentId"), std::to_string(targetStudent.id_))}))
+        {
+            LOG((*logger_), "Assigned grade (", grade, ") to a student [", targetStudent.email_, " ", targetStudent.id_, "] from a subject [", targetSubject.name_, " ", targetSubject.id_, "]");
+            return true;
+        }
+        LOG((*logger_), "Could not assign given grade");
+        return false;
     }
 
     bool WsManager::removeGrade(const Core::Types::Student& targetStudent, const Core::Types::Subject& targetSubject)

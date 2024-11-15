@@ -59,21 +59,15 @@ namespace Utilities
 
         uint16_t getLatestIdFromTable(std::string tblName);
 
-        // Add school
         bool addSchool(Core::Types::School& newSchool);
         bool removeSchool(const Core::Types::School& removeSchool);
-
-        // Add student
         bool addStudent(Core::Types::Student& newStudent);
         bool removeStudent(const Core::Types::Student& targetStudent);
-        
-        // Add subject
         bool addSubject(Core::Types::Subject& newSubject);
         bool removeSubject(const Core::Types::Subject& targetSubject);
-        
-        // Add grade
         bool addGrade(Core::Types::Student& targetStudent, Core::Types::Subject& targetSubject, const float& grade);
         bool removeGrade(const Core::Types::Student& targetStudent, const Core::Types::Subject& targetSubject);
+        // Add/Remove Course
         
     };
 } // namespace Utilities

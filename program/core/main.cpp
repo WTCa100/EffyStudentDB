@@ -9,4 +9,5 @@ int main(int argc, char const *argv[])
 {
     std::shared_ptr<WsManager> coreManager = std::make_shared<WsManager>();
     Session coreSession(coreManager, coreManager->getLogger());
+    coreSession.run();
 }

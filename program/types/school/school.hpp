@@ -12,6 +12,7 @@ namespace Core::Types
         uint16_t id_;
         std::string name_;
         std::map<uint16_t, const Student*> students_;
+        std::string toString() const;
     };
 } // namespace Core
 

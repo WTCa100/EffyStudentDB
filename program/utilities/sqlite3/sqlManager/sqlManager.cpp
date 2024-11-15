@@ -14,13 +14,14 @@ namespace Utilities::Workspace
     std::vector<std::string> SqlManager::executeIn(const std::string& sqlQuery)
     {
         sqlite3_stmt *result;
+        LOG((*logger_), "Executing query ", sqlQuery);
         std::cout << "Executing query: \"" << sqlQuery << "\n"; 
         if(int rc = !sqlite3_prepare_v2(currentDb_, sqlQuery.c_str(), sqlQuery.size(), &result, nullptr) == SQLITE_OK)
         {
-            std::cout << "Command failed with exit code: " << rc << "\n";
+            LOG((*logger_),  "Query failed at preparation stage with exit code: ", rc);
             return {};
         }
-        std::cout << "Command prepared without any errors!\n";
+        LOG((*logger_), "Query prepared without any issues.");
 
         std::vector<std::string> output;
         int sqlStep;
@@ -44,11 +45,14 @@ namespace Utilities::Workspace
 
         if(sqlStep != SQLITE_DONE)
         {
-            std::cout << "Command failed with code " << sqlStep << "\n";
-            std::cout << "Details: " << sqlite3_errmsg(currentDb_) << "\n";
+            const char* sqlErrMsg = sqlite3_errmsg(currentDb_);
+            LOG((*logger_), "Query: \"", sqlQuery, "\" failed! Details: ", sqlErrMsg);
+            std::cout << "Query failed at execution stage with\n";
+            std::cout << "Details: " << sqlErrMsg << "\n";
         }
         else
         {
+            LOG((*logger_), "Query \"", sqlQuery, "\" executed without any errors.");
             std::cout << "Command executed without any errores!\n";
         }
 
@@ -59,24 +63,29 @@ namespace Utilities::Workspace
     bool SqlManager::executeOut(const std::string& sqlCommand)
     {
         sqlite3_stmt *result;
+        LOG((*logger_), "Executing command: \"", sqlCommand, "\"");
         std::cout << "Executing command: \"" << sqlCommand << "\"\n"; 
         int rc = sqlite3_prepare_v2(currentDb_, sqlCommand.c_str(), sqlCommand.length(), &result, nullptr);
         if(rc != SQLITE_OK)
         {
-            std::cout << "Command failed with exit code: " << rc << "\n";
+            LOG((*logger_),  "Command failed at preparation stage with exit code: ", rc);
+            std::cout << "Command failed at preparation stage with exit code: " << rc << "\n";
             sqlite3_finalize(result);
             return false;
         }
-        std::cout << "Command prepared without any errors!\n";
+        LOG((*logger_), "Command prepared without any issues.");
 
         rc = sqlite3_step(result);
         if(rc != SQLITE_DONE)
         {
-            std::cout << "Command failed with code " << rc << "\n";
-            std::cout << "Details: " << sqlite3_errmsg(currentDb_) << "\n";
+            const char* sqlErrMsg = sqlite3_errmsg(currentDb_);
+            LOG((*logger_), "Command: \"", sqlCommand, "\" failed with result: ", rc, " Details: ", sqlErrMsg);
+            std::cout << "Command failed at execution stage with code " << rc << "\n";
+            std::cout << "Details: " << sqlErrMsg << "\n";
         }
         else
         {
+            LOG((*logger_), "Command \"", sqlCommand, "\" executed without any errors.");
             std::cout << "Command executed without any errors!\n";
         }
 
@@ -92,19 +101,23 @@ namespace Utilities::Workspace
 
     bool SqlManager::isTableInDatabase(const std::string& tableName)
     {
+        LOG((*logger_), "Looking for table ", tableName, " in the database");
         std::vector<std::string> presentTables = getEntriesFromTable("sqlite_master", {"name"}, "type = 'table'");
         for(size_t i = 0; i < presentTables.size(); ++i)
         {
             if(presentTables.at(i) == tableName)
             {
+                LOG((*logger_), "Found table in the database");
                 return true;
             }
         }
+        LOG((*logger_), "No such table present in the database")
         return false;
     }
 
     bool SqlManager::moveSchemasToDatabase()
     {
+        LOG((*logger_), "Moving all schemas to database");
         bool isEverythingInserted = false;
         for(const auto& tbl : tables_)
         {
@@ -115,6 +128,7 @@ namespace Utilities::Workspace
 
     bool SqlManager::moveSchemaToDatabase(const Sql::Types::Table& table)
     {
+        LOG((*logger_), "Adding new table ", table.getName(), " to database");
         std::cout << "Adding table: " << table.getName() << "\n";
         // Check if a given table exist in the tables map
         if(!tables_.contains(table.getName()))
@@ -126,8 +140,10 @@ namespace Utilities::Workspace
 
         if(!insertTable(table))
         {
+            LOG((*logger_), "Error: Could not insert table!");
             return false;
         }
+        LOG((*logger_), "Table has been inserted into the database");
         return true;
     }
 
@@ -137,13 +153,15 @@ namespace Utilities::Workspace
         return executeOut(formula);
     }
 
-    SqlManager::SqlManager(std::filesystem::path dbPath) : dbPath_(dbPath), currentDb_(), isDbOpen_(false) {}
+    SqlManager::SqlManager(std::shared_ptr<Logger> extLogger, std::filesystem::path dbPath) : logger_(extLogger), dbPath_(dbPath), currentDb_(), isDbOpen_(false) {}
 
     bool SqlManager::openDb()
     {
+        LOG((*logger_), "Opening db at: ", dbPath_.string());
         if(isDbOpen_)
         {
             std::cout << "Database is already open\n";
+            LOG((*logger_), "Database is already open");
             return true;
         }
 
@@ -151,13 +169,16 @@ namespace Utilities::Workspace
         
         if(rc != SQLITE_OK)
         {
-            std::cout << "Sqlite failed to opend a db with error code " << rc << "\n";
+            LOG((*logger_), "Sqlite failed to open a db with error code ", rc );
+            std::cout << "Sqlite failed to open a db with error code " << rc << "\n";
         }
         else
         {
             std::cout << "Succesully opened DB at: " << dbPath_.string() << "\n";
+            LOG((*logger_), "Database at ", dbPath_.string(), " was opened");
             isDbOpen_ = true;
         }
+        LOG((*logger_), "OpenDb exits with code: ", rc);
         return rc == SQLITE_OK;
     }
 
@@ -167,6 +188,7 @@ namespace Utilities::Workspace
         {
             sqlite3_close_v2(currentDb_);
             isDbOpen_ = false;
+            LOG((*logger_), "Database at ", dbPath_.string(), " closed");
         }
     }
 
@@ -181,6 +203,7 @@ namespace Utilities::Workspace
 
     bool SqlManager::addEntryToTable(std::string tableName, entry newVals)
     {
+        LOG((*logger_), "Adding entry to table ", tableName);
         std::stringstream ss;
         ss << "INSERT INTO " << tableName << "(";
         for(size_t pos = 0; pos < newVals.size(); ++pos)
@@ -217,29 +240,33 @@ namespace Utilities::Workspace
 
     bool SqlManager::removeEntryFromTable(std::string tableName, uint16_t entryId)
     {
-        std::string command =  "DELETE FROM " + tableName + " WHERE id = " + std::to_string(entryId) +";";
+        std::string idCondition = "id = " + std::to_string(entryId);
+        return removeEntryFromTable(tableName, idCondition);
+    }
+
+    bool SqlManager::removeEntryFromTable(std::string tableName, std::string condition)
+    {
+        std::string command = "DELETE FROM " + tableName + " WHERE " + condition + ";";
         return executeOut(command);
     }
 
-    // @TODO removeEntryFromTable with custom condition string
-    // removeEntryFromTable(string [tableName], string [condition])
-
     void SqlManager::initialTablesLoad(std::fstream& schemaPtr)
     {
-        std::cout << "Loading all tables into the memory...\n";
+        LOG((*logger_), "Initializing all tables from the schema file");
         // Get all table names from the DB
         std::vector<std::string> tableNames = getEntriesFromTable("sqlite_master", {"name"}, "type = 'table'");
 
-        std::cout << "Got the following names:\n";
+        LOG((*logger_), "Got ", tableNames.size(), " tables");
         for(auto name : tableNames)
         {
             addTable(getTableSchema(name));
         }
-        std::cout << "Initial tables has been loaded\n";
+        LOG((*logger_), "Tables have been added into the tables_");
     }
 
     std::vector<std::string> SqlManager::getEntriesFromTable(std::string tableName, std::vector<std::string> attributes, std::string filter)
     {
+        LOG((*logger_), "Fetching entries from table: ", tableName, " attributes count: ", attributes.size(), " filter: ", filter);
         std::string selectWhat = "";
         std::string sqlFormat = "SELECT ";
         if(attributes.empty())
@@ -271,17 +298,25 @@ namespace Utilities::Workspace
 
     Sql::Types::Table SqlManager::getTableSchema(std::string tableName)
     {
+        LOG((*logger_), "Getting table ", tableName, " schema");
+        // First check if we got the table already in memory.
+        if(tables_.contains(tableName))
+        {  
+            LOG((*logger_), "Table already in memory");
+            return tables_.at(tableName);
+        }
+
         // The output of this pragma is cid|name|type|notnull|dflt_value|pk
         std::string commandAttr = "PRAGMA table_info(" + tableName + ");";
         // The output of this pragma is id|seq|table|from|to|on_update|on_delete|match
-        std::string commandForKey = "PRAGMA foreign_key_list(" + tableName + ");";
+        std::string commandForKeys = "PRAGMA foreign_key_list(" + tableName + ");";
         
         Table resultTbl(tableName);
         
         std::vector<std::string> outputAttr = executeIn(commandAttr);
-        std::vector<std::string> outputFkeys = executeIn(commandForKey);
+        std::vector<std::string> outputFkeys = executeIn(commandForKeys);
 
-
+        LOG((*logger_), "Mapping attributes");
         for(const auto& attr : outputAttr)
         {
             std::vector<std::string> tokenizedAttr = Common::tokenize(attr, '|');
@@ -320,17 +355,36 @@ namespace Utilities::Workspace
             }
             resultTbl.addToSchema(std::move(finalAttr));
         }
+
+        if(!outputFkeys.empty())
+        {
+            LOG((*logger_), "Mapping foreign kets");
+            for(const auto& fKey : outputFkeys)
+            {
+                std::vector<std::string> tokenizedKeys = Common::tokenize(fKey, '|');
+                Attribute linkAttr = resultTbl.getAttributeByName(tokenizedKeys.at(3));
+                if(!linkAttr.isValid())
+                {
+                    std::cout << "No such attribute " << tokenizedKeys.at(3) << " in Table " << resultTbl.getName() << ". Skipping entry...\n";
+                    continue;
+                }
+                resultTbl.linkAttributes(linkAttr, tokenizedKeys.at(5), tokenizedKeys.at(4));
+            }
+
+        }
+        LOG((*logger_), "Returning table: name=", resultTbl.getName(), " attrCount=", resultTbl.getSchema().size(), " foreignKeyCount=", resultTbl.getForeignKeys().size());
         return resultTbl;
     }
 
     SqlManager::~SqlManager()
     {
-        std::cout << "SqlManager :dtor:\n";
+        LOG((*logger_), "SqlManager :dtor:");
         closeDb();
     }
 
     void SqlManager::printTables()
     {
+        LOG((*logger_), "Trying to print all tables");
         if(tables_.empty())
         {
             std::cout << "No tables present\n";

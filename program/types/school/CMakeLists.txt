@@ -1,0 +1,1 @@
+add_library(School STATIC school.cpp school.hpp)

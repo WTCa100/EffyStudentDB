@@ -1,25 +1,30 @@
 #include "menu.hpp"
 
-Menu::Menu(std::shared_ptr<Utilities::Logger> logger)
+namespace Core::Display
 {
-    if(!logger)
+    Menu::Menu(std::shared_ptr<Utilities::Logger> logger)
     {
-        std::cout << "Logger is null! Can't save logs\n";
+        if(!logger)
+        {
+            std::cout << "Logger is null! Can't save logs\n";
+        }
+        else
+        {
+            logger_ = logger;
+            LOG((*logger_), "Menu object created");
+            inHandler_ = std::make_unique<Utilities::InputHandler>();
+        }
     }
-    else
-    {
-        logger_ = logger;
-        LOG((*logger_), "Menu object created");
-    }
-}
 
-void Menu::showMainMenu()
-{
-    LOG((*logger_), "Showing main menu");
-    std::cout << "-=# Main Menu #=-\n";
-    std::cout << "1. Add entry (like school, subject, etc.).\n";
-    std::cout << "2. Remove entry.\n";
-    std::cout << "3. Alter entry.\n";
-    std::cout << "4. Calculate.\n";
-    std::cout << "5. Exit\n";
+    void Menu::showMainMenu()
+    {
+        MainMenuOption op;
+        LOG((*logger_), "Showing main menu");
+        std::cout << "-=# Main Menu #=-\n";
+        std::cout << "1. Manage Database\n";
+        std::cout << "2. Handle student requests\n";
+        std::cout << "3. Exit.\n";
+        op = static_cast<MainMenuOption>(inHandler_->getOption(1, 3));
+        LOG((*logger_), "Got option ", op);
+    }
 }

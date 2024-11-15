@@ -1,6 +1,6 @@
 #include "session.hpp"
 
-Session::Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logger) : wsMgr_(wsMgr), logger_(logger), sesData_(std::make_unique<SessionData>())
+Session::Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logger) : wsMgr_(wsMgr), logger_(logger), sesData_(std::make_unique<SessionData>()), display_(std::make_unique<Menu>(logger_))
 {
     LOG((*logger_), "Loading initial database entries");
     fetchAll();
@@ -72,6 +72,11 @@ void Session::fetchSubjects()
         std::cout << "At " << entry.name_ << "\n";
         sesData_->addSubject(entry);
     }
+}
+
+void Session::run()
+{
+    display_->showMainMenu();
 }
 
 bool Session::addSchool(School newSchool)

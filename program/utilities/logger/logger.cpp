@@ -18,13 +18,15 @@ namespace Utilities
 
     bool Logger::touch(std::filesystem::path path, std::string fileName)
     {
-        std::cout << "Attempting to write " << path.c_str() + fileName + logExt << "\n";
         filePtr_.open(std::string(path.c_str() + fileName + logExt));
         if(filePtr_.good())
         {
+            std::cout << "Log file at " << path.c_str() + fileName + logExt << "\n";
+            LOG((*this), "File created");
             return true;
         }
         
+        std::cout << "Could not create a log file!\n";
         filePtr_.close();
         return false;
     }

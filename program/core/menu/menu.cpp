@@ -4,16 +4,9 @@ namespace Core::Display
 {
     Menu::Menu(std::shared_ptr<Utilities::Logger> logger)
     {
-        if(!logger)
-        {
-            std::cout << "Logger is null! Can't save logs\n";
-        }
-        else
-        {
-            logger_ = logger;
-            LOG((*logger_), "Menu object created");
-            inHandler_ = std::make_unique<Utilities::InputHandler>();
-        }
+        logger_ = logger;
+        LOG((*logger_), "Menu object created");
+        inHandler_ = std::make_unique<Utilities::InputHandler>();
     }
 
     void Menu::showMainMenu()

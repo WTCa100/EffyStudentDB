@@ -25,10 +25,10 @@ void SessionData::addStudent(const Student& newStudnet)
         // Assign a student to a school
         if(schoolList_.contains(newStudnet.schoolId_))
         {
-            schoolList_.at(newStudnet.schoolId_).students_.push_back(newStudnet);
+            schoolList_.at(newStudnet.schoolId_).students_.insert(std::make_pair(newStudnet.id_, newStudnet));
         }
     }
-    studentList_.erase(targetStudent.id_);
+    studentList_.erase(newStudnet.id_);
 }
 
 void SessionData::addSubject(const Subject& newSubject)

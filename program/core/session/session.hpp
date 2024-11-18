@@ -17,9 +17,9 @@ class Session
        - Formular creator (either a class or just a function that handles a formula to a given targeted major)*/
     std::shared_ptr<WsManager> wsMgr_; 
     std::shared_ptr<Logger> logger_;
+    std::shared_ptr<SessionData> sesData_;
     
     // Consider removing this since we're (for now) only using it in one class
-    std::unique_ptr<SessionData> sesData_;
     std::unique_ptr<Menu> display_;
 
 
@@ -37,7 +37,7 @@ class Session
     bool addSchool(School& newSchool);
     bool addStudent(Student& newStudent);
     bool addSubject(Subject& newSubject);
-    bool addGrade(Subject& targetSubject, Student& targetStudent);
+    bool addGrade(Subject& targetSubject, Student& targetStudent, float value);
     bool addCourse(Course newCourse);
     bool addSrequest(Srequest newSrequest);
 

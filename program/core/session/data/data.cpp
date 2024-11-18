@@ -28,7 +28,20 @@ void SessionData::addStudent(const Student& newStudnet)
             schoolList_.at(newStudnet.schoolId_).students_.insert(std::make_pair(newStudnet.id_, newStudnet));
         }
     }
-    studentList_.erase(newStudnet.id_);
+}
+
+void SessionData::removeStudent(const Student& targetStudent)
+{
+    if(studentList_.contains(targetStudent.id_))
+    {
+        School& studentSchool = schoolList_.at(targetStudent.schoolId_);
+        
+        if(studentSchool.students_.contains(targetStudent.id_))
+        {
+            studentSchool.students_.erase(targetStudent.id_);
+        }
+        studentList_.erase(targetStudent.id_);
+    }
 }
 
 void SessionData::addSubject(const Subject& newSubject)
@@ -36,6 +49,22 @@ void SessionData::addSubject(const Subject& newSubject)
     if(!subjectList_.contains(newSubject.id_))
     {
         subjectList_.insert(std::make_pair(newSubject.id_, newSubject));
+    }
+}
+
+void SessionData::removeSubject(const Subject& targetSubject)
+{
+    if(subjectList_.contains(targetSubject.id_))
+    {
+        // Remove grades from all the students
+        for(auto stud : studentList_)
+        {
+            if(stud.second.grades_.contains(targetSubject.name_))
+            {
+                stud.second.grades_.erase(targetSubject.name_);
+            }
+        }
+        subjectList_.erase(targetSubject.id_);
     }
 }
 
@@ -54,6 +83,21 @@ void SessionData::addGrade(const uint16_t targetSubject, const uint16_t targetSt
     studentList_.at(targetStudent).grades_.insert(std::make_pair(subjectList_.at(targetSubject).name_, value));
 }
 
+void SessionData::removeGrade(const uint16_t targetSubject, const uint16_t targetStudent)
+{
+    if(!subjectList_.contains(targetStudent) || !studentList_.contains(targetSubject))
+    {
+        return;
+    }
+
+    std::map<std::string, float>& targetGrades = studentList_.at(targetStudent).grades_;
+    Subject& targetSub = subjectList_.at(targetSubject);
+    if(targetGrades.contains(targetSub.name_))
+    {
+        targetGrades.erase(targetSub.name_);
+    }
+}
+
 void SessionData::addCourse(const Course& newCourse)
 {
     if(!courseList_.contains(newCourse.id_))
@@ -62,11 +106,35 @@ void SessionData::addCourse(const Course& newCourse)
     }
 }
 
+void SessionData::removeCourse(const uint16_t targetCourse)
+{
+    if(courseList_.contains(targetCourse))
+    {
+        courseList_.erase(targetCourse);
+        for(auto sr : sRequestsList_)
+        {
+            if(sr.second.courseId_)
+            {
+                // For now just deny every request - there may be a reason added later
+                sr.second.status_ = Core::Types::Request::Denied;
+            }
+        }
+    }
+}
+
 void SessionData::addStudentRequest(const Srequest& newSrequest)
 {
     if(!sRequestsList_.contains(newSrequest.requestId_))
     {
         sRequestsList_.insert(std::make_pair(newSrequest.requestId_, newSrequest));
+    }
+}
+
+void SessionData::removeStudentRequest(const uint16_t targetSReq)
+{
+    if(sRequestsList_.contains(targetSReq))
+    {
+        sRequestsList_.erase(targetSReq);
     }
 }
 

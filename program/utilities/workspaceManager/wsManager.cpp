@@ -449,7 +449,7 @@ namespace Utilities
 
     bool WsManager::addSubject(Core::Types::Subject& newSubject)
     {
-        LOG((*logger_), "Adding new subject \"", newSubject.name_);
+        LOG((*logger_), "Adding new subject \"", newSubject.name_, "\"");
         Table targetTable = sManager_->getTableSchema("Subjects");
         if(sManager_->addEntryToTable(targetTable.getName(), 
             {std::make_pair(targetTable.getAttributeByName("name"), newSubject.name_)}))

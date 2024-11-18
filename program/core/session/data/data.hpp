@@ -34,9 +34,16 @@ public:
     void removeStudent(const Student& targetStudent);
 
     void addSubject(const Subject& newSubject);
+    void removeSubject(const Subject& targetSubject);
+
     void addGrade(const uint16_t targetSubject, const uint16_t targetStudent, float value);
+    void removeGrade(const uint16_t targetSubject, const uint16_t targetStudent);
+
     void addCourse(const Course& newCourse);
+    void removeCourse(const uint16_t targetCourse);
+
     void addStudentRequest(const Srequest& newSrequest);
+    void removeStudentRequest(const uint16_t targetSReq);
 
     void showSchools() const;
     void showStudents() const;

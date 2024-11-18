@@ -9,7 +9,7 @@ namespace Core::Display
         inHandler_ = std::make_unique<Utilities::InputHandler>();
     }
 
-    void Menu::showMainMenu()
+    MainMenuOption Menu::showMainMenu()
     {
         MainMenuOption op;
         LOG((*logger_), "Showing main menu");
@@ -19,5 +19,6 @@ namespace Core::Display
         std::cout << "3. Exit.\n";
         op = static_cast<MainMenuOption>(inHandler_->getOption(1, 3));
         LOG((*logger_), "Got option ", op);
+        return op;
     }
 }

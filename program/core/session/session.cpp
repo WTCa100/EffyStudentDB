@@ -1,6 +1,6 @@
 #include "session.hpp"
 
-Session::Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logger) : wsMgr_(wsMgr), logger_(logger), sesData_(std::make_unique<SessionData>()), display_(std::make_unique<Menu>(logger_))
+Session::Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logger) : wsMgr_(wsMgr), logger_(logger), sesData_(std::make_shared<SessionData>()), display_(std::make_unique<Menu>(logger_))
 {
     LOG((*logger_), "Loading initial database entries");
     fetchAll();
@@ -68,14 +68,29 @@ void Session::fetchSubjects()
     LOG((*logger_), "Got ", dbSubjects.size() , " Entries");
     for(const auto& entry : dbSubjects)
     {
-        std::cout << "At " << entry.name_ << "\n";
         sesData_->addSubject(entry);
     }
 }
 
 void Session::run()
 {
-    display_->showMainMenu();
+    LOG((*logger_), "Main run function called");
+    Core::Display::MainMenuOption op = display_->showMainMenu();
+    switch (op)
+    {
+    case Core::Display::MainMenuOption::manageDb:
+        
+        break;
+    case Core::Display::MainMenuOption::handleRqs:
+        break;
+    
+    case Core::Display::MainMenuOption::exit:
+        
+        break;
+    default:
+        break;
+    }
+
 }
 
 bool Session::addSchool(School& newSchool)
@@ -118,6 +133,50 @@ bool Session::removeStudent(Student targetStudent)
     if(wsMgr_->removeStudent(targetStudent))
     {
         sesData_->removeStudent(targetStudent);
+        return true;
+    }
+    return false;
+}
+
+bool Session::addSubject(Subject& targetSubject)
+{
+    LOG((*logger_), "Adding new subject ", targetSubject.name_);
+    if(wsMgr_->addSubject(targetSubject))
+    {
+        sesData_->addSubject(targetSubject);
+        return true;
+    }
+    return false;
+}
+
+bool Session::removeSubject(Subject targetSubject)
+{
+    LOG((*logger_), "Attempting to remove subject ", targetSubject.name_);
+    if(wsMgr_->removeSubject(targetSubject))
+    {
+        sesData_->removeSubject(targetSubject);
+        return true;
+    }
+    return false;
+}
+
+bool Session::addGrade(Subject& targetSubject, Student& targetStudent, float value)
+{
+    LOG((*logger_), "Adding new grade for pair: ", targetSubject.name_, "-", targetStudent.email_, " value=", value);
+    if(wsMgr_->addGrade(targetStudent, targetSubject, value))
+    {
+        sesData_->addGrade(targetSubject.id_, targetStudent.id_, value);
+        return true;
+    }
+    return false;
+}
+
+bool Session::removeGrade(Subject targetSubject, Student targetStudent)
+{
+    LOG((*logger_), "Removing grade for pair: ", targetSubject.name_, "-", targetStudent.email_);
+    if(wsMgr_->removeGrade(targetStudent, targetSubject))
+    {
+        sesData_->removeGrade(targetSubject.id_, targetSubject.id_);
         return true;
     }
     return false;

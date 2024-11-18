@@ -20,9 +20,11 @@ namespace Core::Display
     private:
         std::shared_ptr<Utilities::Logger> logger_;
         std::unique_ptr<Utilities::InputHandler> inHandler_;
+        // Consider adding session data shared ptr here to easily handler
+        // content display
     public:
         Menu(std::shared_ptr<Utilities::Logger> logger);
-        void showMainMenu();
+        MainMenuOption showMainMenu();
         // Change in plan was made and now the display will a little bit differently to make it more readable for the client.
         // Display main menu
             // I.e. 

@@ -31,6 +31,7 @@ namespace Utilities
         std::unique_ptr<Workspace::DirectoryManager> dManager_;
         std::unique_ptr<Workspace::FileManager>      fManager_;
         std::unique_ptr<Workspace::SqlManager>       sManager_;
+        // Adapter idea: std::shared_ptr<Utilities::SqlAdapter> sAdapter_;
         void initializeDatabase();
         bool createInitialSchema();
         bool isInitializationNeeded();
@@ -51,7 +52,7 @@ namespace Utilities
 
         std::shared_ptr<Logger> getLogger() const { return logger_; }
 
-        // Contacting SQL DB
+        // Contacting SQL DB - maybe move this to a SQL adapter?
         std::vector<Core::Types::School>      getSchools();
         std::vector<Core::Types::Student>     getStudents();
         std::vector<Core::Types::Subject>     getSubjects();

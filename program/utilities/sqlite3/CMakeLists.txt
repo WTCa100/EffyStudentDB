@@ -1,1 +1,2 @@
+add_subdirectory(sqlAdapter)
 add_subdirectory(sqlManager)

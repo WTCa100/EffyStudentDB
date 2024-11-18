@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace Utilities::Workspace::Sql::Types
+namespace Utilities::Sql::Types
 {
     enum class AttributeFlag
     {

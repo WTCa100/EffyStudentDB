@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-namespace Utilities::Workspace::Sql::Types
+namespace Utilities::Sql::Types
 {
 
     Table::Table(std::string name) : name_(name), schema_({}), foreignKeys_({}) {}
@@ -41,7 +41,7 @@ namespace Utilities::Workspace::Sql::Types
             ss << attr.first << " " << attr.second.type_ << " ";
             for(const auto& flag : attr.second.flags_)
             {
-                ss << Utilities::Workspace::Sql::Types::attrFlagToString(flag) << " ";
+                ss << Utilities::Sql::Types::attrFlagToString(flag) << " ";
             }
 
             if(currentAtrCount < targetAtrCount || !foreignKeys_.empty())

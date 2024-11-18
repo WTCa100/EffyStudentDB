@@ -4,10 +4,12 @@
 
 #include "../../utilities/workspaceManager/wsManager.hpp"
 #include "../../utilities/logger/logger.hpp"
+#include "../../utilities/sqlite3/sqlAdapter/sqlAdapter.hpp"
 #include "../menu/menu.hpp"
 #include "data/data.hpp"
 
 using Utilities::WsManager;
+using Utilities::Sql::SqlAdapter;
 using Utilities::Logger;
 using Core::Display::Menu;
 class Session
@@ -17,6 +19,7 @@ class Session
        - Formular creator (either a class or just a function that handles a formula to a given targeted major)*/
     std::shared_ptr<WsManager> wsMgr_; 
     std::shared_ptr<Logger> logger_;
+    std::unique_ptr<SqlAdapter> sAdapter_;
     std::shared_ptr<SessionData> sesData_;
     
     // Consider removing this since we're (for now) only using it in one class
@@ -50,6 +53,6 @@ class Session
     bool removeSrequest();
 
 
-    Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logger);
+    Session(std::shared_ptr<WsManager> wsMgr);
     ~Session();
 };

@@ -8,7 +8,7 @@
 
 // @TODO Implement a way to handle Foreign key and References (like adding ON DELETE SET NULL etc.)
 
-namespace Utilities::Workspace::Sql::Types
+namespace Utilities::Sql::Types
 {   
     using refKeys = std::vector<std::string>;
     class Table

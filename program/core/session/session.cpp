@@ -1,6 +1,10 @@
 #include "session.hpp"
 
-Session::Session(std::shared_ptr<WsManager> wsMgr, std::shared_ptr<Logger> logger) : wsMgr_(wsMgr), logger_(logger), sesData_(std::make_shared<SessionData>()), display_(std::make_unique<Menu>(logger_))
+Session::Session(std::shared_ptr<WsManager> wsMgr) : wsMgr_(wsMgr),
+                                                     logger_(wsMgr_->getLogger()),
+                                                     sAdapter_(std::make_unique<SqlAdapter>(logger_, wsMgr_->getSqlManager())),
+                                                     sesData_(std::make_shared<SessionData>()),
+                                                     display_(std::make_unique<Menu>(logger_, sesData_))
 {
     LOG((*logger_), "Loading initial database entries");
     fetchAll();
@@ -32,17 +36,12 @@ void Session::fetchAll()
     fetchSubjects();
     fetchGrades();
     LOG((*logger_), "Fetching done");
-
-    sesData_->showSchools();
-    sesData_->showSubjects();
-    sesData_->showStudents();
-    sesData_->showGrades();
 }
 
 void Session::fetchSchools()
 {
     LOG((*logger_), "Fetching schools");
-    std::vector<Core::Types::School> dbSchools = wsMgr_->getSchools();
+    std::vector<Core::Types::School> dbSchools = sAdapter_->getSchools();
     LOG((*logger_), "Got ", dbSchools.size() , " Entries");
     for(const auto& entry : dbSchools)
     {
@@ -53,7 +52,7 @@ void Session::fetchSchools()
 void Session::fetchStudents()
 {
     LOG((*logger_), "Fetching students");
-    std::vector<Core::Types::Student> dbStudents = wsMgr_->getStudents();
+    std::vector<Core::Types::Student> dbStudents = sAdapter_->getStudents();
     LOG((*logger_), "Got ", dbStudents.size() , " Entries");
     for(const auto& entry : dbStudents)
     {
@@ -64,7 +63,7 @@ void Session::fetchStudents()
 void Session::fetchSubjects()
 {
     LOG((*logger_), "Fetching subjects");
-    std::vector<Core::Types::Subject> dbSubjects = wsMgr_->getSubjects();
+    std::vector<Core::Types::Subject> dbSubjects = sAdapter_->getSubjects();
     LOG((*logger_), "Got ", dbSubjects.size() , " Entries");
     for(const auto& entry : dbSubjects)
     {
@@ -75,28 +74,34 @@ void Session::fetchSubjects()
 void Session::run()
 {
     LOG((*logger_), "Main run function called");
-    Core::Display::MainMenuOption op = display_->showMainMenu();
-    switch (op)
+    bool exit = false;
+    do
     {
-    case Core::Display::MainMenuOption::manageDb:
+        Core::Display::MainMenuOption op = display_->showMainMenu();
+        switch (op)
+        {
+        case Core::Display::MainMenuOption::manageDb:
+            display_->displayDatabase();
+            break;
+        case Core::Display::MainMenuOption::handleRqs:
+            break;
         
-        break;
-    case Core::Display::MainMenuOption::handleRqs:
-        break;
+        case Core::Display::MainMenuOption::exit:
+            exit = true;
+            LOG((*logger_), "Exiting application");
+        default:
+            break;
+        }
+        
+    } while (!exit);
     
-    case Core::Display::MainMenuOption::exit:
-        
-        break;
-    default:
-        break;
-    }
 
 }
 
 bool Session::addSchool(School& newSchool)
 {
     LOG((*logger_), "Adding new school: \"", newSchool.name_, "\"");
-    if(wsMgr_->addSchool(newSchool))
+    if(sAdapter_->addSchool(newSchool))
     {
         sesData_->addSchool(newSchool);
         return true;
@@ -107,7 +112,7 @@ bool Session::addSchool(School& newSchool)
 bool Session::removeSchool(School targetSchool)
 {
     LOG((*logger_), "Removing existing school: \"", targetSchool.name_, "\"");
-    if(wsMgr_->removeSchool(targetSchool))
+    if(sAdapter_->removeSchool(targetSchool))
     {
         sesData_->removeSchool(targetSchool.id_);
         return true;
@@ -119,7 +124,7 @@ bool Session::removeSchool(School targetSchool)
 bool Session::addStudent(Student& newStudent)
 {
     LOG((*logger_), "Adding new student: {", newStudent.firstName_, " ", newStudent.lastName_, " ", newStudent.email_, "}");
-    if(wsMgr_->addStudent(newStudent))
+    if(sAdapter_->addStudent(newStudent))
     {
         sesData_->addStudent(newStudent);
         return true;
@@ -130,7 +135,7 @@ bool Session::addStudent(Student& newStudent)
 bool Session::removeStudent(Student targetStudent)
 {
     LOG((*logger_), "Removing student: id=", targetStudent.id_);
-    if(wsMgr_->removeStudent(targetStudent))
+    if(sAdapter_->removeStudent(targetStudent))
     {
         sesData_->removeStudent(targetStudent);
         return true;
@@ -141,7 +146,7 @@ bool Session::removeStudent(Student targetStudent)
 bool Session::addSubject(Subject& targetSubject)
 {
     LOG((*logger_), "Adding new subject ", targetSubject.name_);
-    if(wsMgr_->addSubject(targetSubject))
+    if(sAdapter_->addSubject(targetSubject))
     {
         sesData_->addSubject(targetSubject);
         return true;
@@ -152,7 +157,7 @@ bool Session::addSubject(Subject& targetSubject)
 bool Session::removeSubject(Subject targetSubject)
 {
     LOG((*logger_), "Attempting to remove subject ", targetSubject.name_);
-    if(wsMgr_->removeSubject(targetSubject))
+    if(sAdapter_->removeSubject(targetSubject))
     {
         sesData_->removeSubject(targetSubject);
         return true;
@@ -163,7 +168,7 @@ bool Session::removeSubject(Subject targetSubject)
 bool Session::addGrade(Subject& targetSubject, Student& targetStudent, float value)
 {
     LOG((*logger_), "Adding new grade for pair: ", targetSubject.name_, "-", targetStudent.email_, " value=", value);
-    if(wsMgr_->addGrade(targetStudent, targetSubject, value))
+    if(sAdapter_->addGrade(targetStudent, targetSubject, value))
     {
         sesData_->addGrade(targetSubject.id_, targetStudent.id_, value);
         return true;
@@ -174,7 +179,7 @@ bool Session::addGrade(Subject& targetSubject, Student& targetStudent, float val
 bool Session::removeGrade(Subject targetSubject, Student targetStudent)
 {
     LOG((*logger_), "Removing grade for pair: ", targetSubject.name_, "-", targetStudent.email_);
-    if(wsMgr_->removeGrade(targetStudent, targetSubject))
+    if(sAdapter_->removeGrade(targetStudent, targetSubject))
     {
         sesData_->removeGrade(targetSubject.id_, targetSubject.id_);
         return true;
@@ -185,7 +190,7 @@ bool Session::removeGrade(Subject targetSubject, Student targetStudent)
 void Session::fetchGrades()
 {
     LOG((*logger_), "Fetching grades");
-    std::vector<std::vector<std::string>> dbGrades = wsMgr_->getGrades();
+    std::vector<std::vector<std::string>> dbGrades = sAdapter_->getGrades();
     LOG((*logger_), "Got ", dbGrades.size() , " Entries");
     if(!dbGrades.empty())
     {

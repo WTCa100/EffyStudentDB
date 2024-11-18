@@ -4,6 +4,7 @@ add_subdirectory(data)
 
 target_link_libraries(Session PUBLIC 
     WorkspaceManager
+    SqlAdapter
     Logger
     Menu
     Data)

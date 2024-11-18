@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-namespace Utilities::Workspace::Sql::Types
+namespace Utilities::Sql::Types
 {
     std::string attrFlagToString(const AttributeFlag& flag)
     {

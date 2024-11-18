@@ -17,10 +17,10 @@
 
 #include <sqlite3.h>
 
-namespace Utilities::Workspace
+namespace Utilities::Sql
 {
 
-    typedef std::vector<std::pair<Utilities::Workspace::Sql::Types::Attribute, std::string>> entry;
+    typedef std::vector<std::pair<Utilities::Sql::Types::Attribute, std::string>> entry;
     enum class PragmaTableFormat
     {
         cid        = 0,

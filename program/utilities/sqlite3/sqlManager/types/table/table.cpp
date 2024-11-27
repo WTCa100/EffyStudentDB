@@ -117,6 +117,7 @@ namespace Utilities::Sql::Types
         courseTbl.addToSchema({"name", "TEXT", {Types::AttributeFlag::NOT_NULL, Types::AttributeFlag::UNIQUE}});
         courseTbl.addToSchema({"minStudents", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
         courseTbl.addToSchema({"maxStudents", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
+        courseTbl.addToSchema({"baseMinimalPoints", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
         return courseTbl;
     }
 

@@ -36,6 +36,8 @@ namespace Utilities::Sql
     {
         std::vector<Core::Types::Student> students;
         LOG((*logger_), "Fetching students from the SQL DB");
+        // @TODO: Idea - instead of simple SELECT call - why not use 2nd param here to specify each attribute in the same order as the struct
+        // This will make the code more readable and understandable.
         std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Students");
         if(rawEntries.empty())
         {
@@ -112,6 +114,70 @@ namespace Utilities::Sql
         }
         LOG((*logger_), "Grades tokenized and pushed into the list. Final vector size = ", listOfGrades.size(), " Raw entries size = ", rawEntries.size());
         return listOfGrades;
+    }
+
+    std::vector<Core::Types::Course> SqlAdapter::getCourses()
+    {
+        std::vector<Core::Types::Course> courses;
+        LOG((*logger_), "Fetching courses from the SQL DB");
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("courses");
+        if(rawEntries.empty())
+        {
+            LOG((*logger_), "Called courses, but got no entries!");
+            std::cout << "No courses! Either fail or sql has no courses\n";
+            return {};
+        }
+        
+        LOG((*logger_), "Got n=", rawEntries.size(), " entries");
+        for(auto e : rawEntries)
+        {
+            std::vector<std::string> tokenizedCourse = Utilities::Common::tokenize(e, '|');
+            // Tokens are:
+            // (0) baseMinimalPoints | (1) name | (2) maxStudentCount | (3) minStudentCount | (4) id
+            // Translates to:
+            // (0) id | (1) minStudentCount | (2) maxStudentsCount | (3) baseMinimalPoints | (4) avgStudentPoints | (5) name | (6) subjectWithWeight
+            Core::Types::Course tmpCourse;
+            tmpCourse.id_                   = std::stoul(tokenizedCourse.at(4));
+            tmpCourse.minStudents_          = std::stoi(tokenizedCourse.at(3));
+            tmpCourse.maxStudents_          = std::stoi(tokenizedCourse.at(2));
+            tmpCourse.baseMinimalPoints_    = std::stoi(tokenizedCourse.at(0));
+            tmpCourse.averageStudentPoints_ = 0.0f;
+            tmpCourse.name_                 = tokenizedCourse.at(1);
+            tmpCourse.subjectWithWeight_    = {};
+
+            // For each course get the aproporiate
+            mapSubjectToCourseWeight(tmpCourse);
+            courses.push_back(std::move(tmpCourse)); // It's quite big move makes more sense here
+        }
+        LOG((*logger_), "Courses tokenized and pushed into the list. Final vector size = ", courses.size(), " Raw entries size = ", rawEntries.size());
+        return courses;
+    }
+
+    std::vector<Core::Types::Request::Srequest> SqlAdapter::getSrequests()
+    {
+        std::vector<Core::Types::Request::Srequest> sRequests;
+        LOG((*logger_), "Fetching student requests from the SQL DB");
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("StudentRequest");
+        return {};
+    }
+
+    void SqlAdapter::mapSubjectToCourseWeight(Core::Types::Course& targetCourse)
+    {
+        LOG((*logger_), "Fetching subject to course weight");
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("CourseSubjectWeigt", {"subjectId", "weight"}, ("courseId =" + targetCourse.id_));
+        if(rawEntries.empty())
+        {
+            LOG((*logger_), "Course ", targetCourse.name_, " has no weights assigned to it.");
+            return;
+        }
+        LOG((*logger_), "Mapping subjects to courses. Got n=", rawEntries.size(), " entries");
+        for(auto e : rawEntries)
+        {
+            std::vector<std::string> tokenizedEntry = Utilities::Common::tokenize(e, '|');
+            targetCourse.subjectWithWeight_.push_back(std::make_pair( std::stoul(tokenizedEntry.at(0)), std::stod(tokenizedEntry.at(1))));
+        }
+        LOG((*logger_), "Courses weight have been updated. New mapped subjects size = ", targetCourse.subjectWithWeight_.size());
+        return;
     }
 
     uint16_t SqlAdapter::getLatestIdFromTable(std::string tblName)
@@ -221,7 +287,7 @@ namespace Utilities::Sql
     bool SqlAdapter::removeGrade(const Core::Types::Student& targetStudent, const Core::Types::Subject& targetSubject)
     {
         LOG((*logger_), "Attempting to remove grade from \"", targetSubject.name_, "\" from student ", targetStudent.firstName_ , " ", targetStudent.lastName_);
-        // TODO add handle + add new remove entry from table methods WITH condition not just id
+        // TODO add handle
         return true;
     }
 

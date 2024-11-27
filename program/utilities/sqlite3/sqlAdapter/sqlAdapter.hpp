@@ -10,6 +10,8 @@
 #include "../../../types/school/school.hpp"
 #include "../../../types/student/student.hpp"
 #include "../../../types/subject/subject.hpp"
+#include "../../../types/course/course.hpp"
+#include "../../../types/studentRequest/request.hpp"
 
 #include "../../logger/logger.hpp"
 
@@ -24,11 +26,14 @@ namespace Utilities::Sql
         SqlAdapter(std::shared_ptr<Logger> logger, std::shared_ptr<SqlManager> sManager);
         ~SqlAdapter() = default;
 
-        std::vector<Core::Types::School>      getSchools();
-        std::vector<Core::Types::Student>     getStudents();
-        std::vector<Core::Types::Subject>     getSubjects();
-        std::vector<std::vector<std::string>> getGrades();
+        std::vector<Core::Types::School>            getSchools();
+        std::vector<Core::Types::Student>           getStudents();
+        std::vector<Core::Types::Subject>           getSubjects();
+        std::vector<std::vector<std::string>>       getGrades();
+        std::vector<Core::Types::Course>            getCourses();
+        std::vector<Core::Types::Request::Srequest> getSrequests();
 
+        void mapSubjectToCourseWeight(Core::Types::Course& targetCourse);        
         uint16_t getLatestIdFromTable(std::string tblName);
 
         bool addSchool(Core::Types::School& newSchool);
@@ -39,6 +44,10 @@ namespace Utilities::Sql
         bool removeSubject(const Core::Types::Subject& targetSubject);
         bool addGrade(Core::Types::Student& targetStudent, Core::Types::Subject& targetSubject, const float& grade);
         bool removeGrade(const Core::Types::Student& targetStudent, const Core::Types::Subject& targetSubject);
+        bool addCourse(Core::Types::Course& newCourse);
+        bool removeCourse(Core::Types::Course& targetCourse);
+        bool addSrequest(Core::Types::Request::Srequest& newSrequest);
+        bool removeSrequest(Core::Types::Request::Srequest& targetRequest);
     };
     
 } // namespace Utilities

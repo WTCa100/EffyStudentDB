@@ -8,24 +8,6 @@ Session::Session(std::shared_ptr<WsManager> wsMgr) : wsMgr_(wsMgr),
 {
     LOG((*logger_), "Loading initial database entries");
     fetchAll();
-    School test{0, "Test School"};
-    addSchool(test);
-    test = School{0, "Test School 2"};
-    addSchool(test);
-    test = School{0, "ABDCDSDC"};
-    addSchool(test);
-
-    sesData_->showSchools();
-
-    test = School{1, "Whatever"};
-    removeSchool(test);
-
-
-    fetchSchools();
-    sesData_->showSchools();
-    test = School{0, "Whatever"};
-    addSchool(test);
-    sesData_->showSchools();
 }
 
 void Session::fetchAll()
@@ -71,6 +53,26 @@ void Session::fetchSubjects()
     }
 }
 
+void Session::fetchCourses()
+{
+    LOG((*logger_), "Fetching courses");
+    std::vector<Core::Types::Course> dbCourses = sAdapter_->getCourses();
+    for(const auto& entry : dbCourses)
+    {
+        sesData_->addCourse(entry);
+    }
+}
+
+void Session::fetchSrequests()
+{
+    LOG((*logger_), "Fetching student requests");
+    std::vector<Core::Types::Request::Srequest> dbSrequests = sAdapter_->getSrequests();
+    for(const auto& entry : dbSrequests)
+    {
+        sesData_->addStudentRequest(entry);
+    }
+}
+
 void Session::run()
 {
     LOG((*logger_), "Main run function called");
@@ -81,8 +83,15 @@ void Session::run()
         switch (op)
         {
         case Core::Display::MainMenuOption::manageDb:
-            display_->displayDatabase();
-            break;
+            {
+                std::string command = "";
+                do
+                {
+                    display_->displayDatabase();
+                } while (command != "EXIT");
+                
+                break;
+            }
         case Core::Display::MainMenuOption::handleRqs:
             break;
         
@@ -184,6 +193,34 @@ bool Session::removeGrade(Subject targetSubject, Student targetStudent)
         sesData_->removeGrade(targetSubject.id_, targetSubject.id_);
         return true;
     }
+    return false;
+}
+
+bool Session::addCourse(Course& newCourse)
+{
+    LOG((*logger_), "Adding new course: ", newCourse.name_);
+    if(sAdapter_->addCourse(newCourse))
+    {
+        sesData_->addCourse(newCourse);
+        return true;
+    }
+    return false;
+}
+
+bool Session::removeCourse(Course targetCourse)
+{
+    LOG((*logger_), "Removing course: ", targetCourse.name_);
+    return false;
+}
+
+bool Session::addSrequest(Srequest& newSrequest)
+{
+    return false;
+}
+
+bool Session::removeSrequest(Srequest targetSrequest)
+{
+
     return false;
 }
 

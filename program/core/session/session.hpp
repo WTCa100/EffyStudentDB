@@ -32,6 +32,8 @@ class Session
     void fetchStudents();
     void fetchSubjects();
     void fetchGrades();
+    void fetchCourses();
+    void fetchSrequests();
 
     public:
     void run();
@@ -41,16 +43,16 @@ class Session
     bool addStudent(Student& newStudent);
     bool addSubject(Subject& newSubject);
     bool addGrade(Subject& targetSubject, Student& targetStudent, float value);
-    bool addCourse(Course newCourse);
-    bool addSrequest(Srequest newSrequest);
+    bool addCourse(Course& newCourse);
+    bool addSrequest(Srequest& newSrequest);
 
     // Removing
     bool removeSchool(School targetSchool);
     bool removeStudent(Student targetStudent);
     bool removeSubject(Subject targetSubject);
     bool removeGrade(Subject targetSubject, Student targetStudent);
-    bool removeCourse();
-    bool removeSrequest();
+    bool removeCourse(Course targetCourse);
+    bool removeSrequest(Srequest targetRequest);
 
 
     Session(std::shared_ptr<WsManager> wsMgr);

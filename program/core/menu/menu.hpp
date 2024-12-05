@@ -12,8 +12,8 @@ namespace Core::Display
     enum MainMenuOption
     {
         manageDb  = 1,
-        handleRqs    ,
-        exit
+        handleRqs = 2,
+        exit      = 3
     };
 
     class Menu
@@ -22,12 +22,20 @@ namespace Core::Display
         std::shared_ptr<Utilities::Logger> logger_;
         std::shared_ptr<SessionData> sesData_;
         std::unique_ptr<Utilities::InputHandler> inHandler_;
+
+        static bool validateCommand(std::string cmd);
         // Consider adding session data shared ptr here to easily handler
         // content display
     public:
         Menu(std::shared_ptr<Utilities::Logger> logger, std::shared_ptr<SessionData> sesData);
         MainMenuOption showMainMenu();
-        void manageDatabase();
+        std::string manageDatabase();
+        std::string getManagementOption() const;
+        // Manage each table separately
+        std::string manageSchools();
+
+        School constructSchool();
+
         // Change in plan was made and now the display will a little bit differently to make it more readable for the client.
         // Display main menu
             // I.e. 

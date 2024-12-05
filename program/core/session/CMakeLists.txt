@@ -7,4 +7,5 @@ target_link_libraries(Session PUBLIC
     SqlAdapter
     Logger
     Menu
+    StringManip
     Data)

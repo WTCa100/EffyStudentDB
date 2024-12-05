@@ -1,5 +1,7 @@
 #include "session.hpp"
 
+#include "../../utilities/common/stringManip.hpp"
+
 Session::Session(std::shared_ptr<WsManager> wsMgr) : wsMgr_(wsMgr),
                                                      logger_(wsMgr_->getLogger()),
                                                      sAdapter_(std::make_unique<SqlAdapter>(logger_, wsMgr_->getSqlManager())),
@@ -111,10 +113,18 @@ void Session::run()
         case Core::Display::MainMenuOption::manageDb:
             {
                 std::string command = "";
-                // do
-                // {
-                display_->manageDatabase();
-                // } while (command != "EXIT");
+                do
+                {
+                    command = display_->manageDatabase();
+                    if(executeCommand(command))
+                    {
+                        std::cout << "Done!\n";
+                    }
+                    else
+                    {
+                        std::cout << "Failed to execute the command.";
+                    }
+                } while (command != "EXIT");
                 
                 break;
             }
@@ -129,8 +139,36 @@ void Session::run()
         }
         
     } while (!exit);
-    
 
+}
+
+bool Session::executeCommand(std::string command)
+{
+    LOG((*logger_), "Executing session command: ", command);
+    std::cout << "DBG: Command = " << command << "\n";
+    if(command == "EXIT") return true;
+
+    std::vector<std::string> tokenizedCommand = Utilities::Common::tokenize(command , ' ');
+    
+    // 1st Table 2nd action 3rd (optional) targetId
+    std::string table = tokenizedCommand.at(0);
+    std::string action = tokenizedCommand.at(1);
+    std::optional<std::string> targetId = (tokenizedCommand.size() == 3) ? std::optional<std::string>(tokenizedCommand.at(2)) : std::nullopt;
+
+    if(table == "SCHOOL") 
+    {
+        if(action == "ADD")
+        {
+            // Construct school
+            School newSchool = display_->constructSchool();
+            return addSchool(newSchool);
+        }
+    }
+    else if(table == "STUDENT") {}
+    else if(table == "SUBJECT") {}
+    else if (table == "COURSE") {}
+    else if (table == "SREQUEST") {}
+    return true;
 }
 
 bool Session::addSchool(School& newSchool)

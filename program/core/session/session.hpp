@@ -58,6 +58,7 @@ class Session
     bool removeCourse(Course targetCourse);
     bool removeSrequest(Srequest targetRequest);
 
+    bool executeCommand(std::string command);
 
     Session(std::shared_ptr<WsManager> wsMgr);
     ~Session();

@@ -1,5 +1,7 @@
 #include "menu.hpp"
 
+#include "../../utilities/common/stringManip.hpp"
+
 namespace Core::Display
 {
     Menu::Menu(std::shared_ptr<Utilities::Logger> logger, std::shared_ptr<SessionData> sesData)
@@ -10,7 +12,7 @@ namespace Core::Display
         inHandler_ = std::make_unique<Utilities::InputHandler>();
     }
 
-    void Menu::manageDatabase()
+    std::string Menu::manageDatabase()
     {
         LOG((*logger_), "Displaying Database - getting input");
         std::cout << "What table to display?\n";
@@ -25,11 +27,15 @@ namespace Core::Display
         LOG((*logger_), "Got option ", op);
 
         // For now - this will get overhauled later
+        std::string returnCommand;
         switch (op)
         {
         case 1:
-            sesData_->showSchools();
+        {
+            std::string mgmtCmd = manageSchools();
+            if(mgmtCmd != "EXIT") returnCommand = "SCHOOL " + mgmtCmd; else returnCommand = "EXIT";
             break;
+        }
         case 2:
             sesData_->showGrades();
             break;
@@ -45,10 +51,80 @@ namespace Core::Display
         case 6:
             LOG((*logger_), "Going back to main menu");
         default:
+            returnCommand = "EXIT";
             break;
         }
+        return returnCommand;
     }
 
+    std::string Menu::manageSchools()
+    {
+        LOG((*logger_), "Managing schools");
+        sesData_->showSchools();
+        // @TODO consider adding pages
+        // uint16_t pages = schools.size(); 
+        // uint16_t currentPage = 1;
+        // std::cout << "Displaying Schools";
+        std::string commandOption;
+        do
+        {
+            do
+            {
+                commandOption = getManagementOption();
+            } while (!validateCommand(commandOption));
+            LOG((*logger_), "Got command: ", commandOption);
+        } while (commandOption == "NEXT" || commandOption == "PREV");
+        
+        return commandOption;
+    }
+
+    bool Menu::validateCommand(std::string cmd)
+    {
+        if(cmd.empty())
+        {
+            return false;
+        }
+
+        std::vector<std::string> tokenizedCmd = Utilities::Common::tokenize(cmd, ' ');
+
+        std::string cmdCore = tokenizedCmd.at(0);
+
+        if(cmdCore == "NEXT" ||
+           cmdCore == "PREV" ||
+           cmdCore == "ADD"  ||
+           cmdCore == "ALTER" ||
+           cmdCore == "REMOVE" ||
+           cmdCore == "EXIT")
+        {
+            if(cmdCore == "ALTER" || cmdCore == "REMOVE")
+            {
+                if(!(tokenizedCmd.size() > 1))
+                {
+                    return false;
+                }
+
+                std::string cmdIdPart = tokenizedCmd.at(1);
+                return Utilities::InputHandler::isNumber(cmdIdPart);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    std::string Menu::getManagementOption() const
+    {
+            LOG((*logger_), "Getting management option");
+            std::cout << "Options:\n";
+            std::cout << "NEXT - move 1 page fruther\n";
+            std::cout << "PREV - move 1 page back\n";
+            std::cout << "ADD - proceed to create a new entry\n";
+            std::cout << "ALTER <targetID> - proceed to update entry with provided targetId with new values\n";
+            std::cout << "REMOVE <targetID> - proceed to delete a given entry\n";
+            std::cout << "EXIT - exits this view\n";
+            std::string buf;
+            std::getline(std::cin, buf);
+            return buf;
+    }
 
     MainMenuOption Menu::showMainMenu()
     {
@@ -61,5 +137,17 @@ namespace Core::Display
         op = static_cast<MainMenuOption>(inHandler_->getOption(1, 3));
         LOG((*logger_), "Got option ", op);
         return op;
+    }
+
+    School Menu::constructSchool()
+    {
+        std::string name;
+        std::cout << "Creating a school:\n";
+        do
+        {
+            std::cout << "Name: ";
+            std::getline(std::cin, name);
+        } while (name.empty());
+        return School{0, name, {}};
     }
 }

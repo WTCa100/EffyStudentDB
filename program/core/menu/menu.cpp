@@ -10,7 +10,7 @@ namespace Core::Display
         inHandler_ = std::make_unique<Utilities::InputHandler>();
     }
 
-    void Menu::displayDatabase()
+    void Menu::manageDatabase()
     {
         LOG((*logger_), "Displaying Database - getting input");
         std::cout << "What table to display?\n";

@@ -53,4 +53,10 @@ public:
     void showGrades() const;
     void showCourses() const;
     void showStudentRequests(bool detailed = false) const;
+
+    const std::map<uint16_t, School>& getSchools() const { return schoolList_; } 
+    const std::map<uint16_t, Student>& getStudents() const { return studentList_; }
+    const std::map<uint16_t, Subject>& getSubjects() const { return subjectList_; }
+    const std::map<uint16_t, Course>& getCourses() const { return courseList_; }
+    const std::map<uint16_t, Srequest>& getSrequest() const { return sRequestsList_; }
 };

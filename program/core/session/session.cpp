@@ -113,7 +113,7 @@ void Session::run()
                 std::string command = "";
                 // do
                 // {
-                display_->displayDatabase();
+                display_->manageDatabase();
                 // } while (command != "EXIT");
                 
                 break;

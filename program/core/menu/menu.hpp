@@ -27,7 +27,7 @@ namespace Core::Display
     public:
         Menu(std::shared_ptr<Utilities::Logger> logger, std::shared_ptr<SessionData> sesData);
         MainMenuOption showMainMenu();
-        void displayDatabase();
+        void manageDatabase();
         // Change in plan was made and now the display will a little bit differently to make it more readable for the client.
         // Display main menu
             // I.e. 

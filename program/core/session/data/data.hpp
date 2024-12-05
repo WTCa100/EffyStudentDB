@@ -28,6 +28,7 @@ public:
     ~SessionData() = default;
 
     void addSchool(const School& newSchool);
+    void updateSchool(const uint16_t targetSchool, const School& alteredSchool);
     void removeSchool(const uint16_t targetSchool);
 
     void addStudent(const Student& newStudent);
@@ -40,6 +41,7 @@ public:
     void removeGrade(const uint16_t targetSubject, const uint16_t targetStudent);
 
     void addCourse(const Course& newCourse);
+    void updateCourse(const uint16_t targetCourse, const Course& alteredCourse);
     void removeCourse(const uint16_t targetCourse);
 
     void addStudentRequest(const Srequest& newSrequest);

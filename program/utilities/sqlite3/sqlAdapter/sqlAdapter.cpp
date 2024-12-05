@@ -158,7 +158,31 @@ namespace Utilities::Sql
         std::vector<Core::Types::Request::Srequest> sRequests;
         LOG((*logger_), "Fetching student requests from the SQL DB");
         std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("StudentRequest");
-        return {};
+        
+        if(rawEntries.empty())
+        {
+            LOG((*logger_), "Called courses, but got no entries!");
+            std::cout << "No courses! Either fail or sql has no courses\n";
+            return {};
+        }
+        
+        LOG((*logger_), "Got n=", rawEntries.size(), " entries");
+        for(auto e : rawEntries)
+        {
+            std::vector<std::string> tokenizedEntry = Utilities::Common::tokenize(e, '|');
+            // Tokens are
+            // (0) requestStatus | (1) courseId | (2) studentId | (3) RequestId |
+            // Translates to
+            // (0) RequestId | (1) studentId | (2) studentId | (3) requestStatus
+            Request::Srequest newEntry(static_cast<uint32_t>(std::stoul(tokenizedEntry.at(3))),
+                                       static_cast<uint16_t>(std::stoul(tokenizedEntry.at(2))),
+                                       static_cast<uint16_t>(std::stoul(tokenizedEntry.at(1))),
+                                       static_cast<Request::requestStatus>(std::stoul(tokenizedEntry.at(0))));
+            sRequests.push_back(newEntry);
+        }
+
+        LOG((*logger_), "Courses tokenized and pushed into the list. Final vector size = ", sRequests.size(), " Raw entries size = ", rawEntries.size());
+        return sRequests;
     }
 
     void SqlAdapter::mapSubjectToCourseWeight(Core::Types::Course& targetCourse)
@@ -206,6 +230,29 @@ namespace Utilities::Sql
     
         LOG((*logger_), "Could not add given school into the database. Name=", newSchool.name_);
         return false;
+    }
+
+    bool SqlAdapter::updateSchool(const School& targetSchool, const School& newSchool)
+    {
+        LOG((*logger_), "Updating target school ", targetSchool.name_, ". Compare has started");
+        AttrsValues newValPacket{};
+        // First compare 
+        if(targetSchool.name_ != newSchool.name_)
+        {
+            LOG((*logger_), "Name mismatch ", targetSchool.name_, " <-> ", newSchool.name_);
+            // For altering existing attribute there is no need to add any extra flags
+            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("name"), newSchool.name_));
+        }
+        
+        if(newValPacket.empty())
+        {
+            LOG((*logger_), "New School = Old School nothing needs to be altered");
+            return true;
+        }
+
+        LOG((*logger_), "Changes were found, DB will be contacted");
+        std::string condition = "id = " + std::to_string(targetSchool.id_);
+        return sManager_->updateEntryFromTable("Schools", newValPacket, condition);
     }
 
     bool SqlAdapter::removeSchool(const Core::Types::School& removeSchool)
@@ -289,6 +336,140 @@ namespace Utilities::Sql
         LOG((*logger_), "Attempting to remove grade from \"", targetSubject.name_, "\" from student ", targetStudent.firstName_ , " ", targetStudent.lastName_);
         // TODO add handle
         return true;
+    }
+
+    bool SqlAdapter::addCourse(Course& newCourse)
+    {
+        LOG((*logger_), "Attempting to add new course ( name:", newCourse.name_, " minStudents:", newCourse.minStudents_, " maxStudents:", newCourse.maxStudents_ ,")");
+        Table targetTable = sManager_->getTable("Courses");
+        if(sManager_->addEntryToTable(targetTable.getName(), 
+            {std::make_pair(targetTable.getAttributeByName("name"), newCourse.name_),
+             std::make_pair(targetTable.getAttributeByName("baseMinimalPoints"), std::to_string(newCourse.baseMinimalPoints_)),
+             std::make_pair(targetTable.getAttributeByName("minStudents"), std::to_string(newCourse.minStudents_)),
+             std::make_pair(targetTable.getAttributeByName("maxStudents"), std::to_string(newCourse.maxStudents_))}))
+        {
+            newCourse.id_ = getLatestIdFromTable("Courses");
+            LOG((*logger_), "New course added.");
+            return true;
+        }
+        LOG((*logger_), "Could not addd new course");
+        return false;
+    }
+
+    bool SqlAdapter::updateCourse(const Course& targetCourse, const Course& newCourse)
+    {
+        LOG((*logger_), "Attempting to modify course ( name:", targetCourse.name_, " minStudents:", targetCourse.minStudents_, " maxStudents:", targetCourse.maxStudents_ ,") <-> (name: ", newCourse.name_, " minStudents:", newCourse.minStudents_, " maxStudents:", newCourse.maxStudents_, ")");
+        AttrsValues newValPacket{};
+        // First compare 
+        if(targetCourse.name_ != newCourse.name_)
+        {
+            LOG((*logger_), "Name mismatch ", targetCourse.name_, " <-> ", newCourse.name_);
+            // For altering existing attribute there is no need to add any extra flags
+            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("name"), newCourse.name_));
+        }
+        
+        if(targetCourse.baseMinimalPoints_ != newCourse.baseMinimalPoints_)
+        {
+            LOG((*logger_), "BaseMinimalPoints mismatch ", targetCourse.baseMinimalPoints_, " <-> ", newCourse.baseMinimalPoints_);
+            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("baseMinimalPoints"), std::to_string(newCourse.baseMinimalPoints_)));
+        }
+
+        if(targetCourse.minStudents_ != newCourse.minStudents_)
+        {
+            LOG((*logger_), "MinStudents mismatch ", targetCourse.minStudents_, "<->", newCourse.minStudents_);
+            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("minStudents"), std::to_string(newCourse.minStudents_)));
+        }
+
+        if(targetCourse.maxStudents_ != newCourse.maxStudents_)
+        {
+            LOG((*logger_), "MaxStudents mismatch ", targetCourse.maxStudents_, "<->", newCourse.maxStudents_);
+            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("maxStudents"), std::to_string(newCourse.maxStudents_)));
+        }
+
+
+        if(newValPacket.empty())
+        {
+            LOG((*logger_), "New Course = Old Course nothing needs to be altered");
+            return true;
+        }
+
+        LOG((*logger_), "Changes were found, DB will be contacted");
+        std::string condition = "id = " + std::to_string(targetCourse.id_);
+        return sManager_->updateEntryFromTable("Courses", newValPacket, condition);
+    }
+
+    bool SqlAdapter::removeCourse(Course& targetCourse)
+    {
+        LOG((*logger_), "Attempting to remove the course: ", targetCourse.name_);
+        if(sManager_->removeEntryFromTable("Courses", targetCourse.id_))
+        {
+            LOG((*logger_), "Course ", targetCourse.name_, " was deleted successfully");
+            return true;
+        }
+        LOG((*logger_), "Course ", targetCourse.name_, " could not be deleted");
+        return false;
+    }
+
+    bool SqlAdapter::addSrequest(Request::Srequest& newRequest)
+    {
+        LOG((*logger_), "Adding request from: ", newRequest.studentId_, " to: ", newRequest.courseId_);
+        Table targetTable = sManager_->getTable("StudentRequest");
+        if(sManager_->addEntryToTable(targetTable.getName(), 
+            {std::make_pair(targetTable.getAttributeByName("courseId_"), std::to_string(newRequest.courseId_)),
+             std::make_pair(targetTable.getAttributeByName("studentId_"), std::to_string(newRequest.studentId_))}))
+        {
+            LOG((*logger_), "New request has been added. From: ", newRequest.studentId_, " to ", newRequest.courseId_);
+            return true;
+        }
+        LOG((*logger_), "Request from: ", newRequest.studentId_, " to: ", newRequest.courseId_, " could not be added");
+        return false;
+    }
+
+    bool SqlAdapter::updateSrequest(const Request::Srequest& targetSreq, const Request::Srequest& newSreq)
+    {
+        LOG((*logger_), "Attempting to update a request from: ", targetSreq.studentId_, " to: ", targetSreq.courseId_);
+        Utilities::Sql::AttrsValues newValPacket{};
+
+        // First compare
+        if(targetSreq.courseId_ != newSreq.courseId_)
+        {
+            LOG((*logger_), "Missmatch in courseId ", targetSreq.courseId_, " <-> ", newSreq.courseId_);
+            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("courseId"), std::to_string(newSreq.courseId_)));
+        }
+    
+        if(targetSreq.studentId_ != newSreq.studentId_)
+        {
+            LOG((*logger_), "Missmatch in studentId ", targetSreq.studentId_, " <-> ", newSreq.studentId_);
+            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("studentId"), std::to_string(newSreq.studentId_)));
+        }
+
+        if(targetSreq.status_ != newSreq.status_)
+        {
+            LOG((*logger_), "Missmatch in status ", Request::statusToString(targetSreq.status_), " <-> ", Request::statusToString(newSreq.status_));
+            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("status"), std::to_string(newSreq.status_)));
+        }
+
+        if(newValPacket.empty())
+        {
+            LOG((*logger_), "New SRequest = Old SRequest nothing needs to be altered");
+            return true;
+        }
+
+        LOG((*logger_), "Changes were found, DB will be contacted");
+        std::string condition = "id = " + std::to_string(targetSreq.requestId_);
+        return sManager_->updateEntryFromTable("StudentRequest", newValPacket, condition);
+    }
+
+    bool SqlAdapter::removeSrequest(Request::Srequest& targetRequest)
+    {
+        LOG((*logger_), "Removing request from: ", targetRequest.studentId_, " to: ", targetRequest.courseId_);
+        if(sManager_->removeEntryFromTable("StudentRequest", targetRequest.requestId_))
+        {
+            LOG((*logger_), "Request from :", targetRequest.studentId_, " to: ", targetRequest.courseId_, " was removed");
+            return true;
+        }
+        LOG((*logger_), "Request from :", targetRequest.studentId_, " to: ", targetRequest.courseId_, " could not be removed");
+        return false;
     }
 
 } // namespace Utilities::Sql

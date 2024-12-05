@@ -8,6 +8,30 @@ Session::Session(std::shared_ptr<WsManager> wsMgr) : wsMgr_(wsMgr),
 {
     LOG((*logger_), "Loading initial database entries");
     fetchAll();
+
+    School mockSchool = School{0, "Non_Existing_School", {}};
+    addSchool(mockSchool);
+
+    Subject mockSubject = Subject{0, "Non_Existing_Subject"};
+    addSubject(mockSubject);
+
+    Student mockStudent = Student{0, "John", std::nullopt, "Doe", "john.doe@mail.com", {}, mockSchool.id_};
+    addStudent(mockStudent);
+
+    Course mockCourse = Course{0, 20, 50, 20, 0, "Invalid_Course", {}};
+    addCourse(mockCourse);
+
+    sesData_->showSchools();
+    sesData_->showCourses();
+
+    School newMockSchool = School{0, "Existing_School", {}};
+    Course newMockCourse = Course{0, 10, 40, 10, 0, "Valid_Course", {}};
+    updateSchool(mockSchool, newMockSchool);
+    updateCourse(mockCourse, newMockCourse);
+    sesData_->showSchools();
+    sesData_->showCourses();
+    sesData_->showStudentRequests(true);
+    
 }
 
 void Session::fetchAll()
@@ -17,6 +41,8 @@ void Session::fetchAll()
     fetchStudents();
     fetchSubjects();
     fetchGrades();
+    fetchCourses();
+    fetchSrequests();
     LOG((*logger_), "Fetching done");
 }
 
@@ -85,10 +111,10 @@ void Session::run()
         case Core::Display::MainMenuOption::manageDb:
             {
                 std::string command = "";
-                do
-                {
-                    display_->displayDatabase();
-                } while (command != "EXIT");
+                // do
+                // {
+                display_->displayDatabase();
+                // } while (command != "EXIT");
                 
                 break;
             }
@@ -113,6 +139,20 @@ bool Session::addSchool(School& newSchool)
     if(sAdapter_->addSchool(newSchool))
     {
         sesData_->addSchool(newSchool);
+        return true;
+    }
+    return false;
+}
+
+bool Session::updateSchool(School& targetSchool, School& newSchool)
+{
+    LOG((*logger_), "Editing existing school");
+    if(sAdapter_->updateSchool(targetSchool, newSchool))
+    {
+        // This will be moved to the in-menu editing screen later on
+        targetSchool.name_ = newSchool.name_;
+        // <- Untill this moment
+        sesData_->updateSchool(targetSchool.id_, newSchool);
         return true;
     }
     return false;
@@ -202,6 +242,17 @@ bool Session::addCourse(Course& newCourse)
     if(sAdapter_->addCourse(newCourse))
     {
         sesData_->addCourse(newCourse);
+        return true;
+    }
+    return false;
+}
+
+bool Session::updateCourse(Course& targetCourse, Course& newCourse)
+{
+    LOG((*logger_), "Updating existing course.");
+    if(sAdapter_->updateCourse(targetCourse, newCourse))
+    {
+        sesData_->updateCourse(targetCourse.id_, newCourse);
         return true;
     }
     return false;

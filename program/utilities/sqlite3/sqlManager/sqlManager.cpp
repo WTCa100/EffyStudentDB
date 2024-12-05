@@ -198,10 +198,10 @@ namespace Utilities::Sql
         {
             return tables_.at(name);
         }
-        return Sql::Types::Table("");
+        return Table("");
     }
 
-    bool SqlManager::addEntryToTable(std::string tableName, entry newVals)
+    bool SqlManager::addEntryToTable(std::string tableName, AttrsValues newVals)
     {
         LOG((*logger_), "Adding entry to table ", tableName);
         std::stringstream ss;
@@ -236,6 +236,26 @@ namespace Utilities::Sql
         }
         ss << ");";
         return executeOut(ss.str());
+    }
+
+
+    bool SqlManager::updateEntryFromTable(std::string tableName, AttrsValues newVals, std::string condition)
+    {
+        LOG((*logger_), "Executing update. Target table: ", tableName ," condition:", condition)
+        std::string command = "UPDATE " + tableName + " SET ";
+        for(size_t valuePos = 0; valuePos < newVals.size(); valuePos++)
+        {
+            const Attribute& currentAtr = newVals.at(valuePos).first;
+            const std::string& currentAtrVal = newVals.at(valuePos).second;
+            command += currentAtr.name_ + " = \"" + currentAtrVal + "\" ";
+
+            if(valuePos != newVals.size() - 1)
+            {
+                command += ", ";
+            }
+        }
+        command += "WHERE " + condition + ";";
+        return executeOut(command);
     }
 
     bool SqlManager::removeEntryFromTable(std::string tableName, uint16_t entryId)

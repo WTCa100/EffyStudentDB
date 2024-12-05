@@ -46,6 +46,10 @@ class Session
     bool addCourse(Course& newCourse);
     bool addSrequest(Srequest& newSrequest);
 
+    // Updating
+    bool updateSchool(School& targetSchool, School& newSchool);
+    bool updateCourse(Course& targetCourse, Course& newCourse);
+
     // Removing
     bool removeSchool(School targetSchool);
     bool removeStudent(Student targetStudent);

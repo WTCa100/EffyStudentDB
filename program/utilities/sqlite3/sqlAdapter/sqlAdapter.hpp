@@ -17,6 +17,7 @@
 
 namespace Utilities::Sql
 {
+    using namespace Core::Types;
     class SqlAdapter
     {
     private:
@@ -26,28 +27,34 @@ namespace Utilities::Sql
         SqlAdapter(std::shared_ptr<Logger> logger, std::shared_ptr<SqlManager> sManager);
         ~SqlAdapter() = default;
 
-        std::vector<Core::Types::School>            getSchools();
-        std::vector<Core::Types::Student>           getStudents();
-        std::vector<Core::Types::Subject>           getSubjects();
+        std::vector<School>                         getSchools();
+        std::vector<Student>                        getStudents();
+        std::vector<Subject>                        getSubjects();
         std::vector<std::vector<std::string>>       getGrades();
-        std::vector<Core::Types::Course>            getCourses();
-        std::vector<Core::Types::Request::Srequest> getSrequests();
+        std::vector<Course>                         getCourses();
+        std::vector<Request::Srequest>              getSrequests();
 
-        void mapSubjectToCourseWeight(Core::Types::Course& targetCourse);        
+        void mapSubjectToCourseWeight(Course& targetCourse);        
         uint16_t getLatestIdFromTable(std::string tblName);
 
-        bool addSchool(Core::Types::School& newSchool);
-        bool removeSchool(const Core::Types::School& removeSchool);
-        bool addStudent(Core::Types::Student& newStudent);
-        bool removeStudent(const Core::Types::Student& targetStudent);
-        bool addSubject(Core::Types::Subject& newSubject);
-        bool removeSubject(const Core::Types::Subject& targetSubject);
-        bool addGrade(Core::Types::Student& targetStudent, Core::Types::Subject& targetSubject, const float& grade);
-        bool removeGrade(const Core::Types::Student& targetStudent, const Core::Types::Subject& targetSubject);
-        bool addCourse(Core::Types::Course& newCourse);
-        bool removeCourse(Core::Types::Course& targetCourse);
-        bool addSrequest(Core::Types::Request::Srequest& newSrequest);
-        bool removeSrequest(Core::Types::Request::Srequest& targetRequest);
+        bool addSchool(School& newSchool);
+        bool updateSchool(const School& targetSchool, const School& newSchool);
+        bool removeSchool(const School& removeSchool);
+        bool addStudent(Student& newStudent);
+        bool removeStudent(const Student& targetStudent);
+        bool addSubject(Subject& newSubject);
+        bool removeSubject(const Subject& targetSubject);
+        bool addGrade(Student& targetStudent, Subject& targetSubject, const float& grade);
+        bool removeGrade(const Student& targetStudent, const Subject& targetSubject);
+        bool addCourse(Course& newCourse);
+        bool updateCourse(const Course& targetCourse, const Course& newCourse);
+        bool removeCourse(Course& targetCourse);
+        bool addSrequest(Request::Srequest& newSrequest);
+        bool updateSrequest(const Request::Srequest& targetSreq, const Request::Srequest& newSreq);
+        bool removeSrequest(Request::Srequest& targetRequest);
+
+
+
     };
     
 } // namespace Utilities

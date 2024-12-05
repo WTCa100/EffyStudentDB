@@ -28,7 +28,7 @@ namespace Utilities::Sql::Types
         std::string makeFormula() const;
         // void printTable(std::ostream& stream) const;
         void addToSchema(const Attribute& atr);
-        void linkAttributes(Attribute src, std::string refferencedTblName, std::string refferencedAttrName);
+        void linkAttributes(const Attribute& src, std::string refferencedTblName, std::string refferencedAttrName);
 
         Attribute getAttributeByName(std::string name); 
         

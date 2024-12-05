@@ -62,7 +62,7 @@ namespace Utilities::Sql::Types
         return ss.str();
     }
 
-    void Table::linkAttributes(Attribute src, std::string refferencedTblName, std::string refferencedAttrName)
+    void Table::linkAttributes(const Attribute& src, std::string refferencedTblName, std::string refferencedAttrName)
     {
         std::stringstream ss;
         ss << "FOREIGN KEY (" << src.name_ << ") REFERENCES " << refferencedTblName << "(" << refferencedAttrName << ")";
@@ -139,6 +139,7 @@ namespace Utilities::Sql::Types
         studentReq.addToSchema({"id", "INTEGER", {Types::AttributeFlag::PRIMARY_KEY}});
         studentReq.addToSchema({"studentId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
         studentReq.addToSchema({"courseId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
+        studentReq.addToSchema({"requstStatus", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
         studentReq.linkAttributes(studentReq.getAttributeByName("studentId"), "Students", "id");
         studentReq.linkAttributes(studentReq.getAttributeByName("courseId"), "Courses", "id");
         return studentReq;

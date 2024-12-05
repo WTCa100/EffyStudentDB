@@ -9,6 +9,19 @@ void SessionData::addSchool(const School& newSchool)
     }
 }
 
+void SessionData::updateSchool(const uint16_t targetSchool, const School& alteredSchool)
+{
+    if(schoolList_.contains(targetSchool))
+    {
+        // Only thing we can change from the SQL is the name
+        School& target = schoolList_.at(targetSchool);
+        if(target.name_ != alteredSchool.name_)
+        {
+            target.name_ = alteredSchool.name_;
+        }
+    }
+}
+
 void SessionData::removeSchool(const uint16_t targetSchool)
 {
     if(schoolList_.contains(targetSchool))
@@ -106,12 +119,39 @@ void SessionData::addCourse(const Course& newCourse)
     }
 }
 
+void SessionData::updateCourse(const uint16_t targetCourse, const Course& alteredCourse)
+{
+    if(courseList_.contains(targetCourse))
+    {
+        Course& target = courseList_.at(targetCourse);
+        if(target.name_ != alteredCourse.name_)
+        {
+            target.name_ = alteredCourse.name_;
+        }
+
+        if(target.minStudents_ != alteredCourse.minStudents_)
+        {
+            target.minStudents_ = alteredCourse.minStudents_;
+        }
+
+        if(target.maxStudents_ != alteredCourse.maxStudents_)
+        {
+            target.maxStudents_ = alteredCourse.maxStudents_;
+        }
+
+        if(target.baseMinimalPoints_ != alteredCourse.baseMinimalPoints_)
+        {
+            target.baseMinimalPoints_ = alteredCourse.baseMinimalPoints_;
+        }
+    }
+}
+
 void SessionData::removeCourse(const uint16_t targetCourse)
 {
     if(courseList_.contains(targetCourse))
     {
         courseList_.erase(targetCourse);
-        for(auto sr : sRequestsList_)
+        for(auto& sr : sRequestsList_)
         {
             if(sr.second.courseId_)
             {
@@ -200,7 +240,6 @@ void SessionData::showStudentRequests(bool detailed) const
             else
             {
                 std::cout << "Invalid student id - no entry matched in the memory!\n";
-                continue;
             }
 
             if(courseList_.contains(req.second.courseId_))

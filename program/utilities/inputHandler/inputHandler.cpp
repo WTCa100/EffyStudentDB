@@ -39,21 +39,24 @@ namespace Utilities
             std::cout << "Select option from " << optionMin << " - " << optionMax << "\n";
             std::getline(std::cin, buf);
             // Validate
-            if(isNumber(buf))
+            if(!buf.empty())
             {
-               ans = std::stoi(buf);
-               if(ans > optionMax || ans < optionMin)
-               {
-                    std::cout << "Select a valid option from range " << optionMin << " to " << optionMax << "\n";
-               }
-               else
-               {
-                    isValid = true;
-               }
-            }
-            else
-            {
-                std::cout << "Only use numbers.\n";
+                if(isNumber(buf))
+                {
+                ans = std::stoi(buf);
+                if(ans > optionMax || ans < optionMin)
+                {
+                        std::cout << "Select a valid option from range " << optionMin << " to " << optionMax << "\n";
+                }
+                else
+                {
+                        isValid = true;
+                }
+                }
+                else
+                {
+                    std::cout << "Only use numbers.\n";
+                }
             }
         } while (!isValid);
         return ans;

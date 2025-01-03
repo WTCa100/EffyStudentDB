@@ -94,6 +94,7 @@ namespace Core::Display
            cmdCore == "ADD"  ||
            cmdCore == "ALTER" ||
            cmdCore == "REMOVE" ||
+           cmdCore == "FIND" ||
            cmdCore == "EXIT")
         {
             if(cmdCore == "ALTER" || cmdCore == "REMOVE")
@@ -120,6 +121,7 @@ namespace Core::Display
             std::cout << "ADD - proceed to create a new entry\n";
             std::cout << "ALTER <targetID> - proceed to update entry with provided targetId with new values\n";
             std::cout << "REMOVE <targetID> - proceed to delete a given entry\n";
+            std::cout << "FIND - proceed to get entries that match at least one parameter\n";
             std::cout << "EXIT - exits this view\n";
             std::string buf;
             std::getline(std::cin, buf);

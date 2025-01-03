@@ -10,4 +10,12 @@ namespace Core::Types
         ss << id_ << ". " << name_ << ": " << students_.size() << " students";
         return ss.str();
     }
+
+    std::map<std::string, std::string> School::getAttrs() const
+    {
+        return {{"name", name_}};
+    }
+
+
+
 }

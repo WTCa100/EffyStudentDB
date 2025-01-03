@@ -2,13 +2,17 @@
 
 #include <string>
 
+#include "../entry.hpp"
+
 namespace Core::Types
 {
-    struct Subject
+    struct Subject : public Entry
     {
-        uint16_t    id_;
         std::string name_;
-        inline std::string toString() const { return std::to_string(id_) + ". " + name_; }
+        Subject(uint16_t id, std::string name) : Entry(id, "Subjects"), name_(name) {};
+    
+        inline std::map<std::string, std::string> getAttrs() const override { return {{"name", name_}};}
+        inline std::string toString() const override { return std::to_string(id_) + ". " + name_; }
     };
 
 } // namespace Core::Types

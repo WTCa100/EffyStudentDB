@@ -318,7 +318,7 @@ namespace Utilities::Sql
 
     Sql::Types::Table SqlManager::getTableSchema(std::string tableName)
     {
-        LOG((*logger_), "Getting table ", tableName, " schema");
+        LOG((*logger_), "Getting table \"", tableName, "\" schema");
         // First check if we got the table already in memory.
         if(tables_.contains(tableName))
         {  

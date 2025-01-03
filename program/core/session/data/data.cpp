@@ -164,9 +164,9 @@ void SessionData::removeCourse(const uint16_t targetCourse)
 
 void SessionData::addStudentRequest(const Srequest& newSrequest)
 {
-    if(!sRequestsList_.contains(newSrequest.requestId_))
+    if(!sRequestsList_.contains(newSrequest.id_))
     {
-        sRequestsList_.insert(std::make_pair(newSrequest.requestId_, newSrequest));
+        sRequestsList_.insert(std::make_pair(newSrequest.id_, newSrequest));
     }
 }
 

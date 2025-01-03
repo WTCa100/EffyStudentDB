@@ -3,6 +3,8 @@
 #include <inttypes.h>
 #include <string>
 
+#include "../entry.hpp"
+
 namespace Core::Types::Request
 {
     enum requestStatus
@@ -12,17 +14,16 @@ namespace Core::Types::Request
         Pending
     };
 
-    struct Srequest
+    struct Srequest : public Entry
     {
-        uint32_t requestId_;
         uint16_t studentId_;
         uint16_t courseId_;
         requestStatus status_;
 
         Srequest() = delete;
         Srequest(uint32_t reqId, uint16_t stdId, uint16_t corId) : Srequest(reqId, stdId, corId, requestStatus::Pending) {}
-        Srequest(uint32_t reqId, uint16_t stdId, uint16_t corId, requestStatus status) : requestId_(reqId), studentId_(stdId), courseId_(corId), status_(status) {}
-        std::string toString() const;
+        Srequest(uint32_t reqId, uint16_t stdId, uint16_t corId, requestStatus status) : Entry(reqId, "StudentRequest"), studentId_(stdId), courseId_(corId), status_(status) {}
+        std::string toString() const override;
     };
 
 

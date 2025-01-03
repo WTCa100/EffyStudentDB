@@ -12,6 +12,7 @@
 #include "../../../types/subject/subject.hpp"
 #include "../../../types/course/course.hpp"
 #include "../../../types/studentRequest/request.hpp"
+#include "../../../types/entry.hpp"
 
 #include "../../logger/logger.hpp"
 
@@ -37,24 +38,11 @@ namespace Utilities::Sql
         void mapSubjectToCourseWeight(Course& targetCourse);        
         uint16_t getLatestIdFromTable(std::string tblName);
 
-        bool addSchool(School& newSchool);
-        bool updateSchool(const School& targetSchool, const School& newSchool);
-        bool removeSchool(const School& removeSchool);
-        bool addStudent(Student& newStudent);
-        bool removeStudent(const Student& targetStudent);
-        bool addSubject(Subject& newSubject);
-        bool removeSubject(const Subject& targetSubject);
+        bool addEntry(Entry& newEntry);
+        bool updateEntry(const Entry& oldEntry, const Entry& newEntry);
+        bool removeEntry(const Entry& targetEntry);
         bool addGrade(Student& targetStudent, Subject& targetSubject, const float& grade);
         bool removeGrade(const Student& targetStudent, const Subject& targetSubject);
-        bool addCourse(Course& newCourse);
-        bool updateCourse(const Course& targetCourse, const Course& newCourse);
-        bool removeCourse(Course& targetCourse);
-        bool addSrequest(Request::Srequest& newSrequest);
-        bool updateSrequest(const Request::Srequest& targetSreq, const Request::Srequest& newSreq);
-        bool removeSrequest(Request::Srequest& targetRequest);
-
-
-
     };
     
 } // namespace Utilities

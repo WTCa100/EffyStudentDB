@@ -6,7 +6,7 @@ namespace Core::Types::Request
     std::string Srequest::toString() const
     {
         std::stringstream ss("");
-        ss << "Request Id: " << requestId_ << " courseId: " << courseId_ << " studentId: " << studentId_ << " status: " << statusToString(status_);
+        ss << "Request Id: " << id_ << " courseId: " << courseId_ << " studentId: " << studentId_ << " status: " << statusToString(status_);
         return ss.str();
     }
 

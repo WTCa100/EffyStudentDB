@@ -188,7 +188,7 @@ namespace Utilities::Sql
     void SqlAdapter::mapSubjectToCourseWeight(Core::Types::Course& targetCourse)
     {
         LOG((*logger_), "Fetching subject to course weight");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("CourseSubjectWeigt", {"subjectId", "weight"}, ("courseId =" + targetCourse.id_));
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("CourseSubjectWeight", {"subjectId", "weight"}, ("courseId =" + std::to_string(targetCourse.id_)));
         if(rawEntries.empty())
         {
             LOG((*logger_), "Course ", targetCourse.name_, " has no weights assigned to it.");
@@ -213,105 +213,97 @@ namespace Utilities::Sql
         return static_cast<uint16_t>(std::stoul(result.at(0)));
     }
 
-    bool SqlAdapter::addSchool(Core::Types::School& newSchool)
+    bool SqlAdapter::addEntry(Entry& newEntry)
     {
-        LOG((*logger_), "Adding new school \"", newSchool.name_, "\"");
-        // Check if given entry exists
-        // if(sManager_->) Check if entry already exists
-        // Prepare atributes
-        Table targetTable = sManager_->getTableSchema("Schools");
-        if(sManager_->addEntryToTable(targetTable.getName(),
-            { std::make_pair(targetTable.getAttributeByName("name") , newSchool.name_)}))
+        std::string targetTableName = newEntry.associatedTable_;
+        LOG((*logger_), "Adding new entry \"", newEntry.toString(), " to table: ", targetTableName);
+        Table targetTable = sManager_->getTableSchema(targetTableName);
+        if(!targetTable.isValid())
         {
-            newSchool.id_ = getLatestIdFromTable(targetTable.getName());
-            LOG((*logger_), "New school added. Name=", newSchool.name_, " id=", newSchool.id_);
+            LOG((*logger_), "Table ", targetTableName, " does not exist. Aborting procedure.");
+            return false;
+        }
+
+        Utilities::Sql::AttrsValues entryAttrs;
+        // Extract info about attributes 
+        for(const auto& entryAttr : newEntry.getAttrs())
+        {
+            Utilities::Sql::Types::Attribute curAttr = targetTable.getAttributeByName(entryAttr.first);
+            if(!curAttr.isValid())
+            {
+                LOG((*logger_), "Attribute ", entryAttr.first, " is not valid. Skipping...");
+                continue;
+            }
+            LOG((*logger_), "Adding to attribute: ", entryAttr.first, " value: ", entryAttr.second);
+            entryAttrs.push_back(std::make_pair(curAttr, entryAttr.second));
+        }
+        if(sManager_->addEntryToTable(targetTableName, entryAttrs))
+        {
+            newEntry.id_ = getLatestIdFromTable(targetTableName);
+            LOG((*logger_), "New entry has been added to a table: ", targetTableName);
             return true;
         }
-    
-        LOG((*logger_), "Could not add given school into the database. Name=", newSchool.name_);
-        return false;
+        LOG((*logger_), "Could not add entry to a table: ", targetTableName);
+        return true;
     }
 
-    bool SqlAdapter::updateSchool(const School& targetSchool, const School& newSchool)
+    bool SqlAdapter::updateEntry(const Entry& oldEntry, const Entry& newEntry)
     {
-        LOG((*logger_), "Updating target school ", targetSchool.name_, ". Compare has started");
-        AttrsValues newValPacket{};
-        // First compare 
-        if(targetSchool.name_ != newSchool.name_)
+        std::string targetTableName = oldEntry.associatedTable_;
+        LOG((*logger_), "Updating target entry: ", oldEntry.toString(), " Compare has started.");
+
+        if(targetTableName != newEntry.associatedTable_)
         {
-            LOG((*logger_), "Name mismatch ", targetSchool.name_, " <-> ", newSchool.name_);
-            // For altering existing attribute there is no need to add any extra flags
-            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("name"), newSchool.name_));
+            LOG((*logger_), "Associated table is different in both entires. Cannot edit.");
+            return false;
         }
-        
+
+        Table targetTable = sManager_->getTableSchema(targetTableName);
+        if(!targetTable.isValid())
+        {
+            LOG((*logger_), "Table ", targetTableName, " does not exist. Aborting procedure.");
+            return false;
+        }
+
+        std::map<std::string, std::string> entryAttrsOld, entryAttrsNew;
+        AttrsValues newValPacket{};
+        entryAttrsOld = oldEntry.getAttrs();
+        entryAttrsNew = newEntry.getAttrs();
+
+        for(const auto& entryComp : entryAttrsOld)
+        {
+            std::string newVal = entryAttrsNew.at(entryComp.first);
+            if(newVal != entryComp.second)
+            {
+                LOG((*logger_), entryComp.first, " mismatch: ", entryComp.second , " <-> ", newVal);
+                newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute(entryComp.first), newVal));
+            }
+        }
+
         if(newValPacket.empty())
         {
-            LOG((*logger_), "New School = Old School nothing needs to be altered");
+            LOG((*logger_), "Old Entry = New Entry nothing needs to be altered");
             return true;
         }
 
         LOG((*logger_), "Changes were found, DB will be contacted");
-        std::string condition = "id = " + std::to_string(targetSchool.id_);
-        return sManager_->updateEntryFromTable("Schools", newValPacket, condition);
+        std::string condition = "id = " + std::to_string(newEntry.id_);
+        return sManager_->updateEntryFromTable(targetTableName, newValPacket, condition);
     }
 
-    bool SqlAdapter::removeSchool(const Core::Types::School& removeSchool)
+    bool SqlAdapter::removeEntry(const Entry& targetEntry)
     {
-        LOG((*logger_), "Attempting to remove school \"", removeSchool.name_, "\"");
-        // TODO Check if exists - if not, nothing to delete and return true
-        sManager_->removeEntryFromTable("Schools", removeSchool.id_);\
-        // TODO verify
-        return true;
-    }
-
-    bool SqlAdapter::addStudent(Core::Types::Student& newStudent)
-    {
-        LOG((*logger_), "Adding new student \"", newStudent.email_, "\"");
-        // Check if given entry exists
-        // if(sManager_->) Check if entry already exists
-        // Prepare atributes
-        Table targetTable = sManager_->getTableSchema("Students");
-        if(sManager_->addEntryToTable(targetTable.getName(),
-            { std::make_pair(targetTable.getAttributeByName("firstName") , newStudent.firstName_),
-              std::make_pair(targetTable.getAttributeByName("secondName"), (newStudent.secondName_ ? newStudent.secondName_.value() : "" )),
-              std::make_pair(targetTable.getAttributeByName("lastName"), newStudent.lastName_),
-              std::make_pair(targetTable.getAttributeByName("email"), newStudent.email_),
-              std::make_pair(targetTable.getAttributeByName("schoolId"), std::to_string(newStudent.schoolId_))}))
+        std::string targetTableName = targetEntry.associatedTable_;
+        LOG((*logger_), "Attempting to remove entry: ", targetEntry.toString(), " from table: ", targetTableName);
+    
+        Table targetTable = sManager_->getTableSchema(targetTableName);
+        if(!targetTable.isValid())
         {
-            newStudent.id_ = getLatestIdFromTable(targetTable.getName());
-            LOG((*logger_), "New student added. Email=", newStudent.email_, " id=", newStudent.id_);
-            return true;
+            LOG((*logger_), "Table ", targetTableName, " does not exist. Aborting procedure.");
+            return false;
         }
-        LOG((*logger_), "Could not add given student into the database. Name=", newStudent.firstName_, " ", newStudent.lastName_, " email=", newStudent.email_);
-        return false;
-    }
 
-    bool SqlAdapter::removeStudent(const Core::Types::Student& targetStudent)
-    {
-        LOG((*logger_), "Attempting to remove student \"", targetStudent.email_, "\"");
-        sManager_->removeEntryFromTable("Students", targetStudent.id_);
-        return true;
-    }
-
-    bool SqlAdapter::addSubject(Core::Types::Subject& newSubject)
-    {
-        LOG((*logger_), "Adding new subject \"", newSubject.name_, "\"");
-        Table targetTable = sManager_->getTableSchema("Subjects");
-        if(sManager_->addEntryToTable(targetTable.getName(), 
-            {std::make_pair(targetTable.getAttributeByName("name"), newSubject.name_)}))
-        {
-            newSubject.id_ = getLatestIdFromTable(targetTable.getName());
-            LOG((*logger_), "New subject added. Name=", newSubject.name_, " id=", newSubject.id_);
-            return true;
-        }
-        LOG((*logger_), "Could not add given subject into the database. Name=", newSubject.name_);
-        return false;
-    }
-
-    bool SqlAdapter::removeSubject(const Core::Types::Subject& targetSubject)
-    {
-        LOG((*logger_), "Attempting to remove subject \"", targetSubject.name_, "\"");
-        sManager_->removeEntryFromTable("Subjects", targetSubject.id_);
+        sManager_->removeEntryFromTable(targetTableName, targetEntry.id_);
         return true;
     }
 
@@ -336,140 +328,6 @@ namespace Utilities::Sql
         LOG((*logger_), "Attempting to remove grade from \"", targetSubject.name_, "\" from student ", targetStudent.firstName_ , " ", targetStudent.lastName_);
         // TODO add handle
         return true;
-    }
-
-    bool SqlAdapter::addCourse(Course& newCourse)
-    {
-        LOG((*logger_), "Attempting to add new course ( name:", newCourse.name_, " minStudents:", newCourse.minStudents_, " maxStudents:", newCourse.maxStudents_ ,")");
-        Table targetTable = sManager_->getTable("Courses");
-        if(sManager_->addEntryToTable(targetTable.getName(), 
-            {std::make_pair(targetTable.getAttributeByName("name"), newCourse.name_),
-             std::make_pair(targetTable.getAttributeByName("baseMinimalPoints"), std::to_string(newCourse.baseMinimalPoints_)),
-             std::make_pair(targetTable.getAttributeByName("minStudents"), std::to_string(newCourse.minStudents_)),
-             std::make_pair(targetTable.getAttributeByName("maxStudents"), std::to_string(newCourse.maxStudents_))}))
-        {
-            newCourse.id_ = getLatestIdFromTable("Courses");
-            LOG((*logger_), "New course added.");
-            return true;
-        }
-        LOG((*logger_), "Could not addd new course");
-        return false;
-    }
-
-    bool SqlAdapter::updateCourse(const Course& targetCourse, const Course& newCourse)
-    {
-        LOG((*logger_), "Attempting to modify course ( name:", targetCourse.name_, " minStudents:", targetCourse.minStudents_, " maxStudents:", targetCourse.maxStudents_ ,") <-> (name: ", newCourse.name_, " minStudents:", newCourse.minStudents_, " maxStudents:", newCourse.maxStudents_, ")");
-        AttrsValues newValPacket{};
-        // First compare 
-        if(targetCourse.name_ != newCourse.name_)
-        {
-            LOG((*logger_), "Name mismatch ", targetCourse.name_, " <-> ", newCourse.name_);
-            // For altering existing attribute there is no need to add any extra flags
-            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("name"), newCourse.name_));
-        }
-        
-        if(targetCourse.baseMinimalPoints_ != newCourse.baseMinimalPoints_)
-        {
-            LOG((*logger_), "BaseMinimalPoints mismatch ", targetCourse.baseMinimalPoints_, " <-> ", newCourse.baseMinimalPoints_);
-            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("baseMinimalPoints"), std::to_string(newCourse.baseMinimalPoints_)));
-        }
-
-        if(targetCourse.minStudents_ != newCourse.minStudents_)
-        {
-            LOG((*logger_), "MinStudents mismatch ", targetCourse.minStudents_, "<->", newCourse.minStudents_);
-            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("minStudents"), std::to_string(newCourse.minStudents_)));
-        }
-
-        if(targetCourse.maxStudents_ != newCourse.maxStudents_)
-        {
-            LOG((*logger_), "MaxStudents mismatch ", targetCourse.maxStudents_, "<->", newCourse.maxStudents_);
-            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("maxStudents"), std::to_string(newCourse.maxStudents_)));
-        }
-
-
-        if(newValPacket.empty())
-        {
-            LOG((*logger_), "New Course = Old Course nothing needs to be altered");
-            return true;
-        }
-
-        LOG((*logger_), "Changes were found, DB will be contacted");
-        std::string condition = "id = " + std::to_string(targetCourse.id_);
-        return sManager_->updateEntryFromTable("Courses", newValPacket, condition);
-    }
-
-    bool SqlAdapter::removeCourse(Course& targetCourse)
-    {
-        LOG((*logger_), "Attempting to remove the course: ", targetCourse.name_);
-        if(sManager_->removeEntryFromTable("Courses", targetCourse.id_))
-        {
-            LOG((*logger_), "Course ", targetCourse.name_, " was deleted successfully");
-            return true;
-        }
-        LOG((*logger_), "Course ", targetCourse.name_, " could not be deleted");
-        return false;
-    }
-
-    bool SqlAdapter::addSrequest(Request::Srequest& newRequest)
-    {
-        LOG((*logger_), "Adding request from: ", newRequest.studentId_, " to: ", newRequest.courseId_);
-        Table targetTable = sManager_->getTable("StudentRequest");
-        if(sManager_->addEntryToTable(targetTable.getName(), 
-            {std::make_pair(targetTable.getAttributeByName("courseId_"), std::to_string(newRequest.courseId_)),
-             std::make_pair(targetTable.getAttributeByName("studentId_"), std::to_string(newRequest.studentId_))}))
-        {
-            LOG((*logger_), "New request has been added. From: ", newRequest.studentId_, " to ", newRequest.courseId_);
-            return true;
-        }
-        LOG((*logger_), "Request from: ", newRequest.studentId_, " to: ", newRequest.courseId_, " could not be added");
-        return false;
-    }
-
-    bool SqlAdapter::updateSrequest(const Request::Srequest& targetSreq, const Request::Srequest& newSreq)
-    {
-        LOG((*logger_), "Attempting to update a request from: ", targetSreq.studentId_, " to: ", targetSreq.courseId_);
-        Utilities::Sql::AttrsValues newValPacket{};
-
-        // First compare
-        if(targetSreq.courseId_ != newSreq.courseId_)
-        {
-            LOG((*logger_), "Missmatch in courseId ", targetSreq.courseId_, " <-> ", newSreq.courseId_);
-            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("courseId"), std::to_string(newSreq.courseId_)));
-        }
-    
-        if(targetSreq.studentId_ != newSreq.studentId_)
-        {
-            LOG((*logger_), "Missmatch in studentId ", targetSreq.studentId_, " <-> ", newSreq.studentId_);
-            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("studentId"), std::to_string(newSreq.studentId_)));
-        }
-
-        if(targetSreq.status_ != newSreq.status_)
-        {
-            LOG((*logger_), "Missmatch in status ", Request::statusToString(targetSreq.status_), " <-> ", Request::statusToString(newSreq.status_));
-            newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute("status"), std::to_string(newSreq.status_)));
-        }
-
-        if(newValPacket.empty())
-        {
-            LOG((*logger_), "New SRequest = Old SRequest nothing needs to be altered");
-            return true;
-        }
-
-        LOG((*logger_), "Changes were found, DB will be contacted");
-        std::string condition = "id = " + std::to_string(targetSreq.requestId_);
-        return sManager_->updateEntryFromTable("StudentRequest", newValPacket, condition);
-    }
-
-    bool SqlAdapter::removeSrequest(Request::Srequest& targetRequest)
-    {
-        LOG((*logger_), "Removing request from: ", targetRequest.studentId_, " to: ", targetRequest.courseId_);
-        if(sManager_->removeEntryFromTable("StudentRequest", targetRequest.requestId_))
-        {
-            LOG((*logger_), "Request from :", targetRequest.studentId_, " to: ", targetRequest.courseId_, " was removed");
-            return true;
-        }
-        LOG((*logger_), "Request from :", targetRequest.studentId_, " to: ", targetRequest.courseId_, " could not be removed");
-        return false;
     }
 
 } // namespace Utilities::Sql

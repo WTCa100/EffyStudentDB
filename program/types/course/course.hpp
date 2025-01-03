@@ -4,11 +4,12 @@
 #include <string>
 #include <vector>
 
+#include "../entry.hpp"
+
 namespace Core::Types
 {
-    struct Course
+    struct Course : public Entry
     {
-        uint16_t id_;
         uint16_t minStudents_;
         uint16_t maxStudents_;
         uint16_t baseMinimalPoints_;
@@ -20,7 +21,13 @@ namespace Core::Types
         // Example: [(2 * math grade) + (1 * physics grade)] / 2
         std::vector<std::pair<uint16_t, uint16_t>> subjectWithWeight_;
 
-        std::string toString() const;
+        std::string toString() const override;
+        std::map<std::string, std::string> getAttrs() const override;
+
+        Course() : Entry(0, "Courses") {}
+        Course(uint16_t id, uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name);
+        Course(uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name);
+
     };    
 } // namespace Core::Types
 

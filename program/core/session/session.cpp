@@ -11,23 +11,25 @@ Session::Session(std::shared_ptr<WsManager> wsMgr) : wsMgr_(wsMgr),
     LOG((*logger_), "Loading initial database entries");
     fetchAll();
 
-    School mockSchool = School{0, "Non_Existing_School", {}};
+
+    School mockSchool = School{0, "Non_Existing_School"};
     addSchool(mockSchool);
 
     Subject mockSubject = Subject{0, "Non_Existing_Subject"};
+    removeSubject(mockSubject);
     addSubject(mockSubject);
 
-    Student mockStudent = Student{0, "John", std::nullopt, "Doe", "john.doe@mail.com", {}, mockSchool.id_};
+    Student mockStudent = Student{"John", "Doe", "john.doe@mail.com", mockSchool.id_};
     addStudent(mockStudent);
 
-    Course mockCourse = Course{0, 20, 50, 20, 0, "Invalid_Course", {}};
+    Course mockCourse = Course{20, 50, 20, "Invalid_Course"};
     addCourse(mockCourse);
 
     sesData_->showSchools();
     sesData_->showCourses();
 
-    School newMockSchool = School{0, "Existing_School", {}};
-    Course newMockCourse = Course{0, 10, 40, 10, 0, "Valid_Course", {}};
+    School newMockSchool = School{0, "Existing_School"};
+    Course newMockCourse = Course{10, 40, 10, "Valid_Course"};
     updateSchool(mockSchool, newMockSchool);
     updateCourse(mockCourse, newMockCourse);
     sesData_->showSchools();
@@ -174,7 +176,7 @@ bool Session::executeCommand(std::string command)
 bool Session::addSchool(School& newSchool)
 {
     LOG((*logger_), "Adding new school: \"", newSchool.name_, "\"");
-    if(sAdapter_->addSchool(newSchool))
+    if(sAdapter_->addEntry(newSchool))
     {
         sesData_->addSchool(newSchool);
         return true;
@@ -185,7 +187,7 @@ bool Session::addSchool(School& newSchool)
 bool Session::updateSchool(School& targetSchool, School& newSchool)
 {
     LOG((*logger_), "Editing existing school");
-    if(sAdapter_->updateSchool(targetSchool, newSchool))
+    if(sAdapter_->updateEntry(targetSchool, newSchool))
     {
         // This will be moved to the in-menu editing screen later on
         targetSchool.name_ = newSchool.name_;
@@ -199,7 +201,7 @@ bool Session::updateSchool(School& targetSchool, School& newSchool)
 bool Session::removeSchool(School targetSchool)
 {
     LOG((*logger_), "Removing existing school: \"", targetSchool.name_, "\"");
-    if(sAdapter_->removeSchool(targetSchool))
+    if(sAdapter_->removeEntry(targetSchool))
     {
         sesData_->removeSchool(targetSchool.id_);
         return true;
@@ -211,7 +213,7 @@ bool Session::removeSchool(School targetSchool)
 bool Session::addStudent(Student& newStudent)
 {
     LOG((*logger_), "Adding new student: {", newStudent.firstName_, " ", newStudent.lastName_, " ", newStudent.email_, "}");
-    if(sAdapter_->addStudent(newStudent))
+    if(sAdapter_->addEntry(newStudent))
     {
         sesData_->addStudent(newStudent);
         return true;
@@ -222,7 +224,7 @@ bool Session::addStudent(Student& newStudent)
 bool Session::removeStudent(Student targetStudent)
 {
     LOG((*logger_), "Removing student: id=", targetStudent.id_);
-    if(sAdapter_->removeStudent(targetStudent))
+    if(sAdapter_->removeEntry(targetStudent))
     {
         sesData_->removeStudent(targetStudent);
         return true;
@@ -233,7 +235,7 @@ bool Session::removeStudent(Student targetStudent)
 bool Session::addSubject(Subject& targetSubject)
 {
     LOG((*logger_), "Adding new subject ", targetSubject.name_);
-    if(sAdapter_->addSubject(targetSubject))
+    if(sAdapter_->addEntry(targetSubject))
     {
         sesData_->addSubject(targetSubject);
         return true;
@@ -244,7 +246,7 @@ bool Session::addSubject(Subject& targetSubject)
 bool Session::removeSubject(Subject targetSubject)
 {
     LOG((*logger_), "Attempting to remove subject ", targetSubject.name_);
-    if(sAdapter_->removeSubject(targetSubject))
+    if(sAdapter_->removeEntry(targetSubject))
     {
         sesData_->removeSubject(targetSubject);
         return true;
@@ -277,7 +279,7 @@ bool Session::removeGrade(Subject targetSubject, Student targetStudent)
 bool Session::addCourse(Course& newCourse)
 {
     LOG((*logger_), "Adding new course: ", newCourse.name_);
-    if(sAdapter_->addCourse(newCourse))
+    if(sAdapter_->addEntry(newCourse))
     {
         sesData_->addCourse(newCourse);
         return true;
@@ -288,7 +290,7 @@ bool Session::addCourse(Course& newCourse)
 bool Session::updateCourse(Course& targetCourse, Course& newCourse)
 {
     LOG((*logger_), "Updating existing course.");
-    if(sAdapter_->updateCourse(targetCourse, newCourse))
+    if(sAdapter_->updateEntry(targetCourse, newCourse))
     {
         sesData_->updateCourse(targetCourse.id_, newCourse);
         return true;
@@ -299,6 +301,11 @@ bool Session::updateCourse(Course& targetCourse, Course& newCourse)
 bool Session::removeCourse(Course targetCourse)
 {
     LOG((*logger_), "Removing course: ", targetCourse.name_);
+    if(sAdapter_->removeEntry(targetCourse))
+    {
+        sesData_->removeCourse(targetCourse.id_);
+        return true;
+    }
     return false;
 }
 

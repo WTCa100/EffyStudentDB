@@ -50,6 +50,8 @@ class Session
     bool updateSchool(School& targetSchool, School& newSchool);
     bool updateCourse(Course& targetCourse, Course& newCourse);
 
+    // Finding
+
     // Removing
     bool removeSchool(School targetSchool);
     bool removeStudent(Student targetStudent);

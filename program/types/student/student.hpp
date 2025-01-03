@@ -6,18 +6,25 @@
 #include <memory>
 
 #include "../subject/subject.hpp"
+#include "../entry.hpp"
 
 namespace Core::Types
 {
-    struct Student
+    struct Student : public Entry
     {
-        uint16_t id_;
         std::string firstName_;
         std::optional<std::string> secondName_;
         std::string lastName_;
         std::string email_;
         std::map<std::string, float> grades_;
         uint16_t schoolId_;
-        std::string toString(bool showGrades = false) const;
+
+        std::string toString(bool showGrades) const;
+        std::string toString() const override;
+        std::map<std::string, std::string> getAttrs() const override;
+
+        Student() : Entry(0, "Schools") {} // Not sure if we want to leave it that way
+        Student(uint16_t id, std::string name, std::string lastName, std::string email, uint16_t schoolId, std::optional<std::string> secondName = std::nullopt);
+        Student(std::string name, std::string lastName, std::string email, uint16_t schoolId, std::optional<std::string> secondName = std::nullopt);
     };
 } // namespace Core::Types

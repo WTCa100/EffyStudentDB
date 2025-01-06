@@ -14,7 +14,7 @@ namespace Utilities::Sql
     std::vector<std::string> SqlManager::executeIn(const std::string& sqlQuery)
     {
         sqlite3_stmt *result;
-        LOG((*logger_), "Executing query ", sqlQuery);
+        LOG((*logger_), "Executing query \"", sqlQuery, "\"");
         std::cout << "Executing query: \"" << sqlQuery << "\n"; 
         if(int rc = !sqlite3_prepare_v2(currentDb_, sqlQuery.c_str(), sqlQuery.size(), &result, nullptr) == SQLITE_OK)
         {

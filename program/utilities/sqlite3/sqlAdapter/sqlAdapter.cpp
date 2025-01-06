@@ -12,7 +12,7 @@ namespace Utilities::Sql
     {
         std::vector<Core::Types::School> schools;
         LOG((*logger_), "Fetching schools from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Schools");
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Schools", {"id", "name"});
         if(rawEntries.empty())
         {
             LOG((*logger_), "Called schools, but got no entries!");
@@ -25,8 +25,8 @@ namespace Utilities::Sql
         {
             std::vector<std::string> tokenizedSchool = Utilities::Common::tokenize(e, '|');
             // Tokens are:
-            // (0)NAME | (1)ID
-            schools.push_back(Core::Types::School{static_cast<uint16_t>(std::stoul(tokenizedSchool.at(1))), tokenizedSchool.at(0), {}});
+            // (0)Id | (1)Name
+            schools.push_back(Core::Types::School{static_cast<uint16_t>(std::stoul(tokenizedSchool.at(0))), tokenizedSchool.at(1), {}});
         }
         LOG((*logger_), "Schools tokenized and pushed into the list. Final vector size = ", schools.size(), " Raw entries size = ", rawEntries.size());
         return schools;
@@ -36,9 +36,7 @@ namespace Utilities::Sql
     {
         std::vector<Core::Types::Student> students;
         LOG((*logger_), "Fetching students from the SQL DB");
-        // @TODO: Idea - instead of simple SELECT call - why not use 2nd param here to specify each attribute in the same order as the struct
-        // This will make the code more readable and understandable.
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Students");
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Students", {"id", "firstName", "secondName", "lastName", "email", "schoolId"});
         if(rawEntries.empty())
         {
             LOG((*logger_), "Called students, but got no entries!");
@@ -51,20 +49,18 @@ namespace Utilities::Sql
         {
             std::vector<std::string> tokenizedStudent = Utilities::Common::tokenize(e, '|');
             // Tokens are:
-            // (0) EMAIL | (1)LASTNAME | (2) SECONDNAME | (3) FIRSTNAME | (4) SCHOOLID | (5) ID
-            // Translates to:
             // (0) ID | (1) FIRSTNAME | (2) SECONDNAME | (3) LASTNAME | (4) EMAIL | (5) SCHOOLID 
             std::optional<std::string> secondName = std::nullopt;
-            if(tokenizedStudent.at(2) != "NULL") { secondName = tokenizedStudent.at(1); }
+            if(tokenizedStudent.at(2) != "NULL") { secondName = tokenizedStudent.at(2); }
             
             Core::Types::Student tmpStudent;
-            tmpStudent.id_         = std::stoul(tokenizedStudent.at(5));
-            tmpStudent.firstName_  = tokenizedStudent.at(3);
+            tmpStudent.id_         = std::stoul(tokenizedStudent.at(0));
+            tmpStudent.firstName_  = tokenizedStudent.at(1);
             tmpStudent.secondName_ = secondName;
-            tmpStudent.lastName_   = tokenizedStudent.at(1);
-            tmpStudent.email_      = tokenizedStudent.at(0);
+            tmpStudent.lastName_   = tokenizedStudent.at(3);
+            tmpStudent.email_      = tokenizedStudent.at(4);
             tmpStudent.grades_     = {};
-            tmpStudent.schoolId_   = std::stoul(tokenizedStudent.at(4));
+            tmpStudent.schoolId_   = std::stoul(tokenizedStudent.at(5));
             students.push_back(tmpStudent);
         }
         LOG((*logger_), "Students tokenized and pushed into the list. Final vector size = ", students.size(), " Raw entries size = ", rawEntries.size());
@@ -75,7 +71,7 @@ namespace Utilities::Sql
     {
         std::vector<Core::Types::Subject> subjects;
         LOG((*logger_), "Fetching subjects from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Subjects");
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Subjects", {"id", "name"});
         if(rawEntries.empty())
         {
             LOG((*logger_), "Called subjects, but got no entries!");
@@ -88,8 +84,8 @@ namespace Utilities::Sql
         {
             std::vector<std::string> tokenizedSubjects = Utilities::Common::tokenize(e, '|');
             // Tokens are:
-            // (0)NAME | (1)ID
-            subjects.push_back(Core::Types::Subject{static_cast<uint16_t>(std::stoul(tokenizedSubjects.at(1))), tokenizedSubjects.at(0)});
+            // (0)Id | (1)Name
+            subjects.push_back(Core::Types::Subject{static_cast<uint16_t>(std::stoul(tokenizedSubjects.at(0))), tokenizedSubjects.at(1)});
         }
         LOG((*logger_), "Subjects tokenized and pushed into the list. Final vector size = ", subjects.size(), " Raw entries size = ", rawEntries.size());
         return subjects;
@@ -120,7 +116,7 @@ namespace Utilities::Sql
     {
         std::vector<Core::Types::Course> courses;
         LOG((*logger_), "Fetching courses from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("courses");
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("courses", {"id", "minStudentCount", "maxStudentCount", "baseMinimalPoints", "name"});
         if(rawEntries.empty())
         {
             LOG((*logger_), "Called courses, but got no entries!");
@@ -133,16 +129,14 @@ namespace Utilities::Sql
         {
             std::vector<std::string> tokenizedCourse = Utilities::Common::tokenize(e, '|');
             // Tokens are:
-            // (0) baseMinimalPoints | (1) name | (2) maxStudentCount | (3) minStudentCount | (4) id
-            // Translates to:
             // (0) id | (1) minStudentCount | (2) maxStudentsCount | (3) baseMinimalPoints | (4) avgStudentPoints | (5) name | (6) subjectWithWeight
             Core::Types::Course tmpCourse;
-            tmpCourse.id_                   = std::stoul(tokenizedCourse.at(4));
-            tmpCourse.minStudents_          = std::stoi(tokenizedCourse.at(3));
+            tmpCourse.id_                   = std::stoul(tokenizedCourse.at(0));
+            tmpCourse.minStudents_          = std::stoi(tokenizedCourse.at(1));
             tmpCourse.maxStudents_          = std::stoi(tokenizedCourse.at(2));
-            tmpCourse.baseMinimalPoints_    = std::stoi(tokenizedCourse.at(0));
-            tmpCourse.averageStudentPoints_ = 0.0f;
-            tmpCourse.name_                 = tokenizedCourse.at(1);
+            tmpCourse.baseMinimalPoints_    = std::stoi(tokenizedCourse.at(3));
+            tmpCourse.averageStudentPoints_ = tmpCourse.baseMinimalPoints_;
+            tmpCourse.name_                 = tokenizedCourse.at(4);
             tmpCourse.subjectWithWeight_    = {};
 
             // For each course get the aproporiate
@@ -157,7 +151,7 @@ namespace Utilities::Sql
     {
         std::vector<Core::Types::Request::Srequest> sRequests;
         LOG((*logger_), "Fetching student requests from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("StudentRequest");
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("StudentRequest", {"id", "studentId", "courseId", "requestStatus"});
         
         if(rawEntries.empty())
         {
@@ -171,13 +165,11 @@ namespace Utilities::Sql
         {
             std::vector<std::string> tokenizedEntry = Utilities::Common::tokenize(e, '|');
             // Tokens are
-            // (0) requestStatus | (1) courseId | (2) studentId | (3) RequestId |
-            // Translates to
             // (0) RequestId | (1) studentId | (2) studentId | (3) requestStatus
-            Request::Srequest newEntry(static_cast<uint32_t>(std::stoul(tokenizedEntry.at(3))),
-                                       static_cast<uint16_t>(std::stoul(tokenizedEntry.at(2))),
+            Request::Srequest newEntry(static_cast<uint32_t>(std::stoul(tokenizedEntry.at(0))),
                                        static_cast<uint16_t>(std::stoul(tokenizedEntry.at(1))),
-                                       static_cast<Request::requestStatus>(std::stoul(tokenizedEntry.at(0))));
+                                       static_cast<uint16_t>(std::stoul(tokenizedEntry.at(2))),
+                                       static_cast<Request::requestStatus>(std::stoul(tokenizedEntry.at(3))));
             sRequests.push_back(newEntry);
         }
 
@@ -326,8 +318,14 @@ namespace Utilities::Sql
     bool SqlAdapter::removeGrade(const Core::Types::Student& targetStudent, const Core::Types::Subject& targetSubject)
     {
         LOG((*logger_), "Attempting to remove grade from \"", targetSubject.name_, "\" from student ", targetStudent.firstName_ , " ", targetStudent.lastName_);
-        // TODO add handle
-        return true;
+        std::stringstream condition;
+        condition << "studentId = " << targetStudent.id_ << " AND subjectId = " << targetSubject.id_;
+        if(sManager_->removeEntryFromTable("Grades", condition.str()))
+        {
+            LOG((*logger_), "Removed grade from a student [", targetStudent.email_, " ", targetStudent.id_, "] from a subject [", targetSubject.name_, " ", targetSubject.id_, "]");
+        }
+        LOG((*logger_), "Could not remove given grade: subjectId = ", targetSubject.id_, " studentId = ", targetStudent.id_, " email = ", targetStudent.email_);
+        return false;
     }
 
 } // namespace Utilities::Sql

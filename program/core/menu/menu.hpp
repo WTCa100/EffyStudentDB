@@ -32,9 +32,11 @@ namespace Core::Display
         std::string manageDatabase();
         std::string getManagementOption() const;
         // Manage each table separately
-        std::string manageSchools();
 
-        School constructSchool();
+        std::string makeCommand();
+
+        std::string manageSchools();
+        std::string manageStudents();
 
         // Change in plan was made and now the display will a little bit differently to make it more readable for the client.
         // Display main menu

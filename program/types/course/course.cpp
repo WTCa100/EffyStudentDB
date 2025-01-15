@@ -1,7 +1,9 @@
 #include "course.hpp"
 
 #include <sstream>
+#include <iostream>
 
+#include "../../utilities/inputHandler/inputHandler.hpp"
 namespace Core::Types
 {
     std::string Course::toString() const
@@ -20,6 +22,16 @@ namespace Core::Types
             {"baseMinimalPoints", std::to_string(baseMinimalPoints_)},
             {"name", name_}
         };
+    }
+
+    void Course::userConstruct(bool makeFull)
+    {
+        std::cout << "Creating course from user input\n";
+        minStudents_ = Utilities::InputHandler::getAttrAsNumber("ammount of minimal students");
+        maxStudents_ = Utilities::InputHandler::getAttrAsNumber("ammount of maximal students");
+        baseMinimalPoints_ = Utilities::InputHandler::getAttrAsNumber("Minimal points required");
+        name_ = Utilities::InputHandler::getAttrAsStringNonEmpty("Name");
+        return;
     }
 
     Course::Course(uint16_t id, uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name) :

@@ -16,10 +16,11 @@ namespace Core::Types
         Entry(uint16_t id, std::string table) : id_(id), associatedTable_(table) {}
         virtual ~Entry() {};
         virtual std::string toString() const = 0;
-       
+        virtual void userConstruct(bool makeFull = true) = 0; 
+
         /// @brief This function shall return all of the SQL related attributes such as 
         /// name, related IDs, float values etc. It shall not include id.
-        /// @return 
+        /// @return Attributes mapped "name" -> "value"
         inline virtual std::map<std::string, std::string> getAttrs() const { return {{"id", std::to_string(id_)}};};
     };
     

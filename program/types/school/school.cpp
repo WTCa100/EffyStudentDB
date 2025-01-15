@@ -1,6 +1,9 @@
 #include "school.hpp"
 
+#include <iostream>
 #include <sstream>
+#include "../../utilities/inputHandler/inputHandler.hpp"
+
 
 namespace Core::Types
 {
@@ -16,6 +19,11 @@ namespace Core::Types
         return {{"name", name_}};
     }
 
-
+    void School::userConstruct(bool makeFull)
+    {
+        std::cout << "Creating school from user input\n";
+        name_ = Utilities::InputHandler::getAttrAsStringNonEmpty("Name");
+        return;
+    }
 
 }

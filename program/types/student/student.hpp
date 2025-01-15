@@ -22,8 +22,9 @@ namespace Core::Types
         std::string toString(bool showGrades) const;
         std::string toString() const override;
         std::map<std::string, std::string> getAttrs() const override;
+        void userConstruct(bool makeFull = true) override; 
 
-        Student() : Entry(0, "Schools") {} // Not sure if we want to leave it that way
+        Student() : Entry(0, "Schools") {}
         Student(uint16_t id, std::string name, std::string lastName, std::string email, uint16_t schoolId, std::optional<std::string> secondName = std::nullopt);
         Student(std::string name, std::string lastName, std::string email, uint16_t schoolId, std::optional<std::string> secondName = std::nullopt);
     };

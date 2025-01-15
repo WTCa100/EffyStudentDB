@@ -159,14 +159,35 @@ bool Session::executeCommand(std::string command)
 
     if(table == "SCHOOL") 
     {
+        School newSchool;
         if(action == "ADD")
         {
-            // Construct school
-            School newSchool = display_->constructSchool();
+            newSchool.userConstruct(true);
             return addSchool(newSchool);
         }
+        
+        newSchool.userConstruct();
+        if(action == "ALTER")
+        {
+            // Get entry from the database with the given ID
+
+        }
+
+        if(action == "REMOVE")
+        {}
+
+        // Find?
+
     }
-    else if(table == "STUDENT") {}
+    else if(table == "STUDENT") 
+    {
+        Student newStudent;
+        if(action == "ADD")
+        {
+            newStudent.userConstruct(true);
+            return addStudent(newStudent);
+        }
+    }
     else if(table == "SUBJECT") {}
     else if (table == "COURSE") {}
     else if (table == "SREQUEST") {}

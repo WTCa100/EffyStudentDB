@@ -3,6 +3,7 @@
 #include <string>
 
 #include "../entry.hpp"
+#include "../../utilities/inputHandler/inputHandler.hpp"
 
 namespace Core::Types
 {
@@ -13,6 +14,7 @@ namespace Core::Types
     
         inline std::map<std::string, std::string> getAttrs() const override { return {{"name", name_}};}
         inline std::string toString() const override { return std::to_string(id_) + ". " + name_; }
+        inline void userConstruct(bool makeFull = true) override { name_ = Utilities::InputHandler::getAttrAsStringNonEmpty("Name"); }  
     };
 
 } // namespace Core::Types

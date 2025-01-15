@@ -28,16 +28,17 @@ namespace Core::Display
 
         // For now - this will get overhauled later
         std::string returnCommand;
+        std::string mgmtCmd;
         switch (op)
         {
         case 1:
-        {
-            std::string mgmtCmd = manageSchools();
+            mgmtCmd = manageSchools();
             if(mgmtCmd != "EXIT") returnCommand = "SCHOOL " + mgmtCmd; else returnCommand = "EXIT";
             break;
-        }
+
         case 2:
-            sesData_->showGrades();
+            mgmtCmd = manageStudents();
+            if(mgmtCmd != "EXIT") returnCommand = "STUDENT " + mgmtCmd; else returnCommand = "EXIT";
             break;
         case 3:
             sesData_->showSubjects();
@@ -57,25 +58,46 @@ namespace Core::Display
         return returnCommand;
     }
 
+
+    std::string Menu::makeCommand()
+    {
+        std::string commandOption;
+        do
+        {
+            commandOption = getManagementOption();
+        } while (!validateCommand(commandOption));
+        LOG((*logger_), "Got command: ", commandOption);
+        return commandOption;  
+    }
+
     std::string Menu::manageSchools()
     {
         LOG((*logger_), "Managing schools");
-        sesData_->showSchools();
         // @TODO consider adding pages
         // uint16_t pages = schools.size(); 
         // uint16_t currentPage = 1;
         // std::cout << "Displaying Schools";
-        std::string commandOption;
+        
+        std::string command;
         do
         {
-            do
-            {
-                commandOption = getManagementOption();
-            } while (!validateCommand(commandOption));
-            LOG((*logger_), "Got command: ", commandOption);
-        } while (commandOption == "NEXT" || commandOption == "PREV");
-        
-        return commandOption;
+            sesData_->showSchools();
+            command = makeCommand();
+        } while (command == "NEXT" || command == "PREV");
+        return command;
+    }
+
+    std::string Menu::manageStudents()
+    {
+        LOG((*logger_), "Manage Students");
+        std::string command;
+        do
+        {
+            sesData_->showStudents();
+            command = makeCommand();
+            std::cout << "Command: " << command << "\n";
+        } while (command == "NEXT" || command == "PREV");
+        return command;
     }
 
     bool Menu::validateCommand(std::string cmd)
@@ -139,17 +161,5 @@ namespace Core::Display
         op = static_cast<MainMenuOption>(inHandler_->getOption(1, 3));
         LOG((*logger_), "Got option ", op);
         return op;
-    }
-
-    School Menu::constructSchool()
-    {
-        std::string name;
-        std::cout << "Creating a school:\n";
-        do
-        {
-            std::cout << "Name: ";
-            std::getline(std::cin, name);
-        } while (name.empty());
-        return School{0, name, {}};
     }
 }

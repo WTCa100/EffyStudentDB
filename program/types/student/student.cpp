@@ -32,12 +32,13 @@ namespace Core::Types
     {
         std::stringstream ss("");
         ss << "Id: " << id_ << ", First name: " << firstName_ << ", ";
-        if(secondName_.has_value())
+        if(secondName_.has_value() && !secondName_.value().empty())
         {
             ss << "Second name: " << secondName_.value() << ", ";
         }
         ss << "Last name: " << lastName_ << ", ";
-        ss << "Email: " << email_ << " ";
+        ss << "Email: " << email_ << ", ";
+        ss << "Associated School: " << schoolId_ << " ";
         return ss.str();
     }
 
@@ -58,6 +59,10 @@ namespace Core::Types
         std::cout << "(Attributes tagged as 'optional' can be left empty)\n";
         firstName_ = Utilities::InputHandler::getAttrAsStringNonEmpty("First name");
         secondName_ = Utilities::InputHandler::getAttrAsString("Second name (optional)");
+        if(secondName_.has_value() && secondName_.value().empty())
+        {
+            secondName_ = std::nullopt;
+        }
         lastName_ = Utilities::InputHandler::getAttrAsStringNonEmpty("Last name");
         email_ = Utilities::InputHandler::getAttrAsStringNonEmpty("Email");
         schoolId_ = Utilities::InputHandler::getAttrAsNumber("Associated School (ID)"); // Maybe turn it into optional?

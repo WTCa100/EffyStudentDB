@@ -14,8 +14,8 @@ namespace Core::Display
 
     std::string Menu::manageDatabase()
     {
-        LOG((*logger_), "Displaying Database - getting input");
-        std::cout << "What table to display?\n";
+        LOG((*logger_), "Choosing table to manage - getting input");
+        std::cout << "Which table you want to manage?\n";
         std::cout << "1. Schools\n";
         std::cout << "2. Students with grades\n";
         std::cout << "3. Subjects\n";

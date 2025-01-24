@@ -16,6 +16,10 @@ namespace Core::Types
         Entry(uint16_t id, std::string table) : id_(id), associatedTable_(table) {}
         virtual ~Entry() {};
         virtual std::string toString() const = 0;
+        
+        // TODO Swap user construct so that it will return and std::map<std::string, std::string> instead of void
+        // this will allow to better create a filter in session to invoke with sAdapter on alter and remove command
+        // alternatively you can add "createFilter" based on the std::map return from this user construct command
         virtual void userConstruct(bool makeFull = true) = 0; 
 
         /// @brief This function shall return all of the SQL related attributes such as 

@@ -24,7 +24,7 @@ namespace Core::Types
         std::map<std::string, std::string> getAttrs() const override;
         void userConstruct(bool makeFull = true) override; 
 
-        Student() : Entry(0, "Schools") {}
+        Student() : Entry(0, "Students") {}
         Student(uint16_t id, std::string name, std::string lastName, std::string email, uint16_t schoolId, std::optional<std::string> secondName = std::nullopt);
         Student(std::string name, std::string lastName, std::string email, uint16_t schoolId, std::optional<std::string> secondName = std::nullopt);
     };

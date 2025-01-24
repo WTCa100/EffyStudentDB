@@ -36,8 +36,10 @@ void SessionData::addStudent(const Student& newStudnet)
     {
         studentList_.insert(std::make_pair(newStudnet.id_, newStudnet));
         // Assign a student to a school
+        std::cout << "DBG: Adding student " << newStudnet.schoolId_ << "\n";
         if(schoolList_.contains(newStudnet.schoolId_))
         {
+            std::cout << "DBG: Have school adding it: " << schoolList_.at(newStudnet.schoolId_).name_ << "\n";
             schoolList_.at(newStudnet.schoolId_).students_.insert(std::make_pair(newStudnet.id_, newStudnet));
         }
     }

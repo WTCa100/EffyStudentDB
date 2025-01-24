@@ -152,38 +152,91 @@ bool Session::executeCommand(std::string command)
 
     std::vector<std::string> tokenizedCommand = Utilities::Common::tokenize(command , ' ');
     
-    // 1st Table 2nd action 3rd (optional) targetId
+    // 1st Table 2nd action 3rd (optional - used only for editing and removing) targetId
     std::string table = tokenizedCommand.at(0);
     std::string action = tokenizedCommand.at(1);
     std::optional<std::string> targetId = (tokenizedCommand.size() == 3) ? std::optional<std::string>(tokenizedCommand.at(2)) : std::nullopt;
 
+    // Consider moving it into a map of lambdas
+    // like: std::unordered_map<std::string, std::function<bool()>> commandMap;
+
     if(table == "SCHOOL") 
     {
-        School newSchool;
         if(action == "ADD")
         {
+            School newSchool;
             newSchool.userConstruct(true);
             return addSchool(newSchool);
         }
         
-        newSchool.userConstruct();
+        School targetSchool;
+        std::vector<School> affectedEntries;
+        bool handledAllEntries = true;
+        if(!targetId.has_value())
+        {
+           targetSchool.userConstruct(true); // only one attr present it has to be passed
+           affectedEntries = sAdapter_->getSchools("name = " + targetSchool.name_);
+        }
+        else
+        {
+            targetSchool.id_ = std::stoul(targetId.value());
+            affectedEntries = sAdapter_->getSchools("id = " + targetId.value());
+        }
+
+        if(affectedEntries.empty())
+        {
+            LOG((*logger_), "No such school present!");
+            return false;
+        }
+
         if(action == "ALTER")
         {
-            // Get entry from the database with the given ID
-
+            School alteredSchool;
+            std::cout << "Input new school data\n";
+            alteredSchool.userConstruct();
+            // TODO: Ask user if he wants to update all of the entries
+            std::cout << "Updating school: " << affectedEntries.at(0).name_ << "\n";
+            if(affectedEntries.size() > 1)
+            {
+                std::cout << "And " << affectedEntries.size() - 1 << " more entries\n";
+            }
+            for(auto& entry : affectedEntries)
+            {
+                // TODO print at least 1st entry
+                if(!updateSchool(entry, alteredSchool))
+                {
+                    LOG((*logger_), "Failed to update school: ", entry.name_);
+                    std::cout << "Failed to update school: " << entry.name_ << "\n";
+                    handledAllEntries = false;
+                }
+            }
+            return handledAllEntries;
         }
 
         if(action == "REMOVE")
-        {}
+        {
+            // TODO: Ask user if he wants to update all of the entries
+            for(auto& entry : affectedEntries)
+            {
+                if(!removeSchool(targetSchool))
+                {
+                    // TODO print at least 1st entry
+                    LOG((*logger_), "Failed to update school: ", entry.name_);
+                    std::cout << "Failed to update school: " << entry.name_ << "\n";
+                    handledAllEntries = false;
+                }
+            }
+            return handledAllEntries;
+        }
 
         // Find?
 
     }
     else if(table == "STUDENT") 
     {
-        Student newStudent;
         if(action == "ADD")
         {
+            Student newStudent;
             newStudent.userConstruct(true);
             return addStudent(newStudent);
         }

@@ -28,12 +28,12 @@ namespace Utilities::Sql
         SqlAdapter(std::shared_ptr<Logger> logger, std::shared_ptr<SqlManager> sManager);
         ~SqlAdapter() = default;
 
-        std::vector<School>                         getSchools();
-        std::vector<Student>                        getStudents();
-        std::vector<Subject>                        getSubjects();
-        std::vector<std::vector<std::string>>       getGrades();
-        std::vector<Course>                         getCourses();
-        std::vector<Request::Srequest>              getSrequests();
+        std::vector<School>                         getSchools(std::string filter = "");
+        std::vector<Student>                        getStudents(std::string filter = "");
+        std::vector<Subject>                        getSubjects(std::string filter = "");
+        std::vector<std::vector<std::string>>       getGrades(std::string filter = "");
+        std::vector<Course>                         getCourses(std::string filter = "");
+        std::vector<Request::Srequest>              getSrequests(std::string filter = "");
 
         void mapSubjectToCourseWeight(Course& targetCourse);        
         uint16_t getLatestIdFromTable(std::string tblName);

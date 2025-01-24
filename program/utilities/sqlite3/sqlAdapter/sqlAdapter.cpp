@@ -8,11 +8,11 @@ namespace Utilities::Sql
 {
     SqlAdapter::SqlAdapter(std::shared_ptr<Logger> logger, std::shared_ptr<SqlManager> sManager) : logger_(logger), sManager_(sManager) { LOG((*logger_), "Creation of SqlAdapter"); }
 
-    std::vector<Core::Types::School> SqlAdapter::getSchools()
+    std::vector<Core::Types::School> SqlAdapter::getSchools(std::string filter)
     {
         std::vector<Core::Types::School> schools;
         LOG((*logger_), "Fetching schools from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Schools", {"id", "name"});
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Schools", {"id", "name"}, filter);
         if(rawEntries.empty())
         {
             LOG((*logger_), "Called schools, but got no entries!");
@@ -32,11 +32,11 @@ namespace Utilities::Sql
         return schools;
     }
 
-    std::vector<Core::Types::Student> SqlAdapter::getStudents()
+    std::vector<Core::Types::Student> SqlAdapter::getStudents(std::string filter)
     {
         std::vector<Core::Types::Student> students;
         LOG((*logger_), "Fetching students from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Students", {"id", "firstName", "secondName", "lastName", "email", "schoolId"});
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Students", {"id", "firstName", "secondName", "lastName", "email", "schoolId"}, filter);
         if(rawEntries.empty())
         {
             LOG((*logger_), "Called students, but got no entries!");
@@ -67,11 +67,11 @@ namespace Utilities::Sql
         return students;
     }
     
-    std::vector<Core::Types::Subject> SqlAdapter::getSubjects()
+    std::vector<Core::Types::Subject> SqlAdapter::getSubjects(std::string filter)
     {
         std::vector<Core::Types::Subject> subjects;
         LOG((*logger_), "Fetching subjects from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Subjects", {"id", "name"});
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Subjects", {"id", "name"}, filter);
         if(rawEntries.empty())
         {
             LOG((*logger_), "Called subjects, but got no entries!");
@@ -91,10 +91,10 @@ namespace Utilities::Sql
         return subjects;
     }
 
-    std::vector<std::vector<std::string>> SqlAdapter::getGrades()
+    std::vector<std::vector<std::string>> SqlAdapter::getGrades(std::string filter)
     {
         LOG((*logger_), "Fetching grades from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("grades");
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("grades", {}, filter);
         if(rawEntries.empty())
         {
             LOG((*logger_), "Called grades, but got no entries!");
@@ -112,11 +112,11 @@ namespace Utilities::Sql
         return listOfGrades;
     }
 
-    std::vector<Core::Types::Course> SqlAdapter::getCourses()
+    std::vector<Core::Types::Course> SqlAdapter::getCourses(std::string filter)
     {
         std::vector<Core::Types::Course> courses;
         LOG((*logger_), "Fetching courses from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("courses", {"id", "minStudentCount", "maxStudentCount", "baseMinimalPoints", "name"});
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("courses", {"id", "minStudentCount", "maxStudentCount", "baseMinimalPoints", "name"}, filter);
         if(rawEntries.empty())
         {
             LOG((*logger_), "Called courses, but got no entries!");
@@ -147,11 +147,11 @@ namespace Utilities::Sql
         return courses;
     }
 
-    std::vector<Core::Types::Request::Srequest> SqlAdapter::getSrequests()
+    std::vector<Core::Types::Request::Srequest> SqlAdapter::getSrequests(std::string filter)
     {
         std::vector<Core::Types::Request::Srequest> sRequests;
         LOG((*logger_), "Fetching student requests from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("StudentRequest", {"id", "studentId", "courseId", "requestStatus"});
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("StudentRequest", {"id", "studentId", "courseId", "requestStatus"}, filter);
         
         if(rawEntries.empty())
         {

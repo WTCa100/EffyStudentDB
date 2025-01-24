@@ -22,7 +22,7 @@ namespace Core::Types
     void School::userConstruct(bool makeFull)
     {
         std::cout << "Creating school from user input\n";
-        name_ = Utilities::InputHandler::getAttrAsStringNonEmpty("Name");
+        name_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Name") : Utilities::InputHandler::getAttrAsString("Name");
         return;
     }
 

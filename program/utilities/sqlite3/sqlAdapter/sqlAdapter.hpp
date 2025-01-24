@@ -43,6 +43,8 @@ namespace Utilities::Sql
         bool removeEntry(const Entry& targetEntry);
         bool addGrade(Student& targetStudent, Subject& targetSubject, const float& grade);
         bool removeGrade(const Student& targetStudent, const Subject& targetSubject);
+
+        std::string makeFilter(std::unordered_map<std::string, std::string> attrs);
     };
     
 } // namespace Utilities

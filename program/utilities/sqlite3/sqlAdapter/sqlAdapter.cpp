@@ -328,4 +328,14 @@ namespace Utilities::Sql
         return false;
     }
 
+    std::string SqlAdapter::makeFilter(std::unordered_map<std::string, std::string> attrs)
+    {
+        std::stringstream filter;
+        for(const auto& attr: attrs)
+        {
+            filter << attr.first << " = " << attr.second << " ";
+        }
+        return filter.str(); 
+    }
+
 } // namespace Utilities::Sql

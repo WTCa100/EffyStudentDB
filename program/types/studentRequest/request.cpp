@@ -33,12 +33,13 @@ namespace Core::Types::Request
         return {{"studentId", std::to_string(studentId_)}, {"courseId", std::to_string(courseId_)}, {"status", std::to_string(status_)}};
     }       
 
-    void Srequest::userConstruct(bool makeFull)
+    std::unordered_map<std::string, std::string> Srequest::userConstruct(bool makeFull)
     {
         std::cout << "Creating student request from user input\n";
-        studentId_ = Utilities::InputHandler::getAttrAsNumber("Student ID");
-        courseId_ = Utilities::InputHandler::getAttrAsNumber("Course ID");
+        studentId_ = Utilities::InputHandler::getAttrAsNumberNonEmpty("Student ID");
+        courseId_ = Utilities::InputHandler::getAttrAsNumberNonEmpty("Course ID");
         status_ = requestStatus::Pending;
+        return {};
     }
 
 }

@@ -124,7 +124,7 @@ void Session::run()
                     }
                     else
                     {
-                        std::cout << "Failed to execute the command.";
+                        std::cout << "Failed to execute the command.\n";
                     }
                 } while (command != "EXIT");
                 
@@ -202,7 +202,6 @@ bool Session::executeCommand(std::string command)
             }
             for(auto& entry : affectedEntries)
             {
-                // TODO print at least 1st entry
                 if(!updateSchool(entry, alteredSchool))
                 {
                     LOG((*logger_), "Failed to update school: ", entry.name_);
@@ -216,11 +215,11 @@ bool Session::executeCommand(std::string command)
         if(action == "REMOVE")
         {
             // TODO: Ask user if he wants to update all of the entries
+            std::cout << "Updating school: " << affectedEntries.at(0).name_ << "\n";
             for(auto& entry : affectedEntries)
             {
                 if(!removeSchool(targetSchool))
                 {
-                    // TODO print at least 1st entry
                     LOG((*logger_), "Failed to update school: ", entry.name_);
                     std::cout << "Failed to update school: " << entry.name_ << "\n";
                     handledAllEntries = false;
@@ -239,6 +238,43 @@ bool Session::executeCommand(std::string command)
             Student newStudent;
             newStudent.userConstruct(true);
             return addStudent(newStudent);
+        }
+
+        Student targetStudent;
+        std::vector<Student> affectedEntries;
+        bool handledAllEntries = true;
+        if(!targetId.has_value())
+        {
+            std::unordered_map<std::string, std::string> providedAttrs = targetStudent.userConstruct(true); // only one attr present it has to be passed
+            std::string filter = sAdapter_->makeFilter(providedAttrs);
+            affectedEntries = sAdapter_->getStudents(filter);
+        }
+        else
+        {
+            targetStudent.id_ = std::stoul(targetId.value());
+            affectedEntries = sAdapter_->getStudents("id = " + targetId.value());
+        }
+
+        if(affectedEntries.empty())
+        {
+            LOG((*logger_), "No such student present!");
+            return false;
+        }
+
+        if(action == "REMOVE")
+        {
+            // TODO: Ask user if he wants to update all of the entries
+            std::cout << "Updating students: " << affectedEntries.at(0).firstName_ << "\n";
+            for(auto& entry : affectedEntries)
+            {
+                if(!removeStudent(targetStudent))
+                {
+                    LOG((*logger_), "Failed to update student: ", entry.firstName_);
+                    std::cout << "Failed to update student: " << entry.firstName_ << "\n";
+                    handledAllEntries = false;
+                }
+            }
+            return handledAllEntries;
         }
     }
     else if(table == "SUBJECT") {}
@@ -287,6 +323,14 @@ bool Session::removeSchool(School targetSchool)
 bool Session::addStudent(Student& newStudent)
 {
     LOG((*logger_), "Adding new student: {", newStudent.firstName_, " ", newStudent.lastName_, " ", newStudent.email_, "}");
+    
+    if(!sesData_->existsSchool(newStudent.schoolId_))
+    {
+        LOG((*logger_), "WARN! Attempted to add student to non existing school!");
+        std::cout << "No school with id " << newStudent.schoolId_ << " exists!\n";
+        return false;
+    }
+
     if(sAdapter_->addEntry(newStudent))
     {
         sesData_->addStudent(newStudent);

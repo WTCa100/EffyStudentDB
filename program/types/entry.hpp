@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <string>
 #include <map>
+#include <unordered_map>
 
 namespace Core::Types
 {
@@ -20,7 +21,7 @@ namespace Core::Types
         // TODO Swap user construct so that it will return and std::map<std::string, std::string> instead of void
         // this will allow to better create a filter in session to invoke with sAdapter on alter and remove command
         // alternatively you can add "createFilter" based on the std::map return from this user construct command
-        virtual void userConstruct(bool makeFull = true) = 0; 
+        virtual std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) = 0; 
 
         /// @brief This function shall return all of the SQL related attributes such as 
         /// name, related IDs, float values etc. It shall not include id.

@@ -53,24 +53,34 @@ namespace Core::Types
         return mappedAttrs;
     }
 
-    void Student::userConstruct(bool makeFull)
+    std::unordered_map<std::string, std::string> Student::userConstruct(bool makeFull)
     {
+        std::unordered_map<std::string, std::string> mappedNewAttrs;
         std::cout << "Creating student from user input\n";
         std::cout << "(Attributes tagged as 'optional' can be left empty)\n";
-        firstName_ = Utilities::InputHandler::getAttrAsStringNonEmpty("First name");
+        firstName_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("First name") : Utilities::InputHandler::getAttrAsString("First name");
+        if(!firstName_.empty())  mappedNewAttrs.insert(std::make_pair("firstName", firstName_));
+
         secondName_ = Utilities::InputHandler::getAttrAsString("Second name (optional)");
         if(secondName_.has_value() && secondName_.value().empty())
         {
             secondName_ = std::nullopt;
         }
-        lastName_ = Utilities::InputHandler::getAttrAsStringNonEmpty("Last name");
-        email_ = Utilities::InputHandler::getAttrAsStringNonEmpty("Email");
-        schoolId_ = Utilities::InputHandler::getAttrAsNumber("Associated School (ID)"); // Maybe turn it into optional?
-        return;
+
+        lastName_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Last name") : Utilities::InputHandler::getAttrAsString("Last name");
+        if(!lastName_.empty()) mappedNewAttrs.insert(std::make_pair("lastName", lastName_));
+
+        email_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Email") : Utilities::InputHandler::getAttrAsString("Email");
+        if(!email_.empty()) mappedNewAttrs.insert(std::make_pair("email", email_));
+
+        schoolId_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Associated School (ID)") : Utilities::InputHandler::getAttrAsNumberNonEmpty("Associated School (ID)");
+        if(schoolId_ != 0) mappedNewAttrs.insert(std::make_pair("schoolId", std::to_string(schoolId_)));
+
+        return mappedNewAttrs;
     }
 
     Student::Student(uint16_t id, std::string name, std::string lastName, std::string email, uint16_t schoolId, std::optional<std::string> secondName) : 
-             Entry(id_, "Schools"),
+             Entry(id_, "Students"),
              firstName_(name),
              secondName_(secondName),
              lastName_(lastName),
@@ -80,7 +90,7 @@ namespace Core::Types
     {}
 
     Student::Student(std::string name, std::string lastName, std::string email, uint16_t schoolId, std::optional<std::string> secondName) :
-             Entry(0, "Schools"),
+             Entry(0, "Students"),
              firstName_(name),
              secondName_(secondName),
              lastName_(lastName),

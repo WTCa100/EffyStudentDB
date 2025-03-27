@@ -16,6 +16,15 @@ namespace Utilities
         return true;
     }
 
+    bool InputHandler::isValidNumber(const std::string& target)
+    {
+        if(isNumber(target))
+        {
+            return std::stoi(target) != INT_MAX;
+        }
+        return false;
+    }
+
     int InputHandler::getNumber()
     {
         int ans = -1;
@@ -24,12 +33,9 @@ namespace Utilities
         {
             std::cout << "Enter a number: ";
             std::getline(std::cin, buf);
-            if(!buf.empty())
+            if(buf.empty())
             {
-                if(!isNumber(buf))
-                {
-                    std::cout << "Only use numbers.\n";
-                }
+                return INT_MAX;
             }
         } while (!isNumber(buf));
         return ans = std::stoi(buf);
@@ -67,7 +73,7 @@ namespace Utilities
         return ans;
     }    
 
-    int InputHandler::getAttrAsNumber(std::string attrName)
+    int InputHandler::getAttrAsNumberNonEmpty(std::string attrName)
     {
         int ans = -1;
         std::string buf = "";
@@ -75,7 +81,7 @@ namespace Utilities
         {
             std::cout << "Enter " << attrName << ": ";
             ans = getNumber();
-        } while (ans == -1);
+        } while (ans == INT_MAX);
         return ans;
     }
 

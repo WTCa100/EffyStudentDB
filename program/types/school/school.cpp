@@ -19,11 +19,11 @@ namespace Core::Types
         return {{"name", name_}};
     }
 
-    void School::userConstruct(bool makeFull)
+    std::unordered_map<std::string, std::string> School::userConstruct(bool makeFull)
     {
         std::cout << "Creating school from user input\n";
         name_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Name") : Utilities::InputHandler::getAttrAsString("Name");
-        return;
+        return {};
     }
 
 }

@@ -30,6 +30,11 @@ void SessionData::removeSchool(const uint16_t targetSchool)
     }
 }
 
+bool SessionData::existsSchool(const uint16_t targetSchool) const
+{
+    return schoolList_.contains(targetSchool);
+}
+
 void SessionData::addStudent(const Student& newStudnet)
 {
     if(!studentList_.contains(newStudnet.id_))

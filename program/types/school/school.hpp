@@ -23,7 +23,7 @@ namespace Core::Types
 
         std::string toString() const override;
         virtual std::map<std::string, std::string> getAttrs() const override;
-        void userConstruct(bool makeFull = true) override;
+        std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;
 
     };
 } // namespace Core

@@ -23,7 +23,7 @@ namespace Core::Types
 
         std::string toString() const override;
         std::map<std::string, std::string> getAttrs() const override;
-        void userConstruct(bool makeFull = true) override;
+        std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;
 
         Course() : Entry(0, "Courses") {}
         Course(uint16_t id, uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name);

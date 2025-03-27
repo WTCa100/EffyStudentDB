@@ -121,12 +121,12 @@ namespace Core::Display
         {
             if(cmdCore == "ALTER" || cmdCore == "REMOVE")
             {
-                if(!(tokenizedCmd.size() > 1))
+                std::string cmdIdPart = "";
+                if((tokenizedCmd.size() > 1))
                 {
-                    return false;
+                    cmdIdPart = tokenizedCmd.at(1);
                 }
-
-                std::string cmdIdPart = tokenizedCmd.at(1);
+                
                 return Utilities::InputHandler::isNumber(cmdIdPart);
             }
             return true;

@@ -25,7 +25,7 @@ namespace Core::Types::Request
         Srequest(uint32_t reqId, uint16_t stdId, uint16_t corId, requestStatus status) : Entry(reqId, "StudentRequest"), studentId_(stdId), courseId_(corId), status_(status) {}
         std::string toString() const override;
         std::map<std::string, std::string> getAttrs() const override;
-        void userConstruct(bool makeFull = true) override;
+        std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;
     };
 
 

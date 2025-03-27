@@ -2,6 +2,7 @@
 
 #include <map>
 
+#include "../../../types/entry.hpp"
 #include "../../../types/school/school.hpp"
 #include "../../../types/student/student.hpp"
 #include "../../../types/subject/subject.hpp"
@@ -13,7 +14,6 @@ using Core::Types::Student;
 using Core::Types::Subject;
 using Core::Types::Course;
 using Core::Types::Request::Srequest;
-
 class SessionData
 {
 private:
@@ -27,9 +27,15 @@ public:
     SessionData() : schoolList_({}), studentList_({}), subjectList_({}), courseList_({}), sRequestsList_({}) {}
     ~SessionData() = default;
 
+    // @TODO: What if, all of these function were operating only on abstract entires? 
+    // void addEntry(const Entry& newEntry)
+    // In such function: Look for it's associated table
+    // Each table shall have it's list assign to it
+
     void addSchool(const School& newSchool);
     void updateSchool(const uint16_t targetSchool, const School& alteredSchool);
     void removeSchool(const uint16_t targetSchool);
+    bool existsSchool(const uint16_t targetSchool) const;
 
     void addStudent(const Student& newStudent);
     void removeStudent(const Student& targetStudent);

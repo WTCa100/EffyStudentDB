@@ -24,14 +24,14 @@ namespace Core::Types
         };
     }
 
-    void Course::userConstruct(bool makeFull)
+    std::unordered_map<std::string, std::string> Course::userConstruct(bool makeFull)
     {
         std::cout << "Creating course from user input\n";
-        minStudents_ = Utilities::InputHandler::getAttrAsNumber("ammount of minimal students");
-        maxStudents_ = Utilities::InputHandler::getAttrAsNumber("ammount of maximal students");
-        baseMinimalPoints_ = Utilities::InputHandler::getAttrAsNumber("Minimal points required");
+        minStudents_ = Utilities::InputHandler::getAttrAsNumberNonEmpty("Ammount of minimal students");
+        maxStudents_ = Utilities::InputHandler::getAttrAsNumberNonEmpty("Ammount of maximal students");
+        baseMinimalPoints_ = Utilities::InputHandler::getAttrAsNumberNonEmpty("Minimal points required");
         name_ = Utilities::InputHandler::getAttrAsStringNonEmpty("Name");
-        return;
+        return {};
     }
 
     Course::Course(uint16_t id, uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name) :

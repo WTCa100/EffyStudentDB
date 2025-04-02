@@ -279,7 +279,7 @@ namespace Utilities::Sql
         }
 
         LOG((*logger_), "Changes were found, DB will be contacted");
-        std::string condition = "id = " + std::to_string(newEntry.id_);
+        std::string condition = "id = " + std::to_string(oldEntry.id_);
         return sManager_->updateEntryFromTable(targetTableName, newValPacket, condition);
     }
 

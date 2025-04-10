@@ -20,7 +20,7 @@ namespace Core::Display
     {
     private:
         std::shared_ptr<Utilities::Logger> logger_;
-        std::shared_ptr<SessionData> sesData_;
+        std::shared_ptr<SessionData>       sesData_;
         std::unique_ptr<Utilities::InputHandler> inHandler_;
 
         static bool validateCommand(std::string cmd);

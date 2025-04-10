@@ -99,4 +99,20 @@ namespace Core::Types
              schoolId_(schoolId)
     {}
 
+    Entry& Student::operator=(const Entry& other)
+    {
+        if(this == &other) return *this;
+
+        const auto& otherStudent = dynamic_cast<const Student&>(other);
+        id_         = other.id_;
+        firstName_  = otherStudent.firstName_;
+        secondName_ = otherStudent.secondName_;
+        lastName_   = otherStudent.lastName_;
+        email_      = otherStudent.email_;
+        grades_     = otherStudent.grades_;
+        schoolId_   = otherStudent.schoolId_;
+        
+        return *this;
+    }
+
 } // namespace Core::Types

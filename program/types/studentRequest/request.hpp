@@ -26,6 +26,7 @@ namespace Core::Types::Request
         std::string toString() const override;
         std::map<std::string, std::string> getAttrs() const override;
         std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;
+        Entry& operator=(const Entry& other) override;
     };
 
 

@@ -42,4 +42,19 @@ namespace Core::Types::Request
         return {};
     }
 
+    Entry& Srequest::operator=(const Entry& other) 
+    {
+        if(this == &other) return *this;
+
+        const auto& otherSrequest = dynamic_cast<const Srequest&>(other);
+        
+        id_        = other.id_;
+        studentId_ = otherSrequest.studentId_;
+        courseId_  = otherSrequest.courseId_;
+        status_    = otherSrequest.status_;
+
+        return *this;
+    }
+
+
 }

@@ -22,8 +22,9 @@ namespace Core::Types
         School(uint16_t id, std::string name, std::map<uint16_t, Student> studentList) : Entry(id, "Schools"), name_(name), students_(studentList) {}
 
         std::string toString() const override;
-        virtual std::map<std::string, std::string> getAttrs() const override;
+        std::map<std::string, std::string> getAttrs() const override;
         std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;
+        Entry& operator=(const Entry& other) override;
 
     };
 } // namespace Core

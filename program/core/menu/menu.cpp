@@ -41,13 +41,13 @@ namespace Core::Display
             if(mgmtCmd != "EXIT") returnCommand = "STUDENT " + mgmtCmd; else returnCommand = "EXIT";
             break;
         case 3:
-            sesData_->showSubjects();
+            // sesData_->showSubjects();
             break;
         case 4:
-            sesData_->showCourses();
+            // sesData_->showCourses();
             break;
         case 5:
-            sesData_->showStudentRequests();
+            // sesData_->showStudentRequests();
             break;
         case 6:
             LOG((*logger_), "Going back to main menu");
@@ -72,16 +72,29 @@ namespace Core::Display
 
     std::string Menu::manageSchools()
     {
-        LOG((*logger_), "Managing schools");
         // @TODO consider adding pages
         // uint16_t pages = schools.size(); 
         // uint16_t currentPage = 1;
         // std::cout << "Displaying Schools";
+
+        LOG((*logger_), "Managing schools");
+        const std::unique_ptr<concreteTypeList> schoolList = sesData_->getEntries("Schools");
         
+        if(!schoolList)
+        {
+            std::runtime_error("Could not access concreteTypeList of Schools");
+        }
+
         std::string command;
         do
         {
-            sesData_->showSchools();
+            std::cout << "Displaying schools: \n";
+            std::cout << schoolList->size() << " entries\n";
+            std::cout << "ID | SCHOOL NAME | STUDENT COUNT\n";
+            for(const auto& school : *schoolList)
+            {
+                std::cout << school.second.get()->toString() << "\n";
+            }
             command = makeCommand();
         } while (command == "NEXT" || command == "PREV");
         return command;
@@ -90,10 +103,24 @@ namespace Core::Display
     std::string Menu::manageStudents()
     {
         LOG((*logger_), "Manage Students");
+     
+        const std::unique_ptr<concreteTypeList> studentList = sesData_->getEntries("Students");
+        
+        if(!studentList)
+        {
+            std::runtime_error("Could not access concreteTypeList of Students");
+        }
+
         std::string command;
         do
         {
-            sesData_->showStudents();
+            std::cout << "Displaying students: \n";
+            std::cout << studentList->size() << " entries\n";
+            std::cout << "ID | FIRST NAME | SECOND NAME (optional) | LAST NAME | EMAIL | ASSOCIATED SCHOOL ID\n";
+            for(const auto& student : *studentList)
+            {
+                std::cout << student.second.get()->toString() << "\n";
+            }
             command = makeCommand();
             std::cout << "Command: " << command << "\n";
         } while (command == "NEXT" || command == "PREV");

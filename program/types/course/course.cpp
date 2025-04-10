@@ -36,22 +36,39 @@ namespace Core::Types
 
     Course::Course(uint16_t id, uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name) :
             Entry(id, "Courses"),
+            subjectWithWeight_({}),
+            name_(name),
             minStudents_(minStudents),
             maxStudents_(maxStudents),
             baseMinimalPoints_(baseMinimalPoints),
-            averageStudentPoints_(baseMinimalPoints),
-            name_(name),
-            subjectWithWeight_({})
+            averageStudentPoints_(baseMinimalPoints)
     {}
 
     Course::Course(uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints , std::string name) :
             Entry(0, "Courses"),
+            subjectWithWeight_({}),
+            name_(name),
             minStudents_(minStudents),
             maxStudents_(maxStudents),
             baseMinimalPoints_(baseMinimalPoints),
-            averageStudentPoints_(baseMinimalPoints),
-            name_(name),
-            subjectWithWeight_({})
+            averageStudentPoints_(baseMinimalPoints)
     {}
+
+    Entry& Course::operator=(const Entry& other)
+    {
+        if(this == &other) return *this;
+
+        const auto& otherCourse = dynamic_cast<const Course&>(other);
+        
+        id_                   = otherCourse.id_;
+        subjectWithWeight_    = otherCourse.subjectWithWeight_;
+        name_                 = otherCourse.name_;
+        minStudents_          = otherCourse.minStudents_;
+        maxStudents_          = otherCourse.maxStudents_;
+        baseMinimalPoints_    = otherCourse.baseMinimalPoints_;
+        averageStudentPoints_ = otherCourse.averageStudentPoints_;
+        return *this;
+    }
+
 
 }

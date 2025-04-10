@@ -1,0 +1,1 @@
+add_library(Subject STATIC subject.cpp subject.hpp)

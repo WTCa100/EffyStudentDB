@@ -26,4 +26,14 @@ namespace Core::Types
         return {};
     }
 
+    Entry& School::operator=(const Entry& other)
+    {
+        if(this == &other) return *this;
+        // Cast to aproporiate type
+        const School* otherSchool = dynamic_cast<const School*>(&other);
+        id_              = otherSchool->id_;
+        name_            = otherSchool->name_;
+        students_        = otherSchool->students_;
+        return *this;
+    }
 }

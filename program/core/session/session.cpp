@@ -2,6 +2,8 @@
 
 #include "../../utilities/common/stringManip.hpp"
 
+#include "../../types/entry.hpp"
+
 Session::Session(std::shared_ptr<WsManager> wsMgr) : wsMgr_(wsMgr),
                                                      logger_(wsMgr_->getLogger()),
                                                      sAdapter_(std::make_unique<SqlAdapter>(logger_, wsMgr_->getSqlManager())),
@@ -10,32 +12,7 @@ Session::Session(std::shared_ptr<WsManager> wsMgr) : wsMgr_(wsMgr),
 {
     LOG((*logger_), "Loading initial database entries");
     fetchAll();
-
-
-    School mockSchool = School{0, "Non_Existing_School"};
-    addSchool(mockSchool);
-
-    Subject mockSubject = Subject{0, "Non_Existing_Subject"};
-    removeSubject(mockSubject);
-    addSubject(mockSubject);
-
-    Student mockStudent = Student{"John", "Doe", "john.doe@mail.com", mockSchool.id_};
-    addStudent(mockStudent);
-
-    Course mockCourse = Course{20, 50, 20, "Invalid_Course"};
-    addCourse(mockCourse);
-
-    sesData_->showSchools();
-    sesData_->showCourses();
-
-    School newMockSchool = School{0, "Existing_School"};
-    Course newMockCourse = Course{10, 40, 10, "Valid_Course"};
-    updateSchool(mockSchool, newMockSchool);
-    updateCourse(mockCourse, newMockCourse);
-    sesData_->showSchools();
-    sesData_->showCourses();
-    sesData_->showStudentRequests(true);
-    
+    LOG((*logger_), "Session established");
 }
 
 void Session::fetchAll()
@@ -57,7 +34,7 @@ void Session::fetchSchools()
     LOG((*logger_), "Got ", dbSchools.size() , " Entries");
     for(const auto& entry : dbSchools)
     {
-        sesData_->addSchool(entry);
+        sesData_->addEntry(std::make_shared<School>(entry));
     }
 }
 
@@ -68,7 +45,19 @@ void Session::fetchStudents()
     LOG((*logger_), "Got ", dbStudents.size() , " Entries");
     for(const auto& entry : dbStudents)
     {
-        sesData_->addStudent(entry);
+        sesData_->addEntry(std::make_shared<Student>(entry));
+
+        const uint16_t schoolId = entry.schoolId_;
+        std::shared_ptr<School> targetSchool = std::dynamic_pointer_cast<School>(sesData_->getEntry(schoolId, "Schools"));
+        if(targetSchool)
+        {
+            (*targetSchool).students_.insert(std::make_pair(entry.id_, entry));
+        }
+        else
+        {
+            std::runtime_error("Could not fetch school data with the following data: ID=" + std::to_string(schoolId));
+        }
+
     }
 }
 
@@ -79,7 +68,7 @@ void Session::fetchSubjects()
     LOG((*logger_), "Got ", dbSubjects.size() , " Entries");
     for(const auto& entry : dbSubjects)
     {
-        sesData_->addSubject(entry);
+        sesData_->addEntry(std::make_shared<Subject>(entry));
     }
 }
 
@@ -89,7 +78,7 @@ void Session::fetchCourses()
     std::vector<Core::Types::Course> dbCourses = sAdapter_->getCourses();
     for(const auto& entry : dbCourses)
     {
-        sesData_->addCourse(entry);
+        sesData_->addEntry(std::make_shared<Course>(entry));
     }
 }
 
@@ -99,7 +88,7 @@ void Session::fetchSrequests()
     std::vector<Core::Types::Request::Srequest> dbSrequests = sAdapter_->getSrequests();
     for(const auto& entry : dbSrequests)
     {
-        sesData_->addStudentRequest(entry);
+        sesData_->addEntry(std::make_shared<Srequest>(entry));
     }
 }
 
@@ -132,7 +121,6 @@ void Session::run()
             }
         case Core::Display::MainMenuOption::handleRqs:
             break;
-        
         case Core::Display::MainMenuOption::exit:
             exit = true;
             LOG((*logger_), "Exiting application");
@@ -220,8 +208,8 @@ bool Session::executeCommand(std::string command)
             {
                 if(!removeSchool(targetSchool))
                 {
-                    LOG((*logger_), "Failed to update school: ", entry.name_);
-                    std::cout << "Failed to update school: " << entry.name_ << "\n";
+                    LOG((*logger_), "Failed to remove school: ", entry.name_);
+                    std::cout << "Failed to remove school: " << entry.name_ << "\n";
                     handledAllEntries = false;
                 }
             }
@@ -269,8 +257,8 @@ bool Session::executeCommand(std::string command)
             {
                 if(!removeStudent(targetStudent))
                 {
-                    LOG((*logger_), "Failed to update student: ", entry.firstName_);
-                    std::cout << "Failed to update student: " << entry.firstName_ << "\n";
+                    LOG((*logger_), "Failed to remove student: ", entry.firstName_);
+                    std::cout << "Failed to remove student: " << entry.firstName_ << "\n";
                     handledAllEntries = false;
                 }
             }
@@ -288,7 +276,7 @@ bool Session::addSchool(School& newSchool)
     LOG((*logger_), "Adding new school: \"", newSchool.name_, "\"");
     if(sAdapter_->addEntry(newSchool))
     {
-        sesData_->addSchool(newSchool);
+        sesData_->addEntry(std::make_shared<School>(newSchool));
         return true;
     }
     return false;
@@ -299,10 +287,7 @@ bool Session::updateSchool(School& targetSchool, School& newSchool)
     LOG((*logger_), "Editing existing school");
     if(sAdapter_->updateEntry(targetSchool, newSchool))
     {
-        // This will be moved to the in-menu editing screen later on
-        targetSchool.name_ = newSchool.name_;
-        // <- Untill this moment
-        sesData_->updateSchool(targetSchool.id_, newSchool);
+        sesData_->updateEntry(targetSchool.id_, std::make_shared<School>(newSchool));
         return true;
     }
     return false;
@@ -313,7 +298,7 @@ bool Session::removeSchool(School targetSchool)
     LOG((*logger_), "Removing existing school: \"", targetSchool.name_, "\"");
     if(sAdapter_->removeEntry(targetSchool))
     {
-        sesData_->removeSchool(targetSchool.id_);
+        sesData_->removeEntry(targetSchool.id_, targetSchool.associatedTable_);
         return true;
     }
     LOG((*logger_), "No such school present!");
@@ -324,16 +309,28 @@ bool Session::addStudent(Student& newStudent)
 {
     LOG((*logger_), "Adding new student: {", newStudent.firstName_, " ", newStudent.lastName_, " ", newStudent.email_, "}");
     
-    if(!sesData_->existsSchool(newStudent.schoolId_))
+    const uint16_t& newStudentSchoolId = newStudent.schoolId_;
+
+    if(!sesData_->isPresent(newStudentSchoolId, "Schools"))
     {
         LOG((*logger_), "WARN! Attempted to add student to non existing school!");
-        std::cout << "No school with id " << newStudent.schoolId_ << " exists!\n";
+        std::cout << "No school with id " << newStudentSchoolId << " exists!\n";
         return false;
     }
 
     if(sAdapter_->addEntry(newStudent))
     {
-        sesData_->addStudent(newStudent);
+        sesData_->addEntry(std::make_shared<Student>(newStudent));
+        // Link student with a school
+        std::shared_ptr<School> targetSchool = std::dynamic_pointer_cast<School>(sesData_->getEntry(newStudentSchoolId, "Schools"));
+        if(targetSchool)
+        {
+            (*targetSchool).students_.insert(std::make_pair(newStudent.id_, newStudent));
+        }
+        else
+        {
+            std::runtime_error("Could not fetch school data with the following data: ID=" + std::to_string(newStudentSchoolId));
+        }
         return true;
     }
     return false;
@@ -341,10 +338,25 @@ bool Session::addStudent(Student& newStudent)
 
 bool Session::removeStudent(Student targetStudent)
 {
-    LOG((*logger_), "Removing student: id=", targetStudent.id_);
+    const uint16_t& studentId = targetStudent.id_;
+    LOG((*logger_), "Removing student: id=", studentId);
     if(sAdapter_->removeEntry(targetStudent))
     {
-        sesData_->removeStudent(targetStudent);
+        // Get entry to remove linked school
+        const int16_t linkedSchool = std::dynamic_pointer_cast<Student>(sesData_->getEntry(studentId, "Students"))->schoolId_;
+        LOG((*logger_), "Student Id = ", studentId, " has school id assinged = " , linkedSchool)
+        sesData_->removeEntry(studentId, targetStudent.associatedTable_);
+        // Look for associated school
+        std::shared_ptr<School> associatedSchool = std::dynamic_pointer_cast<School>(sesData_->getEntry(linkedSchool, "Schools"));
+        if(associatedSchool)
+        {
+            (*associatedSchool).students_.erase(studentId);
+            LOG((*logger_), "Deleted student from the school students list");
+        }
+        else
+        {
+            std::runtime_error("Could not fetch school data with the following data: ID=" + std::to_string(targetStudent.schoolId_));
+        }
         return true;
     }
     return false;
@@ -355,7 +367,7 @@ bool Session::addSubject(Subject& targetSubject)
     LOG((*logger_), "Adding new subject ", targetSubject.name_);
     if(sAdapter_->addEntry(targetSubject))
     {
-        sesData_->addSubject(targetSubject);
+        sesData_->addEntry(std::make_shared<Subject>(targetSubject));
         return true;
     }
     return false;
@@ -366,7 +378,9 @@ bool Session::removeSubject(Subject targetSubject)
     LOG((*logger_), "Attempting to remove subject ", targetSubject.name_);
     if(sAdapter_->removeEntry(targetSubject))
     {
-        sesData_->removeSubject(targetSubject);
+        sesData_->removeEntry(targetSubject.id_, targetSubject.associatedTable_);
+
+        // TODO: Loop over courses, scores & grades , and delete ones with given subject
         return true;
     }
     return false;
@@ -399,7 +413,7 @@ bool Session::addCourse(Course& newCourse)
     LOG((*logger_), "Adding new course: ", newCourse.name_);
     if(sAdapter_->addEntry(newCourse))
     {
-        sesData_->addCourse(newCourse);
+        sesData_->addEntry(std::make_shared<Course>(newCourse));
         return true;
     }
     return false;
@@ -410,7 +424,7 @@ bool Session::updateCourse(Course& targetCourse, Course& newCourse)
     LOG((*logger_), "Updating existing course.");
     if(sAdapter_->updateEntry(targetCourse, newCourse))
     {
-        sesData_->updateCourse(targetCourse.id_, newCourse);
+        sesData_->updateEntry(targetCourse.id_, std::make_shared<Course>(newCourse));
         return true;
     }
     return false;
@@ -421,7 +435,9 @@ bool Session::removeCourse(Course targetCourse)
     LOG((*logger_), "Removing course: ", targetCourse.name_);
     if(sAdapter_->removeEntry(targetCourse))
     {
-        sesData_->removeCourse(targetCourse.id_);
+        sesData_->removeEntry(targetCourse.id_, targetCourse.associatedTable_);
+
+        // TODO Do we need a handle to subject weights?
         return true;
     }
     return false;
@@ -429,12 +445,23 @@ bool Session::removeCourse(Course targetCourse)
 
 bool Session::addSrequest(Srequest& newSrequest)
 {
+    LOG((*logger_), "Add student request: from: ", newSrequest.studentId_, " to: ", newSrequest.courseId_);
+    if(sAdapter_->addEntry(newSrequest))
+    {
+        sesData_->addEntry(std::make_shared<Srequest>(newSrequest));
+        return true;
+    }
     return false;
 }
 
 bool Session::removeSrequest(Srequest targetSrequest)
 {
-
+    LOG((*logger_), "Remove student request: from: ", targetSrequest.studentId_, " to: ", targetSrequest.courseId_);
+    if(sAdapter_->removeEntry(targetSrequest))
+    {
+        sesData_->removeEntry(targetSrequest.id_, targetSrequest.associatedTable_);
+        return true;
+    }
     return false;
 }
 

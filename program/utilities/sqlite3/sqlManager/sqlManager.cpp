@@ -53,7 +53,7 @@ namespace Utilities::Sql
         else
         {
             LOG((*logger_), "Query \"", sqlQuery, "\" executed without any errors.");
-            std::cout << "Command executed without any errores!\n";
+            std::cout << "Command executed without any errors!\n";
         }
 
         sqlite3_finalize(result);

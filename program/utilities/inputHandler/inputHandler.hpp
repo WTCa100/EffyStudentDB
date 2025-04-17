@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 
 namespace Utilities
 {
@@ -21,5 +22,11 @@ namespace Utilities
         static int getAttrAsNumber(std::string attrName = "Attribute");
         static std::string getAttrAsString(std::string attrName = "Attribute");
         static std::string getAttrAsStringNonEmpty(std::string attrName = "Attribute");
+        static std::string getStringBeauty(std::optional<std::string> prompt = std::nullopt);
+        static std::string getStringUgly(std::optional<std::string> prompt = std::nullopt);
+        
+        static void beautify(std::string& target);
+        static std::string toLower(std::string& target);
+        static std::string toUpper(std::string& target);
     };
 }

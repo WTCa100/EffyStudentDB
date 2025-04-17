@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cctype>
+
 #include "inputHandler.hpp"
 
 namespace Utilities
@@ -102,5 +104,84 @@ namespace Utilities
         } while (buf.empty());
         return buf;
     }
+
+    void InputHandler::beautify(std::string& target)
+    {
+        // Remove leading whitespaces
+        size_t lWsp = target.find_first_not_of(' ');
+
+        // All characters are whitespaces
+        if(lWsp == std::string::npos) return target.clear();
+
+        target = target.substr(lWsp);
+
+        // Remove tailing whitespaces
+        size_t rWsp = target.find_last_not_of(' ');
+        // At this point there has to be at least one character
+        size_t helper = target.size();
+        while(helper != rWsp + 1)
+        {
+            target.pop_back();
+            --helper;
+        }
+
+        std::string mWsp;
+        bool isWhitespace = false;
+        for(char c : target)
+        {
+            if(isspace(c))
+            {
+                if(!isWhitespace)
+                {
+                    mWsp += " ";
+                    isWhitespace = true;
+                }
+            }
+            else
+            {
+                mWsp += c;
+                isWhitespace = false;
+            }
+        }
+        target = mWsp;
+    }
+
+    std::string InputHandler::toLower(std::string& target)
+    {
+        std::string tmp;
+        for(char c : target)
+        {
+            tmp += tolower(c);
+        }
+        return tmp;
+    }
+
+    std::string InputHandler::toUpper(std::string& target)
+    {
+        std::string tmp;
+        for(char c : target)
+        {
+            tmp += toupper(c);
+        }
+        return tmp;
+    }
+
+    std::string InputHandler::getStringBeauty(std::optional<std::string> prompt)
+    {
+        std::string uglyString = getStringUgly(prompt);
+        beautify(uglyString);
+        std::cout << "String beauty upper: \"" << toUpper(uglyString) << "\"\n";
+        return uglyString;
+    }
+
+    std::string InputHandler::getStringUgly(std::optional<std::string> prompt)
+    {
+        // Plain string input
+        std::string buf = "";
+        if(prompt.has_value()) std::cout << prompt.value() << ": ";
+        std::getline(std::cin, buf);
+        return buf;
+    }
+
 
 } // namespace Utilities

@@ -140,6 +140,10 @@ bool Session::executeCommand(std::string command)
 
     std::vector<std::string> tokenizedCommand = Utilities::Common::tokenize(command , ' ');
     
+    // @TODO - overhaul this!!! for now always fail to execute 
+    std::cout << "DBG: Always fail command\n";
+    return false;
+
     // 1st Table 2nd action 3rd (optional - used only for editing and removing) targetId
     std::string table = tokenizedCommand.at(0);
     std::string action = tokenizedCommand.at(1);
@@ -355,6 +359,7 @@ bool Session::removeStudent(Student targetStudent)
         }
         else
         {
+            // @TODO please remove this God awful throw
             std::runtime_error("Could not fetch school data with the following data: ID=" + std::to_string(targetStudent.schoolId_));
         }
         return true;

@@ -15,46 +15,25 @@ namespace Core::Display
     std::string Menu::manageDatabase()
     {
         LOG((*logger_), "Choosing table to manage - getting input");
-        std::cout << "Which table you want to manage?\n";
-        std::cout << "1. Schools\n";
-        std::cout << "2. Students with grades\n";
-        std::cout << "3. Subjects\n";
-        std::cout << "4. Courses\n";
-        // Should we keep the weights in separate tables?
-        std::cout << "5. Student Request\n";
-        std::cout << "6. Exit\n";
-        int op = inHandler_->getOption(1, 6);
-        LOG((*logger_), "Got option ", op);
-
-        // For now - this will get overhauled later
-        std::string returnCommand;
-        std::string mgmtCmd;
-        switch (op)
+        std::cout << "Select table to manage\n"; 
+        
+        std::cout << "\"Schools\"\n";
+        std::cout << "\"Students\" (With grades)\n";
+        std::cout << "\"Subjects\"\n";
+        std::cout << "\"Courses\"\n";
+        std::cout << "\"StudentRequest\"\n";
+        std::cout << "\"CourseSubjectWeight\"\n";
+        std::cout << "Exit\n";
+        std::string target = inHandler_->getStringBeauty("Table Name");
+        
+        if(inHandler_->toUpper(target) == "EXIT")
         {
-        case 1:
-            mgmtCmd = manageSchools();
-            if(mgmtCmd != "EXIT") returnCommand = "SCHOOL " + mgmtCmd; else returnCommand = "EXIT";
-            break;
-
-        case 2:
-            mgmtCmd = manageStudents();
-            if(mgmtCmd != "EXIT") returnCommand = "STUDENT " + mgmtCmd; else returnCommand = "EXIT";
-            break;
-        case 3:
-            // sesData_->showSubjects();
-            break;
-        case 4:
-            // sesData_->showCourses();
-            break;
-        case 5:
-            // sesData_->showStudentRequests();
-            break;
-        case 6:
-            LOG((*logger_), "Going back to main menu");
-        default:
-            returnCommand = "EXIT";
-            break;
+            return "EXIT";
         }
+        std::string returnCommand = manageEntries(target);
+        
+        // If no table with such name present - return EXIT
+        if( returnCommand == E_NoSuchTable) returnCommand = "EXIT";
         return returnCommand;
     }
 
@@ -70,61 +49,30 @@ namespace Core::Display
         return commandOption;  
     }
 
-    std::string Menu::manageSchools()
+    std::string Menu::manageEntries(const std::string& target)
     {
-        // @TODO consider adding pages
-        // uint16_t pages = schools.size(); 
-        // uint16_t currentPage = 1;
-        // std::cout << "Displaying Schools";
+        LOG((*logger_), "Managing entry table: ", target);
+        const std::unique_ptr<concreteTypeList> concreteList = sesData_->getEntries(target);
 
-        LOG((*logger_), "Managing schools");
-        const std::unique_ptr<concreteTypeList> schoolList = sesData_->getEntries("Schools");
-        
-        if(!schoolList)
+        if(!concreteList) 
         {
-            std::runtime_error("Could not access concreteTypeList of Schools");
+            LOG((*logger_), "Could not find table: ", target);
+            return E_NoSuchTable;
         }
 
         std::string command;
         do
         {
-            std::cout << "Displaying schools: \n";
-            std::cout << schoolList->size() << " entries\n";
-            std::cout << "ID | SCHOOL NAME | STUDENT COUNT\n";
-            for(const auto& school : *schoolList)
+            std::cout << "Displaying " << target << ": \n";
+            std::cout << concreteList->size() << " entries\n";
+            for(const auto& entry : *concreteList)
             {
-                std::cout << school.second.get()->toString() << "\n";
+                std::cout << entry.second.get()->toString() << "\n";
             }
             command = makeCommand();
         } while (command == "NEXT" || command == "PREV");
         return command;
-    }
 
-    std::string Menu::manageStudents()
-    {
-        LOG((*logger_), "Manage Students");
-     
-        const std::unique_ptr<concreteTypeList> studentList = sesData_->getEntries("Students");
-        
-        if(!studentList)
-        {
-            std::runtime_error("Could not access concreteTypeList of Students");
-        }
-
-        std::string command;
-        do
-        {
-            std::cout << "Displaying students: \n";
-            std::cout << studentList->size() << " entries\n";
-            std::cout << "ID | FIRST NAME | SECOND NAME (optional) | LAST NAME | EMAIL | ASSOCIATED SCHOOL ID\n";
-            for(const auto& student : *studentList)
-            {
-                std::cout << student.second.get()->toString() << "\n";
-            }
-            command = makeCommand();
-            std::cout << "Command: " << command << "\n";
-        } while (command == "NEXT" || command == "PREV");
-        return command;
     }
 
     bool Menu::validateCommand(std::string cmd)

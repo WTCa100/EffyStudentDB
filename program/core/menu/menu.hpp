@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <set>
 
 #include "../session/data/data.hpp"
 #include "../../utilities/logger/logger.hpp"
@@ -8,6 +9,8 @@
 
 namespace Core::Display
 {
+
+    const std::string E_NoSuchTable("404_NO_TABLE");
 
     enum MainMenuOption
     {
@@ -35,8 +38,7 @@ namespace Core::Display
 
         std::string makeCommand();
 
-        std::string manageSchools();
-        std::string manageStudents();
+        std::string manageEntries(const std::string& target);
 
         // Change in plan was made and now the display will a little bit differently to make it more readable for the client.
         // Display main menu

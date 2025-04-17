@@ -104,8 +104,6 @@ const std::unique_ptr<concreteTypeList> SessionData::getEntries(const std::strin
     return std::make_unique<std::map<uint16_t, std::shared_ptr<Entry>>>(entryList_.at(table));
 }
 
-
-
 void SessionData::addGrade(const uint16_t targetSubject, const uint16_t targetStudent, float value)
 {
     concreteTypeList studentList = entryList_.at("Students");

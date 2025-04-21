@@ -79,6 +79,7 @@ namespace Utilities
 
     bool WsManager::createInitialSchema()
     {
+        using namespace Types;
         LOG((*logger_), "Creating the initial schema file with default tables");
         std::unique_ptr<std::fstream> schemaPtr = fManager_->getFile(fileBase, fileBaseSubdir);
         if(!schemaPtr->is_open())
@@ -87,34 +88,26 @@ namespace Utilities
             return false;
         }
 
+        std::vector<Table> tables;
         // Fill the base schema file
-        Types::Table schoolsTbl       = Types::defaultSchoolsTable();
-        Types::Table studentsTbl      = Types::defaultStudentsTable();
-        Types::Table subjectsTbl      = Types::defaultSubjectsTable();
-        Types::Table gradesTbl        = Types::defaultGradesTable();
-        Types::Table coursesTbl       = Types::defaultCoursesTable();
-        Types::Table subjectWeightTbl = Types::defaultSubjectToCourseWeightTable();
-        Types::Table studentReqTbl    = Types::defaultStudentRequestTable();
+        tables.push_back(defaultSchoolsTable());
+        tables.push_back(defaultStudentsTable());
+        tables.push_back(defaultSubjectsTable());
+        tables.push_back(defaultGradesTable());
+        tables.push_back(defaultCoursesTable());
+        tables.push_back(defaultSubjectToCourseWeightTable());
+        tables.push_back(defaultStudentRequestTable());
 
         *schemaPtr << "-- Effy.db - this file has been generated automatically\n";
         *schemaPtr << "-- Do not modify it!\n";
-        *schemaPtr << schoolsTbl.makeFormula();
-        *schemaPtr << studentsTbl.makeFormula(); 
-        *schemaPtr << subjectsTbl.makeFormula(); 
-        *schemaPtr << gradesTbl.makeFormula(); 
-        *schemaPtr << coursesTbl.makeFormula();
-        *schemaPtr << subjectWeightTbl.makeFormula();
-        *schemaPtr << studentReqTbl.makeFormula();
+        for(const auto& tbl : tables)
+        {
+            LOG((*logger_), "Inserting ", tbl.getName(), " into database schema");
+            *schemaPtr << tbl.makeFormula();
+            sManager_->addTable(tbl);
+        }
 
         // To make the boot up faster, insert the intial tables into the sql manager
-        sManager_->addTable(schoolsTbl);
-        sManager_->addTable(studentsTbl);
-        sManager_->addTable(subjectsTbl);
-        sManager_->addTable(gradesTbl);
-        sManager_->addTable(coursesTbl);
-        sManager_->addTable(subjectWeightTbl);
-        sManager_->addTable(studentReqTbl);
-
         LOG((*logger_), "Initial schema was written into ", "base.sql");
         schemaPtr->close();
         return true;

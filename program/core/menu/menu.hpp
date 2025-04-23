@@ -4,6 +4,7 @@
 #include <set>
 
 #include "../session/data/data.hpp"
+#include "../session/action/action.hpp"
 #include "../../utilities/logger/logger.hpp"
 #include "../../utilities/inputHandler/inputHandler.hpp"
 
@@ -26,20 +27,21 @@ namespace Core::Display
         std::shared_ptr<SessionData>       sesData_;
         std::unique_ptr<Utilities::InputHandler> inHandler_;
 
-        static bool validateCommand(std::string cmd);
+        bool validateAction(const Action& act);
         // Consider adding session data shared ptr here to easily handler
         // content display
     public:
         Menu(std::shared_ptr<Utilities::Logger> logger, std::shared_ptr<SessionData> sesData);
         MainMenuOption showMainMenu();
-        std::string manageDatabase();
         std::string getManagementOption() const;
         // Manage each table separately
+        
+        Action manageDatabase();
+        Action createAction();
 
-        std::string makeCommand();
-
-        std::string manageEntries(const std::string& target);
-
+        void showEntries(const std::string& target) const;
+        void showHelp() const;
+        void listTables() const;
         // Change in plan was made and now the display will a little bit differently to make it more readable for the client.
         // Display main menu
             // I.e. 

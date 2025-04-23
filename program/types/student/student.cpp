@@ -80,7 +80,7 @@ namespace Core::Types
     }
 
     Student::Student(uint16_t id, std::string name, std::string lastName, std::string email, uint16_t schoolId, std::optional<std::string> secondName) : 
-             Entry(id_, "Students"),
+             Entry(id_, g_tableStudents),
              firstName_(name),
              secondName_(secondName),
              lastName_(lastName),
@@ -90,7 +90,7 @@ namespace Core::Types
     {}
 
     Student::Student(std::string name, std::string lastName, std::string email, uint16_t schoolId, std::optional<std::string> secondName) :
-             Entry(0, "Students"),
+             Entry(0, g_tableStudents),
              firstName_(name),
              secondName_(secondName),
              lastName_(lastName),

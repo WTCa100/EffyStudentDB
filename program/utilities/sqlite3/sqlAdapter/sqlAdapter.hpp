@@ -34,6 +34,7 @@ namespace Utilities::Sql
         std::vector<std::vector<std::string>>       getGrades(std::string filter = "");
         std::vector<Course>                         getCourses(std::string filter = "");
         std::vector<Request::Srequest>              getSrequests(std::string filter = "");
+        std::vector<std::shared_ptr<Entry>>         getEntries(std::string tableName, std::string filter = "");
 
         void mapSubjectToCourseWeight(Course& targetCourse);        
         uint16_t getLatestIdFromTable(std::string tblName);

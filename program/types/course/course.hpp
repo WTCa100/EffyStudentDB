@@ -5,7 +5,9 @@
 #include <vector>
 
 #include "../entry.hpp"
+#include "../../utilities/common/constants.hpp"
 
+using Utilities::Common::Constants::g_tableCourses;
 namespace Core::Types
 {
     struct Course : public Entry
@@ -25,7 +27,7 @@ namespace Core::Types
         std::map<std::string, std::string> getAttrs() const override;
         std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;
 
-        Course() : Entry(0, "Courses") {}
+        Course() : Entry(0, g_tableCourses) {}
         Course(uint16_t id, uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name);
         Course(uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name);
         Entry& operator=(const Entry& other) override;

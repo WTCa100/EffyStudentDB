@@ -2,6 +2,9 @@
 
 #include <sstream>
 
+#include "../../../../common/constants.hpp"
+
+using namespace Utilities::Common::Constants;
 namespace Utilities::Sql::Types
 {
 
@@ -69,9 +72,12 @@ namespace Utilities::Sql::Types
         foreignKeys_.push_back(ss.str());
     }
 
+    // TODO: Avoid using magic values - change later to global variables
+
     Types::Table defaultSchoolsTable()
     {
-        Types::Table schoolTbl("Schools");
+
+        Types::Table schoolTbl(g_tableSchools); 
         schoolTbl.addToSchema({"id", "INTEGER", {Types::AttributeFlag::PRIMARY_KEY}});
         schoolTbl.addToSchema({"name", "TEXT", {Types::AttributeFlag::NOT_NULL, AttributeFlag::UNIQUE}});
         return schoolTbl;
@@ -79,7 +85,7 @@ namespace Utilities::Sql::Types
 
     Types::Table defaultStudentsTable()
     {
-        Types::Table studentTbl("Students");
+        Types::Table studentTbl(g_tableStudents);
         studentTbl.addToSchema({"id", "INTEGER", {Types::AttributeFlag::PRIMARY_KEY}});
         studentTbl.addToSchema({"firstName", "TEXT", {Types::AttributeFlag::NOT_NULL}});
         studentTbl.addToSchema({"secondName", "TEXT", {}});
@@ -92,7 +98,7 @@ namespace Utilities::Sql::Types
 
     Types::Table defaultSubjectsTable()
     {
-        Types::Table subjectTbl("Subjects");
+        Types::Table subjectTbl(g_tableSubjects);
         subjectTbl.addToSchema({"id", "INTEGER", {Types::AttributeFlag::PRIMARY_KEY}});
         subjectTbl.addToSchema({"name", "TEXT", {Types::AttributeFlag::NOT_NULL, Types::AttributeFlag::UNIQUE}});
         return subjectTbl;
@@ -100,7 +106,7 @@ namespace Utilities::Sql::Types
 
     Types::Table defaultGradesTable()
     {
-        Types::Table gradeTbl("Grades");
+        Types::Table gradeTbl(g_tableGrades);
         gradeTbl.addToSchema({"id", "INTEGER", {Types::AttributeFlag::PRIMARY_KEY}});
         gradeTbl.addToSchema({"studentId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
         gradeTbl.addToSchema({"subjectId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
@@ -112,7 +118,7 @@ namespace Utilities::Sql::Types
 
     Types::Table defaultCoursesTable()
     {
-        Types::Table courseTbl("Courses");
+        Types::Table courseTbl(g_tableCourses);
         courseTbl.addToSchema({"id", "INTEGER", {Types::AttributeFlag::PRIMARY_KEY}});
         courseTbl.addToSchema({"name", "TEXT", {Types::AttributeFlag::NOT_NULL, Types::AttributeFlag::UNIQUE}});
         courseTbl.addToSchema({"minStudents", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
@@ -123,7 +129,7 @@ namespace Utilities::Sql::Types
 
     Types::Table defaultSubjectToCourseWeightTable()
     {
-        Types::Table subjectWeightMap("CourseSubjectWeight");
+        Types::Table subjectWeightMap(g_tableCourseSubjectWeight);
         subjectWeightMap.addToSchema({"id", "INTEGER", {Types::AttributeFlag::PRIMARY_KEY}});
         subjectWeightMap.addToSchema({"courseId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
         subjectWeightMap.addToSchema({"subjectId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
@@ -135,7 +141,7 @@ namespace Utilities::Sql::Types
 
     Types::Table defaultStudentRequestTable()
     {
-        Types::Table studentReq("StudentRequest");
+        Types::Table studentReq(g_tableStudentRequest);
         studentReq.addToSchema({"id", "INTEGER", {Types::AttributeFlag::PRIMARY_KEY}});
         studentReq.addToSchema({"studentId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});
         studentReq.addToSchema({"courseId", "INTEGER", {Types::AttributeFlag::NOT_NULL}});

@@ -168,10 +168,9 @@ namespace Utilities
 
     std::string InputHandler::getStringBeauty(std::optional<std::string> prompt)
     {
-        std::string uglyString = getStringUgly(prompt);
-        beautify(uglyString);
-        std::cout << "String beauty upper: \"" << toUpper(uglyString) << "\"\n";
-        return uglyString;
+        std::string tmp = getStringUgly(prompt);
+        beautify(tmp);
+        return tmp;
     }
 
     std::string InputHandler::getStringUgly(std::optional<std::string> prompt)

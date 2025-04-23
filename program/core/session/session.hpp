@@ -7,7 +7,9 @@
 #include "../../utilities/sqlite3/sqlAdapter/sqlAdapter.hpp"
 #include "../menu/menu.hpp"
 #include "data/data.hpp"
+#include "action/action.hpp"
 
+using Core::Action;
 using Utilities::WsManager;
 using Utilities::Sql::SqlAdapter;
 using Utilities::Logger;
@@ -37,6 +39,9 @@ class Session
 
     public:
     void run();
+    bool handleAction(const Action& userAction);
+    std::shared_ptr<Entry> makeConcreteType(const std::string& tableName) const;
+
 
     // Adding
     bool addSchool(School& newSchool);
@@ -59,8 +64,6 @@ class Session
     bool removeGrade(Subject targetSubject, Student targetStudent);
     bool removeCourse(Course targetCourse);
     bool removeSrequest(Srequest targetRequest);
-
-    bool executeCommand(std::string command);
 
     Session(std::shared_ptr<WsManager> wsMgr);
     ~Session();

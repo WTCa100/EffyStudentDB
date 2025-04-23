@@ -89,6 +89,8 @@ namespace Utilities
         }
 
         std::vector<Table> tables;
+        tables.reserve(7);
+
         // Fill the base schema file
         tables.push_back(defaultSchoolsTable());
         tables.push_back(defaultStudentsTable());

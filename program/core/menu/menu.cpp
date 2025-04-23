@@ -1,6 +1,7 @@
 #include "menu.hpp"
 
 #include "../../utilities/common/stringManip.hpp"
+#include "../../utilities/inputHandler/inputHandler.hpp"
 
 namespace Core::Display
 {
@@ -12,101 +13,158 @@ namespace Core::Display
         inHandler_ = std::make_unique<Utilities::InputHandler>();
     }
 
-    std::string Menu::manageDatabase()
+    /* @TODO
+        Add class `Action` that would be handling the user input and parsing, tokenizing it etc.
+        Then return the new Action object, and let the session handle it
+        Example:
+        Enum Value ()
+        Action: 
+            - Tokenized Action (vector of strings)
+            - static Tokenize
+            + getAction (1st token)
+            + getTable (2nd token)
+            + getOptionalTags (3rd + tokens: as vector)
+    */
+    Action Menu::manageDatabase()
     {
-        LOG((*logger_), "Choosing table to manage - getting input");
-        std::cout << "Select table to manage\n"; 
-        
-        std::cout << "\"Schools\"\n";
-        std::cout << "\"Students\" (With grades)\n";
-        std::cout << "\"Subjects\"\n";
-        std::cout << "\"Courses\"\n";
-        std::cout << "\"StudentRequest\"\n";
-        std::cout << "\"CourseSubjectWeight\"\n";
-        std::cout << "Exit\n";
-        std::string target = inHandler_->getStringBeauty("Table Name");
-        
-        if(inHandler_->toUpper(target) == "EXIT")
-        {
-            return "EXIT";
-        }
-        std::string returnCommand = manageEntries(target);
-        
-        // If no table with such name present - return EXIT
-        if( returnCommand == E_NoSuchTable) returnCommand = "EXIT";
-        return returnCommand;
-    }
-
-
-    std::string Menu::makeCommand()
-    {
-        std::string commandOption;
+        LOG((*logger_), "Entering Database management mode");
+        Action userAction;
+        std::string cmd;
+        bool isValidAction;
         do
         {
-            commandOption = getManagementOption();
-        } while (!validateCommand(commandOption));
-        LOG((*logger_), "Got command: ", commandOption);
-        return commandOption;  
+            userAction = createAction();
+            cmd = userAction.getCommand();
+            isValidAction = validateAction(userAction);
+            // Handle help and entry display here
+            LOG((*logger_), "Action got command: ", cmd);
+            if(isValidAction)
+            {
+                if(cmd == "SHOW")
+                {
+                    showEntries(userAction.getTarget());
+                }
+                else if(cmd == "HELP")
+                {
+                    showHelp();
+                }
+                else if(cmd == "LIST")
+                {
+                    listTables();
+                }
+                LOG((*logger_), "Valid Action command: ", cmd, " target: ", userAction.getTarget());
+            }
+            else
+            {
+                LOG((*logger_), "Got invalid action. Cmd = ", cmd, " target = ", userAction.getTarget());
+                std::cout << "Invalid action! Use \"HELP\" for available actions.\n";
+            }
+        } while ((cmd == "SHOW" || cmd == "HELP" || cmd == "LIST") || !isValidAction);
+        return userAction;
     }
 
-    std::string Menu::manageEntries(const std::string& target)
+    void Menu::showHelp() const
     {
-        LOG((*logger_), "Managing entry table: ", target);
+        LOG((*logger_), "Showing help");
+        std::stringstream helpMsg;
+        helpMsg << "Management mode allows the user to alter entries inside the database with given commands.\n";
+        helpMsg << "Commend & their usage:\n";
+        helpMsg << "ADD <TargetTable> - Will launch prompt to insert new entry into given table.\n";
+        helpMsg << "REMOVE <TargetTable> <TargetId - opt> - Will launch a prompt and delete every entry matching given patterns.\n";
+        helpMsg << "If an ID is provided it will delete only that one entry.\n";
+        helpMsg << "EDIT <TargetTable> <TargetId - opt> - Will launch a prompt and alter every entry matching given patterns with new values.\n";
+        helpMsg << "If an ID is provided it will only update that one entry.\n";
+        helpMsg << "FIND <TargetTable> <TargetId - opt> - WIll launch a prompt and display every entry matching given pattern.\n";
+        helpMsg << "If an ID is provided it will only display that one entry\n";
+        helpMsg << "LIST - Will provide the user with the full list of table names.\n";
+        helpMsg << "SHOW <TargetTable> - Will show entries from a given table.\n";
+        helpMsg << "HELP - Displays this message.\n";
+        std::cout << helpMsg.str();
+        return; 
+    }
+
+    void Menu::listTables() const
+    {
+        LOG((*logger_), "Printing current tables");
+        std::cout << "Current tables:\n";
+        for(const auto& tables : sesData_->getTableNames())
+        {
+            std::cout << tables << "\n";
+        }
+    }
+
+    Action Menu::createAction()
+    {
+        LOG((*logger_), "Creating action");
+        std::string rawInput  = Utilities::InputHandler::getStringBeauty("Instruction");
+        LOG((*logger_), "Received input to assemble action: \"", rawInput, "\"");
+        Action userAction = Action(Utilities::InputHandler::toUpper(rawInput));
+        return userAction;
+    }
+
+    void Menu::showEntries(const std::string& target) const
+    {
+        LOG((*logger_), "Showing entries from table: ", target);
         const std::unique_ptr<concreteTypeList> concreteList = sesData_->getEntries(target);
 
         if(!concreteList) 
         {
             LOG((*logger_), "Could not find table: ", target);
-            return E_NoSuchTable;
+            return;
         }
 
-        std::string command;
-        do
+        std::cout << "Displaying " << target << ": \n";
+        std::cout << concreteList->size() << " entries\n";
+        for(const auto& entry : *concreteList)
         {
-            std::cout << "Displaying " << target << ": \n";
-            std::cout << concreteList->size() << " entries\n";
-            for(const auto& entry : *concreteList)
-            {
-                std::cout << entry.second.get()->toString() << "\n";
-            }
-            command = makeCommand();
-        } while (command == "NEXT" || command == "PREV");
-        return command;
-
+            std::cout << entry.second.get()->toString() << "\n";
+        }
     }
 
-    bool Menu::validateCommand(std::string cmd)
+    bool Menu::validateAction(const Action& act)
     {
-        if(cmd.empty())
+        const std::string& command = act.getCommand();
+        
+        if(command.empty())
         {
+            LOG((*logger_), "Action command empty - aborting");
+            return false;
+        }
+        
+        // First check the shortest commands
+        if(command  == "LIST" ||
+            command == "HELP" ||
+            command == "EXIT")
+            {
+                return true;
+            }
+
+        if(command != "SHOW"   &&
+           command != "FIND"   &&
+           command != "ADD"    &&
+           command != "REMOVE" &&
+           command != "UPDATE")
+           {
+            return false;
+           }
+
+        const std::string& target = act.getTarget();
+        // Look for 2nd arg
+        if(target.empty())
+        {
+            LOG((*logger_), "Action target empty while command == ", command);
+            return false;
+        }        
+        
+        // 2nd Arg is always a table name
+        if(!sesData_->getTableNames().contains(target))
+        {
+            LOG((*logger_), "Attempted to operate on non-existent target table: ", target);
             return false;
         }
 
-        std::vector<std::string> tokenizedCmd = Utilities::Common::tokenize(cmd, ' ');
-
-        std::string cmdCore = tokenizedCmd.at(0);
-
-        if(cmdCore == "NEXT" ||
-           cmdCore == "PREV" ||
-           cmdCore == "ADD"  ||
-           cmdCore == "ALTER" ||
-           cmdCore == "REMOVE" ||
-           cmdCore == "FIND" ||
-           cmdCore == "EXIT")
-        {
-            if(cmdCore == "ALTER" || cmdCore == "REMOVE")
-            {
-                std::string cmdIdPart = "";
-                if((tokenizedCmd.size() > 1))
-                {
-                    cmdIdPart = tokenizedCmd.at(1);
-                }
-                
-                return Utilities::InputHandler::isNumber(cmdIdPart);
-            }
-            return true;
-        }
-        return false;
+        // @TODO add optional handle
+        return true;
     }
 
     std::string Menu::getManagementOption() const

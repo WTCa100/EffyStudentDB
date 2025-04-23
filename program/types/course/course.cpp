@@ -35,7 +35,7 @@ namespace Core::Types
     }
 
     Course::Course(uint16_t id, uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name) :
-            Entry(id, "Courses"),
+            Entry(id, g_tableCourses),
             subjectWithWeight_({}),
             name_(name),
             minStudents_(minStudents),
@@ -45,7 +45,7 @@ namespace Core::Types
     {}
 
     Course::Course(uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints , std::string name) :
-            Entry(0, "Courses"),
+            Entry(0, g_tableCourses),
             subjectWithWeight_({}),
             name_(name),
             minStudents_(minStudents),

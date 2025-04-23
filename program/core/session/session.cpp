@@ -1,9 +1,11 @@
 #include "session.hpp"
 
 #include "../../utilities/common/stringManip.hpp"
+#include "../../utilities/common/constants.hpp"
 
 #include "../../types/entry.hpp"
 
+using namespace Utilities::Common::Constants;
 Session::Session(std::shared_ptr<WsManager> wsMgr) : wsMgr_(wsMgr),
                                                      logger_(wsMgr_->getLogger()),
                                                      sAdapter_(std::make_unique<SqlAdapter>(logger_, wsMgr_->getSqlManager())),
@@ -103,19 +105,12 @@ void Session::run()
         {
         case Core::Display::MainMenuOption::manageDb:
             {
-                std::string command = "";
+                Action command;
                 do
                 {
                     command = display_->manageDatabase();
-                    if(executeCommand(command))
-                    {
-                        std::cout << "Done!\n";
-                    }
-                    else
-                    {
-                        std::cout << "Failed to execute the command.\n";
-                    }
-                } while (command != "EXIT");
+                    handleAction(command);
+                } while (command.getCommand() != "EXIT");
                 
                 break;
             }
@@ -132,147 +127,122 @@ void Session::run()
 
 }
 
-bool Session::executeCommand(std::string command)
+bool Session::handleAction(const Action& userAction)
 {
-    LOG((*logger_), "Executing session command: ", command);
-    std::cout << "DBG: Command = " << command << "\n";
-    if(command == "EXIT") return true;
+    LOG((*logger_), "Executing action");
+    // Action is correct here - guaranteed
+    std::string userCommand = userAction.getCommand();
 
-    std::vector<std::string> tokenizedCommand = Utilities::Common::tokenize(command , ' ');
+    LOG((*logger_), "Action got command: ", userCommand);
+    if(userCommand == "EXIT")
+    {
+        LOG((*logger_), "Normal exit");
+        std::cout << "Exiting management mode.\n";
+        return true;
+    }
+
+    std::string userTarget = userAction.getTarget();
+    LOG((*logger_), "Action got target: ", userTarget);
+
+    std::shared_ptr<Entry> concreteEntry = makeConcreteType(userTarget);    
+    if(concreteEntry)
+    {
+        std::cout << "I Exist!\n";
+    }
+    else
+    {
+        std::cout << "I am Null!\n";
+    }
+
+    // Select correct function
+    // This is WIP
+    if(userCommand == "ADD")
+    {
+        LOG((*logger_), "Abstract add: ", userAction.getTarget());
+        std::cout << "New entry:\n";
+        concreteEntry.get()->userConstruct();
+        if(sAdapter_->addEntry(*concreteEntry))
+        {
+            sesData_->addEntry(concreteEntry);
+            return true;
+        }
+    }
+
+    // Now TMP will act as filter holder
+    std::cout << "Matching values:\n";
+    std::unordered_map<std::string, std::string> attrs = concreteEntry->userConstruct(false);
+    std::string filter = sAdapter_->makeFilter(attrs);
+    LOG((*logger_), "Filter to lookup: ", filter);
+    std::vector<std::shared_ptr<Entry>> affectedEntries = sAdapter_->getEntries(userTarget, filter);
+
+    if(affectedEntries.empty())
+    {
+        std::cout << "No match was found in the database!\n";
+    }
+
+    for(const auto& entry : affectedEntries)
+    {
+        std::cout << entry->toString() << "\n";
+    }
+
+    // Nothing much has to be done while finding
+    if(userCommand == "FIND")
+    {
+        return true;
+    }
+
+    // For each affected entry delete
+    if(userCommand == "DELETE")
+    {
+        for(const auto& val : affectedEntries)
+        {
+            sesData_->removeEntry(val->id_, userTarget);
+        }
+        return true;
+    }
+
+    // For each affected entry update
+    if(userCommand == "UPDATE")
+    {
+        // Get new values 1st
+        std::shared_ptr<Entry> updatedValues = makeConcreteType(userTarget);
+        std::cout << "DBG!: Always leave update\n";
+        return true;
+
+        // Update each affected entry
+        for(const auto& val : affectedEntries)
+        {
+            sesData_->updateEntry(val->id_, updatedValues);
+        }
+    }
     
-    // @TODO - overhaul this!!! for now always fail to execute 
-    std::cout << "DBG: Always fail command\n";
+    //@TODO verify linking
+
     return false;
+}
 
-    // 1st Table 2nd action 3rd (optional - used only for editing and removing) targetId
-    std::string table = tokenizedCommand.at(0);
-    std::string action = tokenizedCommand.at(1);
-    std::optional<std::string> targetId = (tokenizedCommand.size() == 3) ? std::optional<std::string>(tokenizedCommand.at(2)) : std::nullopt;
-
-    // Consider moving it into a map of lambdas
-    // like: std::unordered_map<std::string, std::function<bool()>> commandMap;
-
-    if(table == "SCHOOL") 
+std::shared_ptr<Entry> Session::makeConcreteType(const std::string& tableName) const
+{
+    LOG((*logger_), "Getting concrete type from target table: ", tableName);
+    std::shared_ptr<Entry> tmp;
+    // Extract concrete type
+    if(tableName == g_tableSchools)
     {
-        if(action == "ADD")
-        {
-            School newSchool;
-            newSchool.userConstruct(true);
-            return addSchool(newSchool);
-        }
-        
-        School targetSchool;
-        std::vector<School> affectedEntries;
-        bool handledAllEntries = true;
-        if(!targetId.has_value())
-        {
-           targetSchool.userConstruct(true); // only one attr present it has to be passed
-           affectedEntries = sAdapter_->getSchools("name = " + targetSchool.name_);
-        }
-        else
-        {
-            targetSchool.id_ = std::stoul(targetId.value());
-            affectedEntries = sAdapter_->getSchools("id = " + targetId.value());
-        }
-
-        if(affectedEntries.empty())
-        {
-            LOG((*logger_), "No such school present!");
-            return false;
-        }
-
-        if(action == "ALTER")
-        {
-            School alteredSchool;
-            std::cout << "Input new school data\n";
-            alteredSchool.userConstruct();
-            // TODO: Ask user if he wants to update all of the entries
-            std::cout << "Updating school: " << affectedEntries.at(0).name_ << "\n";
-            if(affectedEntries.size() > 1)
-            {
-                std::cout << "And " << affectedEntries.size() - 1 << " more entries\n";
-            }
-            for(auto& entry : affectedEntries)
-            {
-                if(!updateSchool(entry, alteredSchool))
-                {
-                    LOG((*logger_), "Failed to update school: ", entry.name_);
-                    std::cout << "Failed to update school: " << entry.name_ << "\n";
-                    handledAllEntries = false;
-                }
-            }
-            return handledAllEntries;
-        }
-
-        if(action == "REMOVE")
-        {
-            // TODO: Ask user if he wants to update all of the entries
-            std::cout << "Updating school: " << affectedEntries.at(0).name_ << "\n";
-            for(auto& entry : affectedEntries)
-            {
-                if(!removeSchool(targetSchool))
-                {
-                    LOG((*logger_), "Failed to remove school: ", entry.name_);
-                    std::cout << "Failed to remove school: " << entry.name_ << "\n";
-                    handledAllEntries = false;
-                }
-            }
-            return handledAllEntries;
-        }
-
-        // Find?
-
+        tmp = std::make_shared<School>();
     }
-    else if(table == "STUDENT") 
+    else if(tableName == g_tableStudents)
     {
-        if(action == "ADD")
-        {
-            Student newStudent;
-            newStudent.userConstruct(true);
-            return addStudent(newStudent);
-        }
-
-        Student targetStudent;
-        std::vector<Student> affectedEntries;
-        bool handledAllEntries = true;
-        if(!targetId.has_value())
-        {
-            std::unordered_map<std::string, std::string> providedAttrs = targetStudent.userConstruct(true); // only one attr present it has to be passed
-            std::string filter = sAdapter_->makeFilter(providedAttrs);
-            affectedEntries = sAdapter_->getStudents(filter);
-        }
-        else
-        {
-            targetStudent.id_ = std::stoul(targetId.value());
-            affectedEntries = sAdapter_->getStudents("id = " + targetId.value());
-        }
-
-        if(affectedEntries.empty())
-        {
-            LOG((*logger_), "No such student present!");
-            return false;
-        }
-
-        if(action == "REMOVE")
-        {
-            // TODO: Ask user if he wants to update all of the entries
-            std::cout << "Updating students: " << affectedEntries.at(0).firstName_ << "\n";
-            for(auto& entry : affectedEntries)
-            {
-                if(!removeStudent(targetStudent))
-                {
-                    LOG((*logger_), "Failed to remove student: ", entry.firstName_);
-                    std::cout << "Failed to remove student: " << entry.firstName_ << "\n";
-                    handledAllEntries = false;
-                }
-            }
-            return handledAllEntries;
-        }
+        tmp = std::make_shared<Student>();
     }
-    else if(table == "SUBJECT") {}
-    else if (table == "COURSE") {}
-    else if (table == "SREQUEST") {}
-    return true;
+    else if(tableName == g_tableSubjects)
+    {
+        tmp = std::make_shared<Subject>();
+    }
+    else if(tableName == g_tableCourses)
+    {
+        tmp = std::make_shared<Course>();
+    }
+    return tmp;
 }
 
 bool Session::addSchool(School& newSchool)

@@ -1,18 +1,80 @@
 #include"sqlAdapter.hpp"
 
 #include "../../common/stringManip.hpp"
+#include "../../common/constants.hpp"
 
 using Utilities::Sql::Types::Table;
-
+using namespace Utilities::Common::Constants;
 namespace Utilities::Sql
 {
     SqlAdapter::SqlAdapter(std::shared_ptr<Logger> logger, std::shared_ptr<SqlManager> sManager) : logger_(logger), sManager_(sManager) { LOG((*logger_), "Creation of SqlAdapter"); }
+
+
+    /// @brief This function is used to get entries in an abstract way, allowing polymorphism.
+    /// @param tableName target table
+    /// @param filter every entry if empty
+    /// @return Vector of Entries from a concrete class
+    std::vector<std::shared_ptr<Entry>> SqlAdapter::getEntries(std::string tableName, std::string filter)
+    {
+        LOG((*logger_), "Getting abstract objects from table: ", tableName, " with filter: \"", filter, "\"");
+        std::vector<std::shared_ptr<Entry>> entries;
+        if(tableName == g_tableSchools)
+        {
+            std::vector<School> concreteEntries = getSchools(filter);
+            for(const auto& val : concreteEntries)
+            {
+                entries.push_back(std::make_shared<School>(val));
+            }
+        }
+
+        if(tableName == g_tableStudents)
+        {
+            std::vector<Student> concreteEntries = getStudents(filter);
+            for(const auto& val : concreteEntries)
+            {
+                entries.push_back(std::make_shared<Student>(val));
+            }
+
+        }
+
+        if(tableName == g_tableSubjects)
+        {
+            std::vector<Subject> concreteEntries = getSubjects(filter);
+            for(const auto& val : concreteEntries)
+            {
+                entries.push_back(std::make_shared<Subject>(val));
+            }
+
+        }
+
+        if(tableName == g_tableGrades)
+        {
+            // @TODO
+        }
+
+        if(tableName == g_tableCourses)
+        {
+            std::vector<Course> concreteEntries = getCourses(filter);
+            for(const auto& val : concreteEntries)
+            {
+                entries.push_back(std::make_shared<Course>(val));
+            }
+        }
+
+
+        if(tableName == g_tableCourseSubjectWeight)
+        {
+            // @todo
+        }
+        LOG((*logger_), "Returning entries of size n=", entries.size());
+        return entries;
+    }
 
     std::vector<Core::Types::School> SqlAdapter::getSchools(std::string filter)
     {
         std::vector<Core::Types::School> schools;
         LOG((*logger_), "Fetching schools from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Schools", {"id", "name"}, filter);
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(g_tableSchools, {"id", "name"}, filter);
         if(rawEntries.empty())
         {
             LOG((*logger_), "Called schools, but got no entries!");
@@ -31,12 +93,12 @@ namespace Utilities::Sql
         LOG((*logger_), "Schools tokenized and pushed into the list. Final vector size = ", schools.size(), " Raw entries size = ", rawEntries.size());
         return schools;
     }
-
+    
     std::vector<Core::Types::Student> SqlAdapter::getStudents(std::string filter)
     {
         std::vector<Core::Types::Student> students;
         LOG((*logger_), "Fetching students from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Students", {"id", "firstName", "secondName", "lastName", "email", "schoolId"}, filter);
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(g_tableStudents, {"id", "firstName", "secondName", "lastName", "email", "schoolId"}, filter);
         if(rawEntries.empty())
         {
             LOG((*logger_), "Called students, but got no entries!");
@@ -71,7 +133,7 @@ namespace Utilities::Sql
     {
         std::vector<Core::Types::Subject> subjects;
         LOG((*logger_), "Fetching subjects from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("Subjects", {"id", "name"}, filter);
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(g_tableSubjects, {"id", "name"}, filter);
         if(rawEntries.empty())
         {
             LOG((*logger_), "Called subjects, but got no entries!");
@@ -94,7 +156,7 @@ namespace Utilities::Sql
     std::vector<std::vector<std::string>> SqlAdapter::getGrades(std::string filter)
     {
         LOG((*logger_), "Fetching grades from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("grades", {}, filter);
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(g_tableGrades, {}, filter);
         if(rawEntries.empty())
         {
             LOG((*logger_), "Called grades, but got no entries!");
@@ -116,7 +178,7 @@ namespace Utilities::Sql
     {
         std::vector<Core::Types::Course> courses;
         LOG((*logger_), "Fetching courses from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("courses", {"id", "minStudentCount", "maxStudentCount", "baseMinimalPoints", "name"}, filter);
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(g_tableCourses, {"id", "minStudentCount", "maxStudentCount", "baseMinimalPoints", "name"}, filter);
         if(rawEntries.empty())
         {
             LOG((*logger_), "Called courses, but got no entries!");
@@ -151,7 +213,7 @@ namespace Utilities::Sql
     {
         std::vector<Core::Types::Request::Srequest> sRequests;
         LOG((*logger_), "Fetching student requests from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("StudentRequest", {"id", "studentId", "courseId", "requestStatus"}, filter);
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(g_tableStudentRequest, {"id", "studentId", "courseId", "requestStatus"}, filter);
         
         if(rawEntries.empty())
         {
@@ -180,7 +242,7 @@ namespace Utilities::Sql
     void SqlAdapter::mapSubjectToCourseWeight(Core::Types::Course& targetCourse)
     {
         LOG((*logger_), "Fetching subject to course weight");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable("CourseSubjectWeight", {"subjectId", "weight"}, ("courseId =" + std::to_string(targetCourse.id_)));
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(g_tableCourseSubjectWeight, {"subjectId", "weight"}, ("courseId =" + std::to_string(targetCourse.id_)));
         if(rawEntries.empty())
         {
             LOG((*logger_), "Course ", targetCourse.name_, " has no weights assigned to it.");
@@ -333,8 +395,11 @@ namespace Utilities::Sql
         std::stringstream filter;
         for(const auto& attr: attrs)
         {
-            filter << attr.first << " = " << attr.second << " ";
+            filter << attr.first << " = \"" << attr.second  << "\" ";
         }
+
+        // @TODO Add case for handling if a attribute value contians a string
+        // SELECT <attrsList> FROM <tableName> WHERE <targetAttrList> LIKE %"<DesiredValue>"%;
         return filter.str(); 
     }
 

@@ -21,9 +21,11 @@ namespace Core::Types
 
     std::unordered_map<std::string, std::string> School::userConstruct(bool makeFull)
     {
+        std::unordered_map<std::string, std::string> mappedNewAttrs;
         std::cout << "Creating school from user input\n";
         name_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Name") : Utilities::InputHandler::getAttrAsString("Name");
-        return {};
+        if(!name_.empty()) mappedNewAttrs.insert(std::make_pair("name", name_));
+        return mappedNewAttrs;
     }
 
     Entry& School::operator=(const Entry& other)

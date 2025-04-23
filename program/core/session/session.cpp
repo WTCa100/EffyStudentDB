@@ -145,14 +145,6 @@ bool Session::handleAction(const Action& userAction)
     LOG((*logger_), "Action got target: ", userTarget);
 
     std::shared_ptr<Entry> concreteEntry = makeConcreteType(userTarget);    
-    if(concreteEntry)
-    {
-        std::cout << "I Exist!\n";
-    }
-    else
-    {
-        std::cout << "I am Null!\n";
-    }
 
     // Select correct function
     // This is WIP
@@ -171,13 +163,19 @@ bool Session::handleAction(const Action& userAction)
     // Now TMP will act as filter holder
     std::cout << "Matching values:\n";
     std::unordered_map<std::string, std::string> attrs = concreteEntry->userConstruct(false);
-    std::string filter = sAdapter_->makeFilter(attrs);
+    std::string filter = sAdapter_->makeFilter(attrs, Utilities::Sql::filterAnyMatch);
     LOG((*logger_), "Filter to lookup: ", filter);
     std::vector<std::shared_ptr<Entry>> affectedEntries = sAdapter_->getEntries(userTarget, filter);
 
     if(affectedEntries.empty())
     {
         std::cout << "No match was found in the database!\n";
+        return true;
+    }
+
+    if(userCommand == "REMOVE" || userCommand == "UPDATE") 
+    {
+        std::cout << "Affected entries:\n";
     }
 
     for(const auto& entry : affectedEntries)
@@ -192,11 +190,14 @@ bool Session::handleAction(const Action& userAction)
     }
 
     // For each affected entry delete
-    if(userCommand == "DELETE")
+    if(userCommand == "REMOVE")
     {
         for(const auto& val : affectedEntries)
         {
-            sesData_->removeEntry(val->id_, userTarget);
+            if(sAdapter_->removeEntry(*val))
+            {
+                sesData_->removeEntry(val->id_, userTarget);
+            }
         }
         return true;
     }

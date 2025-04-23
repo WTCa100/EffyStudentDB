@@ -345,7 +345,7 @@ namespace Utilities::Sql
         return sManager_->updateEntryFromTable(targetTableName, newValPacket, condition);
     }
 
-    bool SqlAdapter::removeEntry(const Entry& targetEntry)
+    bool SqlAdapter::removeEntry(const Entry& targetEntry, std::optional<std::string> condition)
     {
         std::string targetTableName = targetEntry.associatedTable_;
         LOG((*logger_), "Attempting to remove entry: ", targetEntry.toString(), " from table: ", targetTableName);
@@ -357,8 +357,11 @@ namespace Utilities::Sql
             return false;
         }
 
-        sManager_->removeEntryFromTable(targetTableName, targetEntry.id_);
-        return true;
+        if(condition.has_value())
+        {
+            return sManager_->removeEntryFromTable(targetTableName, condition.value());
+        }
+        return sManager_->removeEntryFromTable(targetTableName, targetEntry.id_);
     }
 
     bool SqlAdapter::addGrade(Core::Types::Student& targetStudent, Core::Types::Subject& targetSubject, const float& grade)
@@ -390,12 +393,25 @@ namespace Utilities::Sql
         return false;
     }
 
-    std::string SqlAdapter::makeFilter(std::unordered_map<std::string, std::string> attrs)
+    std::string SqlAdapter::makeFilter(std::unordered_map<std::string, std::string> attrs, bool exact)
     {
         std::stringstream filter;
-        for(const auto& attr: attrs)
+        if(exact)
         {
-            filter << attr.first << " = \"" << attr.second  << "\" ";
+            for(const auto& attr: attrs)
+            {
+                filter << attr.first << " = '" << attr.second  << "' ";
+            }
+        }
+        else
+        {
+            size_t currentAttr = 0;
+            const size_t attrLast = attrs.size() - 1;
+            for(const auto& attr: attrs)
+            {
+                filter << attr.first << " LIKE '%" << attr.second << "%' ";
+                if(currentAttr != attrLast) filter << " AND ";
+            }
         }
 
         // @TODO Add case for handling if a attribute value contians a string

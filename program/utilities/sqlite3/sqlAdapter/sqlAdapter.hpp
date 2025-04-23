@@ -19,6 +19,8 @@
 namespace Utilities::Sql
 {
     using namespace Core::Types;
+    constexpr bool filterExactMatch = 1;
+    constexpr bool filterAnyMatch   = 0;
     class SqlAdapter
     {
     private:
@@ -41,11 +43,11 @@ namespace Utilities::Sql
 
         bool addEntry(Entry& newEntry);
         bool updateEntry(const Entry& oldEntry, const Entry& newEntry);
-        bool removeEntry(const Entry& targetEntry);
+        bool removeEntry(const Entry& targetEntry, std::optional<std::string> condition = std::nullopt);
         bool addGrade(Student& targetStudent, Subject& targetSubject, const float& grade);
         bool removeGrade(const Student& targetStudent, const Subject& targetSubject);
 
-        std::string makeFilter(std::unordered_map<std::string, std::string> attrs);
+        std::string makeFilter(std::unordered_map<std::string, std::string> attrs, bool exact = filterExactMatch);
     };
     
 } // namespace Utilities

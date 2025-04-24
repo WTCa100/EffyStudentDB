@@ -166,6 +166,8 @@ bool Session::handleAction(const Action& userAction)
     std::cout << "Matching values:\n";
     std::unordered_map<std::string, std::string> attrs = concreteEntry->userConstruct(false);
     std::string filter = sAdapter_->makeFilter(attrs, Utilities::Sql::filterAnyMatch);
+    // @TODO - if filter is empty, delete all? or do nothing?
+
     LOG((*logger_), "Filter to lookup: ", filter);
     std::vector<std::shared_ptr<Entry>> affectedEntries = sAdapter_->getEntries(userTarget, filter);
 

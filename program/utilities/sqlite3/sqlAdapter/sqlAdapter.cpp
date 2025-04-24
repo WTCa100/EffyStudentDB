@@ -409,7 +409,6 @@ namespace Utilities::Sql
             const size_t attrLast = attrs.size() - 1;
             for(const auto& attr: attrs)
             {
-                std::cout << "DBG: currentAttr = " << currentAttr << " attrLast = " << attrLast << "\n";
                 filter << attr.first << " LIKE '%" << attr.second << "%' ";
                 if(currentAttr != attrLast) filter << "AND ";
                 ++currentAttr;

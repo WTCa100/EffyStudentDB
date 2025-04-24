@@ -71,7 +71,7 @@ void SessionData::updateEntry(const uint16_t targetId, const std::shared_ptr<Ent
     }
 
     std::cout << "DBG: Target altered entry: " << alteredEntry.get()->toString() << "\n";
-    concreteTypeList& concreteMap = entryList_.at(alteredEntry->associatedTable_);
+    abstractTypeList& concreteMap = entryList_.at(alteredEntry->associatedTable_);
     if(concreteMap.contains(targetId))
     {
         std::cout << "DBG: Before altering entry: " << concreteMap.at(targetId).get()->toString() << "\n";        
@@ -108,7 +108,7 @@ std::shared_ptr<Entry> SessionData::getEntry(const uint16_t targetId, const std:
     return nullptr;
 }
 
-const std::unique_ptr<concreteTypeList> SessionData::getEntries(const std::string& table)
+std::unique_ptr<abstractTypeList> SessionData::getEntries(const std::string& table)
 {
     if(!verifyTable(table))
     {
@@ -121,8 +121,8 @@ const std::unique_ptr<concreteTypeList> SessionData::getEntries(const std::strin
 
 void SessionData::addGrade(const uint16_t targetSubject, const uint16_t targetStudent, float value)
 {
-    concreteTypeList studentList = entryList_.at(g_tableGrades);
-    concreteTypeList subjectList = entryList_.at(g_tableStudents);
+    abstractTypeList studentList = entryList_.at(g_tableGrades);
+    abstractTypeList subjectList = entryList_.at(g_tableStudents);
 
     if(!studentList.contains(targetStudent) || !subjectList.contains(targetSubject))
     {
@@ -142,8 +142,8 @@ void SessionData::addGrade(const uint16_t targetSubject, const uint16_t targetSt
 void SessionData::removeGrade(const uint16_t targetSubject, const uint16_t targetStudent)
 {
 
-    concreteTypeList studentList = entryList_.at("Students");
-    concreteTypeList subjectList = entryList_.at("Subjects");
+    abstractTypeList studentList = entryList_.at("Students");
+    abstractTypeList subjectList = entryList_.at("Subjects");
 
     if(!studentList.contains(targetStudent) || !subjectList.contains(targetSubject))
     {

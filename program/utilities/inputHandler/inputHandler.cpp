@@ -22,7 +22,7 @@ namespace Utilities
     {
         if(isNumber(target))
         {
-            return std::stoi(target) != INT_MAX;
+            return std::stoi(target) < 0;
         }
         return false;
     }
@@ -37,7 +37,7 @@ namespace Utilities
             std::getline(std::cin, buf);
             if(buf.empty())
             {
-                return INT_MAX;
+                return -1;
             }
         } while (!isNumber(buf));
         return ans = std::stoi(buf);
@@ -82,8 +82,20 @@ namespace Utilities
         do
         {
             std::cout << "Enter " << attrName << ": ";
-            ans = getNumber();
-        } while (ans == INT_MAX);
+            ans = getAttrAsNumber();
+            if(ans == -1)
+            {
+                std::cout << "Cannot leave empty!\n";
+            }
+        } while (ans == -1);
+        return ans;
+    }
+
+    int InputHandler::getAttrAsNumber(std::string attrName)
+    {
+        std::string buf = "";
+        std::cout << "Enter " << attrName << ": ";
+        int ans = getNumber();
         return ans;
     }
 

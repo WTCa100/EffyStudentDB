@@ -73,11 +73,11 @@ namespace Core::Types
         email_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Email") : Utilities::InputHandler::getAttrAsString("Email");
         if(!email_.empty()) mappedNewAttrs.insert(std::make_pair("email", email_));
 
-        schoolId_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Associated School (ID)") : Utilities::InputHandler::getAttrAsNumberNonEmpty("Associated School (ID)");
+        schoolId_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Associated School (ID)") : Utilities::InputHandler::getAttrAsNumber("Associated School (ID)");
         if(schoolId_ != 0) mappedNewAttrs.insert(std::make_pair("schoolId", std::to_string(schoolId_)));
 
         return mappedNewAttrs;
-    }
+    } 
 
     Student::Student(uint16_t id, std::string name, std::string lastName, std::string email, uint16_t schoolId, std::optional<std::string> secondName) : 
              Entry(id_, g_tableStudents),

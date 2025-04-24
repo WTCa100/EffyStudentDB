@@ -105,7 +105,7 @@ namespace Core::Display
     void Menu::showEntries(const std::string& target) const
     {
         LOG((*logger_), "Showing entries from table: ", target);
-        const std::unique_ptr<concreteTypeList> concreteList = sesData_->getEntries(target);
+        const std::unique_ptr<abstractTypeList> concreteList = sesData_->getEntries(target);
 
         if(!concreteList) 
         {

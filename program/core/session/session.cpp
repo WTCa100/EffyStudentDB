@@ -47,13 +47,14 @@ void Session::fetchStudents()
     LOG((*logger_), "Got ", dbStudents.size() , " Entries");
     for(const auto& entry : dbStudents)
     {
-        sesData_->addEntry(std::make_shared<Student>(entry));
+        std::shared_ptr<Student> concreteStudent = std::make_shared<Student>(entry);
+        sesData_->addEntry(concreteStudent);
 
         const uint16_t schoolId = entry.schoolId_;
-        std::shared_ptr<School> targetSchool = std::dynamic_pointer_cast<School>(sesData_->getEntry(schoolId, "Schools"));
+        std::shared_ptr<School> targetSchool = std::dynamic_pointer_cast<School>(sesData_->getEntry(schoolId, g_tableSchools));
         if(targetSchool)
         {
-            (*targetSchool).students_.insert(std::make_pair(entry.id_, entry));
+            (*targetSchool).students_.insert(std::make_pair(entry.id_, *concreteStudent));
         }
         else
         {
@@ -156,6 +157,7 @@ bool Session::handleAction(const Action& userAction)
         if(sAdapter_->addEntry(*concreteEntry))
         {
             sesData_->addEntry(concreteEntry);
+            onAdd(concreteEntry);
             return true;
         }
     }
@@ -196,6 +198,7 @@ bool Session::handleAction(const Action& userAction)
         {
             if(sAdapter_->removeEntry(*val))
             {
+                onDelete(val);
                 sesData_->removeEntry(val->id_, userTarget);
             }
         }
@@ -206,6 +209,7 @@ bool Session::handleAction(const Action& userAction)
     if(userCommand == "UPDATE")
     {
         // Get new values 1st
+        std::cout << "Insert new values:\n";
         std::shared_ptr<Entry> updatedValues = makeConcreteType(userTarget);
         std::cout << "DBG!: Always leave update\n";
         return true;
@@ -220,6 +224,112 @@ bool Session::handleAction(const Action& userAction)
     //@TODO verify linking
 
     return false;
+}
+
+
+void Session::onAdd(const std::shared_ptr<Entry> newEntry)
+{
+    const std::string targetTable = newEntry->associatedTable_;
+    LOG((*logger_), "Called onAdd linking cleanup - target table: ", targetTable);
+    // School, Subject, StudentRequest and Course does not need a special handle
+    if(targetTable == g_tableCourses  ||
+       targetTable == g_tableSubjects ||
+       targetTable == g_tableSchools  ||
+       targetTable == g_tableStudentRequest)
+    {
+        LOG((*logger_), "Simple type - no clean needed");
+        return;
+    }
+
+    // If a new student is present add it to the school list and sRequests
+    if(targetTable == g_tableStudents)
+    {
+        std::shared_ptr<Student> concreteStudent = std::dynamic_pointer_cast<Student>(newEntry);
+        LOG((*logger_), "Student linking - id: ", concreteStudent->id_, " schoolId: ", concreteStudent->schoolId_);
+
+        // Only add to the target school
+        std::shared_ptr<School> studentSchool = std::dynamic_pointer_cast<School>(sesData_->getEntry(concreteStudent->schoolId_, g_tableSchools));
+        if(!studentSchool)
+        {
+            LOG((*logger_), "Student added to a non existing school! This may lead to undefined behavior. Student signature: ", concreteStudent, " id: ", concreteStudent->id_);
+            return;
+        }
+        std::dynamic_pointer_cast<School>(sesData_->getEntry(concreteStudent->schoolId_, g_tableSchools))->students_.insert(std::make_pair(newEntry->id_, *concreteStudent));
+    }
+
+    // No grades and course subject weight impl yet so we stick to the student just for now.
+}
+
+void Session::onDelete(const std::shared_ptr<Entry> targetEntry)
+{
+    const uint16_t id             = targetEntry->id_;
+    const std::string targetTable = targetEntry->associatedTable_;
+    LOG((*logger_), "Called onDelete linking cleanup - target table: ", targetTable);
+    
+    // There are little to no safe types and each have to be handled.
+    // If a school is deleted - inform about leaving students without school
+    if(targetTable == g_tableSchools)
+    {
+        std::shared_ptr<School> concreteSchool = std::dynamic_pointer_cast<School>(targetEntry);
+        LOG((*logger_), "Deleting school id: ", id , " name: ", concreteSchool->name_);
+        if(!concreteSchool->students_.empty())
+        {
+            std::cout << "Deleting " << concreteSchool << " left " << concreteSchool->students_.size() << " without any school\n"; 
+        }
+        return;
+    }
+
+    // If a student is deleted - grades are erased automatically, schools has to remove one entry from list and associated student request deleted.
+    if(targetTable == g_tableStudents)
+    {
+        std::shared_ptr<Student> concreteStudent = std::dynamic_pointer_cast<Student>(targetEntry);
+        LOG((*logger_), "Deleting student id: ", id);
+        // Remove student from a given school
+        LOG((*logger_), "Student linking - id: ", id, " schoolId: ", concreteStudent->schoolId_);
+        std::shared_ptr<School> studentSchool = std::dynamic_pointer_cast<School>(sesData_->getEntry(concreteStudent->schoolId_, g_tableSchools));
+        if(studentSchool)
+        {
+            LOG((*logger_), "Removing student id = ", id, " from assoc school: ", concreteStudent->schoolId_);
+            studentSchool->students_.erase(id);
+        }
+
+        // Remove students' requests
+        std::unique_ptr<abstractTypeList> requestLists = sesData_->getEntries(g_tableStudentRequest);
+        if(!requestLists)
+        {
+            LOG((*logger_), "No student reuqests table found to delete given student");
+            return;
+        }
+
+        for(const auto& request : *requestLists)
+        {
+            std::shared_ptr<Srequest> req = std::dynamic_pointer_cast<Srequest>(request.second);
+            if(req->studentId_ == id)
+            {
+                requestLists->erase(req->id_);
+            }
+        }
+
+        LOG((*logger_), "Linking cleaned with deleted student\n");
+        return;
+    }
+
+    // If a given subject is deleted we only need to handle the course to subject weight - and eventually student grade with given id
+
+    // If a given course is deleted a student request with that course id will be declined, the subject weight will be erased automatically
+
+    // If a given grade is deleted only delete it from target student - no handle yet
+
+    // If a course weight is deleted only delete it from target course - no handle yet
+
+    // @TODO handle rest
+}
+
+void Session::onUpdate(const std::shared_ptr<Entry> oldEntry, const std::shared_ptr<Entry> newEntry)
+{
+    const uint16_t             id = oldEntry->id_;
+    const std::string targetTable = oldEntry->associatedTable_;
+    LOG((*logger_), "Editing entry id:", id, " targetTable:", targetTable);
 }
 
 std::shared_ptr<Entry> Session::makeConcreteType(const std::string& tableName) const
@@ -246,16 +356,6 @@ std::shared_ptr<Entry> Session::makeConcreteType(const std::string& tableName) c
     return tmp;
 }
 
-bool Session::addSchool(School& newSchool)
-{
-    LOG((*logger_), "Adding new school: \"", newSchool.name_, "\"");
-    if(sAdapter_->addEntry(newSchool))
-    {
-        sesData_->addEntry(std::make_shared<School>(newSchool));
-        return true;
-    }
-    return false;
-}
 
 bool Session::updateSchool(School& targetSchool, School& newSchool)
 {
@@ -268,174 +368,12 @@ bool Session::updateSchool(School& targetSchool, School& newSchool)
     return false;
 }
 
-bool Session::removeSchool(School targetSchool)
-{
-    LOG((*logger_), "Removing existing school: \"", targetSchool.name_, "\"");
-    if(sAdapter_->removeEntry(targetSchool))
-    {
-        sesData_->removeEntry(targetSchool.id_, targetSchool.associatedTable_);
-        return true;
-    }
-    LOG((*logger_), "No such school present!");
-    return false;
-}
-
-bool Session::addStudent(Student& newStudent)
-{
-    LOG((*logger_), "Adding new student: {", newStudent.firstName_, " ", newStudent.lastName_, " ", newStudent.email_, "}");
-    
-    const uint16_t& newStudentSchoolId = newStudent.schoolId_;
-
-    if(!sesData_->isPresent(newStudentSchoolId, "Schools"))
-    {
-        LOG((*logger_), "WARN! Attempted to add student to non existing school!");
-        std::cout << "No school with id " << newStudentSchoolId << " exists!\n";
-        return false;
-    }
-
-    if(sAdapter_->addEntry(newStudent))
-    {
-        sesData_->addEntry(std::make_shared<Student>(newStudent));
-        // Link student with a school
-        std::shared_ptr<School> targetSchool = std::dynamic_pointer_cast<School>(sesData_->getEntry(newStudentSchoolId, "Schools"));
-        if(targetSchool)
-        {
-            (*targetSchool).students_.insert(std::make_pair(newStudent.id_, newStudent));
-        }
-        else
-        {
-            std::runtime_error("Could not fetch school data with the following data: ID=" + std::to_string(newStudentSchoolId));
-        }
-        return true;
-    }
-    return false;
-}
-
-bool Session::removeStudent(Student targetStudent)
-{
-    const uint16_t& studentId = targetStudent.id_;
-    LOG((*logger_), "Removing student: id=", studentId);
-    if(sAdapter_->removeEntry(targetStudent))
-    {
-        // Get entry to remove linked school
-        const int16_t linkedSchool = std::dynamic_pointer_cast<Student>(sesData_->getEntry(studentId, "Students"))->schoolId_;
-        LOG((*logger_), "Student Id = ", studentId, " has school id assinged = " , linkedSchool)
-        sesData_->removeEntry(studentId, targetStudent.associatedTable_);
-        // Look for associated school
-        std::shared_ptr<School> associatedSchool = std::dynamic_pointer_cast<School>(sesData_->getEntry(linkedSchool, "Schools"));
-        if(associatedSchool)
-        {
-            (*associatedSchool).students_.erase(studentId);
-            LOG((*logger_), "Deleted student from the school students list");
-        }
-        else
-        {
-            // @TODO please remove this God awful throw
-            std::runtime_error("Could not fetch school data with the following data: ID=" + std::to_string(targetStudent.schoolId_));
-        }
-        return true;
-    }
-    return false;
-}
-
-bool Session::addSubject(Subject& targetSubject)
-{
-    LOG((*logger_), "Adding new subject ", targetSubject.name_);
-    if(sAdapter_->addEntry(targetSubject))
-    {
-        sesData_->addEntry(std::make_shared<Subject>(targetSubject));
-        return true;
-    }
-    return false;
-}
-
-bool Session::removeSubject(Subject targetSubject)
-{
-    LOG((*logger_), "Attempting to remove subject ", targetSubject.name_);
-    if(sAdapter_->removeEntry(targetSubject))
-    {
-        sesData_->removeEntry(targetSubject.id_, targetSubject.associatedTable_);
-
-        // TODO: Loop over courses, scores & grades , and delete ones with given subject
-        return true;
-    }
-    return false;
-}
-
-bool Session::addGrade(Subject& targetSubject, Student& targetStudent, float value)
-{
-    LOG((*logger_), "Adding new grade for pair: ", targetSubject.name_, "-", targetStudent.email_, " value=", value);
-    if(sAdapter_->addGrade(targetStudent, targetSubject, value))
-    {
-        sesData_->addGrade(targetSubject.id_, targetStudent.id_, value);
-        return true;
-    }
-    return false;
-}
-
-bool Session::removeGrade(Subject targetSubject, Student targetStudent)
-{
-    LOG((*logger_), "Removing grade for pair: ", targetSubject.name_, "-", targetStudent.email_);
-    if(sAdapter_->removeGrade(targetStudent, targetSubject))
-    {
-        sesData_->removeGrade(targetSubject.id_, targetSubject.id_);
-        return true;
-    }
-    return false;
-}
-
-bool Session::addCourse(Course& newCourse)
-{
-    LOG((*logger_), "Adding new course: ", newCourse.name_);
-    if(sAdapter_->addEntry(newCourse))
-    {
-        sesData_->addEntry(std::make_shared<Course>(newCourse));
-        return true;
-    }
-    return false;
-}
-
 bool Session::updateCourse(Course& targetCourse, Course& newCourse)
 {
     LOG((*logger_), "Updating existing course.");
     if(sAdapter_->updateEntry(targetCourse, newCourse))
     {
         sesData_->updateEntry(targetCourse.id_, std::make_shared<Course>(newCourse));
-        return true;
-    }
-    return false;
-}
-
-bool Session::removeCourse(Course targetCourse)
-{
-    LOG((*logger_), "Removing course: ", targetCourse.name_);
-    if(sAdapter_->removeEntry(targetCourse))
-    {
-        sesData_->removeEntry(targetCourse.id_, targetCourse.associatedTable_);
-
-        // TODO Do we need a handle to subject weights?
-        return true;
-    }
-    return false;
-}
-
-bool Session::addSrequest(Srequest& newSrequest)
-{
-    LOG((*logger_), "Add student request: from: ", newSrequest.studentId_, " to: ", newSrequest.courseId_);
-    if(sAdapter_->addEntry(newSrequest))
-    {
-        sesData_->addEntry(std::make_shared<Srequest>(newSrequest));
-        return true;
-    }
-    return false;
-}
-
-bool Session::removeSrequest(Srequest targetSrequest)
-{
-    LOG((*logger_), "Remove student request: from: ", targetSrequest.studentId_, " to: ", targetSrequest.courseId_);
-    if(sAdapter_->removeEntry(targetSrequest))
-    {
-        sesData_->removeEntry(targetSrequest.id_, targetSrequest.associatedTable_);
         return true;
     }
     return false;

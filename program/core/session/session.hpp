@@ -40,30 +40,15 @@ class Session
     public:
     void run();
     bool handleAction(const Action& userAction);
+    void onAdd(const std::shared_ptr<Entry> newEntry);
+    void onDelete(const std::shared_ptr<Entry> targetEntry);
+    void onUpdate(const std::shared_ptr<Entry> oldEntry, const std::shared_ptr<Entry> newEntry);
+
     std::shared_ptr<Entry> makeConcreteType(const std::string& tableName) const;
-
-
-    // Adding
-    bool addSchool(School& newSchool);
-    bool addStudent(Student& newStudent);
-    bool addSubject(Subject& newSubject);
-    bool addGrade(Subject& targetSubject, Student& targetStudent, float value);
-    bool addCourse(Course& newCourse);
-    bool addSrequest(Srequest& newSrequest);
 
     // Updating
     bool updateSchool(School& targetSchool, School& newSchool);
     bool updateCourse(Course& targetCourse, Course& newCourse);
-
-    // Finding
-
-    // Removing
-    bool removeSchool(School targetSchool);
-    bool removeStudent(Student targetStudent);
-    bool removeSubject(Subject targetSubject);
-    bool removeGrade(Subject targetSubject, Student targetStudent);
-    bool removeCourse(Course targetCourse);
-    bool removeSrequest(Srequest targetRequest);
 
     Session(std::shared_ptr<WsManager> wsMgr);
     ~Session();

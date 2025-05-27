@@ -1,0 +1,1 @@
+add_library(Grade STATIC grade.hpp grade.cpp)

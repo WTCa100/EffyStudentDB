@@ -5,6 +5,7 @@
 
 namespace Utilities
 {
+    constexpr int g_Reserved = INT16_MAX;
     class InputHandler
     {
     private:

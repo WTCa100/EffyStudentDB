@@ -1,0 +1,1 @@
+add_library(CourseSubjectWieght STATIC courseSubjectWeight.hpp courseSubjectWeight.cpp)

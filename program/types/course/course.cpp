@@ -27,10 +27,18 @@ namespace Core::Types
     std::unordered_map<std::string, std::string> Course::userConstruct(bool makeFull)
     {
         std::cout << "Creating course from user input\n";
-        minStudents_ = Utilities::InputHandler::getAttrAsNumberNonEmpty("Ammount of minimal students");
-        maxStudents_ = Utilities::InputHandler::getAttrAsNumberNonEmpty("Ammount of maximal students");
-        baseMinimalPoints_ = Utilities::InputHandler::getAttrAsNumberNonEmpty("Minimal points required");
-        name_ = Utilities::InputHandler::getAttrAsStringNonEmpty("Name");
+        minStudents_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Ammount of minimal students") : Utilities::InputHandler::getAttrAsNumber("Ammount of minimal students");
+        do
+        {
+            maxStudents_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Ammount of maximal students") : Utilities::InputHandler::getAttrAsNumber("Ammount of maximal students");
+            if(maxStudents_ < minStudents_ && !makeFull)
+            {
+                std::cout << "Max students cannot be lesser than min students!\n";
+            }
+        } while (maxStudents_ < minStudents_);
+        
+        baseMinimalPoints_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Minimal points required") : Utilities::InputHandler::getAttrAsNumber("Minimal points required");
+        name_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Name") : Utilities::InputHandler::getAttrAsString("Name");
         return {};
     }
 

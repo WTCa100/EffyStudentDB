@@ -29,7 +29,7 @@ namespace Utilities
 
     int InputHandler::getNumber()
     {
-        int ans = -1;
+        int ans = g_Reserved;
         std::string buf = "";
         do
         {
@@ -37,7 +37,7 @@ namespace Utilities
             std::getline(std::cin, buf);
             if(buf.empty())
             {
-                return -1;
+                return g_Reserved;
             }
         } while (!isNumber(buf));
         return ans = std::stoi(buf);
@@ -77,17 +77,17 @@ namespace Utilities
 
     int InputHandler::getAttrAsNumberNonEmpty(std::string attrName)
     {
-        int ans = -1;
+        int ans = UINT16_MAX;
         std::string buf = "";
         do
         {
             std::cout << "Enter " << attrName << ": ";
             ans = getAttrAsNumber();
-            if(ans == -1)
+            if(ans == UINT16_MAX)
             {
                 std::cout << "Cannot leave empty!\n";
             }
-        } while (ans == -1);
+        } while (ans == UINT16_MAX);
         return ans;
     }
 

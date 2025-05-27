@@ -54,7 +54,7 @@ void Session::fetchStudents()
         std::shared_ptr<School> targetSchool = std::dynamic_pointer_cast<School>(sesData_->getEntry(schoolId, g_tableSchools));
         if(targetSchool)
         {
-            (*targetSchool).students_.insert(std::make_pair(entry.id_, *concreteStudent));
+            (*targetSchool).students_.insert(std::make_pair(entry.id_, concreteStudent));
         }
         else
         {
@@ -228,7 +228,6 @@ bool Session::handleAction(const Action& userAction)
     return false;
 }
 
-
 void Session::onAdd(const std::shared_ptr<Entry> newEntry)
 {
     const std::string targetTable = newEntry->associatedTable_;
@@ -256,7 +255,7 @@ void Session::onAdd(const std::shared_ptr<Entry> newEntry)
             LOG((*logger_), "Student added to a non existing school! This may lead to undefined behavior. Student signature: ", concreteStudent, " id: ", concreteStudent->id_);
             return;
         }
-        std::dynamic_pointer_cast<School>(sesData_->getEntry(concreteStudent->schoolId_, g_tableSchools))->students_.insert(std::make_pair(newEntry->id_, *concreteStudent));
+        std::dynamic_pointer_cast<School>(sesData_->getEntry(concreteStudent->schoolId_, g_tableSchools))->students_.insert(std::make_pair(newEntry->id_, concreteStudent));
     }
 
     // No grades and course subject weight impl yet so we stick to the student just for now.

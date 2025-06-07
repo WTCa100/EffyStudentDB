@@ -1,17 +1,17 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include <filesystem>
 #include <map>
 #include <memory>
+#include <string>
 #include <unordered_map>
-#include <filesystem>
+#include <vector>
 
 // Get types
-#include "../../../utilities/logger/logger.hpp"
 #include "../../../types/school/school.hpp"
-#include "../../../types/subject/subject.hpp"
 #include "../../../types/student/student.hpp"
+#include "../../../types/subject/subject.hpp"
+#include "../../../utilities/logger/logger.hpp"
 #include "types/attribute/attribute.hpp"
 #include "types/table/table.hpp"
 
@@ -20,66 +20,68 @@
 namespace Utilities::Sql
 {
 
-    typedef std::vector<std::pair<Utilities::Sql::Types::Attribute, std::string>> AttrsValues;
-    enum class PragmaTableFormat
-    {
-        cid        = 0,
-        name       = 1,
-        type       = 2,
-        notnull    = 3,
-        dflt_value = 4,
-        pk         = 5
-    };
-    class SqlManager
-    {
-    private:
-        std::unordered_map<std::string, Sql::Types::Table> tables_;
-        std::shared_ptr<Logger> logger_;
-        std::filesystem::path dbPath_;
-        sqlite3* currentDb_;
-        bool isDbOpen_;
-        
-    public:
-        void initialTablesLoad(std::fstream& schemaPtr);
+	typedef std::vector<std::pair<Utilities::Sql::Types::Attribute, std::string>> AttrsValues;
+	enum class PragmaTableFormat
+	{
+		cid        = 0,
+		name       = 1,
+		type       = 2,
+		notnull    = 3,
+		dflt_value = 4,
+		pk         = 5
+	};
 
-        // Low level methods
-        std::vector<std::string> executeIn(const std::string& sqlQuery);
-        bool executeOut(const std::string& sqlQuery);
+	class SqlManager
+	{
+	  private:
+		std::unordered_map<std::string, Sql::Types::Table> tables_;
+		std::shared_ptr<Logger> logger_;
+		std::filesystem::path dbPath_;
+		sqlite3* currentDb_;
+		bool isDbOpen_;
 
-        // Wrappers
-        bool moveSchemasToDatabase();
-        bool moveSchemaToDatabase(const Sql::Types::Table& table);
-        bool insertTable(const Sql::Types::Table& newTbl);
-        Sql::Types::Table getTableSchema(std::string tableName);
-        // Object related methods
-        inline void addTable(const Sql::Types::Table& newTbl) { tables_.insert(std::make_pair(newTbl.getName(), newTbl)); }
-        const Sql::Types::Table getTable(const std::string& name) const;
-        std::unordered_map<std::string, Sql::Types::Table> getTables() const { return tables_; }
+	  public:
+		void initialTablesLoad(std::fstream& schemaPtr);
 
-        // Move it to adapter
-        bool addEntryToTable(std::string tableName, AttrsValues newVals);
-        bool updateEntryFromTable(std::string tableName, AttrsValues newVals, std::string condition);
-        bool removeEntryFromTable(std::string tableName, uint16_t entryId);
-        bool removeEntryFromTable(std::string tableName, std::string condition);
-        std::vector<std::string> getEntriesFromTable(std::string tableName, std::vector<std::string> attributes = {}, std::string filter = "");
+		// Low level methods
+		std::vector<std::string> executeIn(const std::string& sqlQuery);
+		bool executeOut(const std::string& sqlQuery);
 
-        
-        bool isTableInDatabase(const Sql::Types::Table& table);
-        bool isTableInDatabase(const std::string& tableName);
+		// Wrappers
+		bool moveSchemasToDatabase();
+		bool moveSchemaToDatabase(const Sql::Types::Table& table);
+		bool insertTable(const Sql::Types::Table& newTbl);
+		Sql::Types::Table getTableSchema(std::string tableName);
 
+		// Object related methods
+		inline void addTable(const Sql::Types::Table& newTbl) { tables_.insert(std::make_pair(newTbl.getName(), newTbl)); }
 
+		const Sql::Types::Table getTable(const std::string& name) const;
 
-        // bool addEntryToTable(std::string tableName /*, Entry*/);
+		std::unordered_map<std::string, Sql::Types::Table> getTables() const { return tables_; }
 
-        SqlManager(std::shared_ptr<Logger> extLogger, std::filesystem::path dbPath);
-        ~SqlManager();
+		// Move it to adapter
+		bool addEntryToTable(std::string tableName, AttrsValues newVals);
+		bool updateEntryFromTable(std::string tableName, AttrsValues newVals, std::string condition);
+		bool removeEntryFromTable(std::string tableName, uint16_t entryId);
+		bool removeEntryFromTable(std::string tableName, std::string condition);
+		std::vector<std::string> getEntriesFromTable(
+			std::string tableName, std::vector<std::string> attributes = {}, std::string filter = "");
 
-        bool openDb();
-        void closeDb();
-        bool isDbOpen() const { return isDbOpen_; }
+		bool isTableInDatabase(const Sql::Types::Table& table);
+		bool isTableInDatabase(const std::string& tableName);
 
+		// bool addEntryToTable(std::string tableName /*, Entry*/);
 
-        void printTables();
-    };
-    
-}
+		SqlManager(std::shared_ptr<Logger> extLogger, std::filesystem::path dbPath);
+		~SqlManager();
+
+		bool openDb();
+		void closeDb();
+
+		bool isDbOpen() const { return isDbOpen_; }
+
+		void printTables();
+	};
+
+}  // namespace Utilities::Sql

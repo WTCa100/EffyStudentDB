@@ -5,7 +5,9 @@
 
 // Types
 #include "../../../types/course/course.hpp"
+#include "../../../types/courseSubjectWeight/courseSubjectWeight.hpp"
 #include "../../../types/entry.hpp"
+#include "../../../types/grade/grade.hpp"
 #include "../../../types/school/school.hpp"
 #include "../../../types/student/student.hpp"
 #include "../../../types/studentRequest/request.hpp"
@@ -34,12 +36,12 @@ namespace Utilities::Sql
 		std::vector<School> getSchools(std::string filter = "");
 		std::vector<Student> getStudents(std::string filter = "");
 		std::vector<Subject> getSubjects(std::string filter = "");
-		std::vector<std::vector<std::string>> getGrades(std::string filter = "");
+		std::vector<Grade> getGrades(std::string filter = "");
+		std::vector<CourseSubjectWeight> getCourseSubjectWeight(std::string filter = "");
 		std::vector<Course> getCourses(std::string filter = "");
 		std::vector<Request::Srequest> getSrequests(std::string filter = "");
 		std::vector<std::shared_ptr<Entry>> getEntries(std::string tableName, std::string filter = "");
 
-		void mapSubjectToCourseWeight(Course& targetCourse);
 		uint16_t getLatestIdFromTable(std::string tblName);
 
 		bool addEntry(Entry& newEntry);

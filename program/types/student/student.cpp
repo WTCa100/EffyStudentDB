@@ -16,7 +16,7 @@ namespace Core::Types
 			if (!grades_.empty())
 			{
 				ss << ", Grades: \n";
-				for (const auto& grade : grades_) { ss << grade.first << ":" << grade.second << "\n"; }
+				for (const auto& grade : grades_) { ss << grade.second->studentName_ << ":" << grade.second->value_ << "\n"; }
 			}
 			else { ss << "No grades."; }
 		}

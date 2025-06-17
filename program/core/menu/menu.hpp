@@ -42,6 +42,7 @@ namespace Core::Display
 		void showEntries(const std::string& target) const;
 		void showHelp() const;
 		void listTables() const;
+		bool promptDeleteAll(std::string filter, uint16_t count) const;
 		// Change in plan was made and now the display will a little bit differently to make it more readable for the client.
 		// Display main menu
 		// I.e.

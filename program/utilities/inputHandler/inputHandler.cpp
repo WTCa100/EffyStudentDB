@@ -169,4 +169,23 @@ namespace Utilities
 		return buf;
 	}
 
+	char InputHandler::getYesOrNo()
+	{
+		char ans = 0;
+		do {
+			std::string buf;
+			std::cout << "Y (yes) / N (no)";
+			std::getline(std::cin, buf);
+			if (buf.empty())
+			{
+				std::cout << "???\n";
+				continue;
+			}
+			ans = buf[0];
+			ans = toupper(ans);
+			if (ans != 'Y' && ans != 'N') { std::cout << "???\n"; }
+		} while (ans != 'Y' && ans != 'N');
+		return ans;
+	}
+
 }  // namespace Utilities

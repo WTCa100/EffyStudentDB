@@ -1,11 +1,12 @@
 #pragma once
 
 #include "../../utilities/common/constants.hpp"
+#include "../courseSubjectWeight/courseSubjectWeight.hpp"
 #include "../entry.hpp"
 
 #include <inttypes.h>
+#include <memory>
 #include <string>
-#include <vector>
 
 using Utilities::Common::Constants::g_tableCourses;
 
@@ -13,7 +14,7 @@ namespace Core::Types
 {
 	struct Course : public Entry
 	{
-		std::vector<std::pair<uint16_t, uint16_t>> subjectWithWeight_;
+		std::map<uint16_t, std::shared_ptr<CourseSubjectWeight>> subjectWithWeight_;
 		std::string name_;
 		uint16_t minStudents_;
 		uint16_t maxStudents_;

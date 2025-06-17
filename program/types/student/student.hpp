@@ -2,12 +2,14 @@
 
 #include "../../utilities/common/constants.hpp"
 #include "../entry.hpp"
+#include "../grade/grade.hpp"
 #include "../subject/subject.hpp"
 
 #include <map>
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 using Utilities::Common::Constants::g_tableStudents;
 
@@ -19,7 +21,7 @@ namespace Core::Types
 		std::optional<std::string> secondName_;
 		std::string lastName_;
 		std::string email_;
-		std::map<std::string, float> grades_;
+		std::map<uint16_t, std::shared_ptr<Grade>> grades_;
 		uint16_t schoolId_;
 
 		std::string toString(bool showGrades) const;

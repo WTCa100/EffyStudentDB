@@ -34,8 +34,5 @@ class SessionData
 	void updateEntry(const uint16_t targetId, const std::shared_ptr<Entry> alteredEntry);
 	bool isPresent(const uint16_t targetId, const std::string& associatedTable) const;
 	std::shared_ptr<Entry> getEntry(const uint16_t targetId, const std::string& associatedTable);
-	std::unique_ptr<abstractTypeList> getEntries(const std::string& table);
-
-	void addGrade(const uint16_t targetSubject, const uint16_t targetStudent, float value);
-	void removeGrade(const uint16_t targetSubject, const uint16_t targetStudent);
+	std::shared_ptr<abstractTypeList> getEntries(const std::string& table);
 };

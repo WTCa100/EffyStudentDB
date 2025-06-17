@@ -43,7 +43,8 @@ namespace Utilities::Sql
 
 		if (tableName == g_tableGrades)
 		{
-			// @TODO
+			std::vector<Grade> concreteEntries = getGrades(filter);
+			for (const auto& val : concreteEntries) { entries.push_back(std::make_shared<Grade>(val)); }
 		}
 
 		if (tableName == g_tableCourses)
@@ -54,7 +55,8 @@ namespace Utilities::Sql
 
 		if (tableName == g_tableCourseSubjectWeight)
 		{
-			// @todo
+			std::vector<CourseSubjectWeight> concreteEntries = getCourseSubjectWeight(filter);
+			for (const auto& val : concreteEntries) { entries.push_back(std::make_shared<CourseSubjectWeight>(val)); }
 		}
 		LOG((*logger_), "Returning entries of size n=", entries.size());
 		return entries;
@@ -149,10 +151,11 @@ namespace Utilities::Sql
 		return subjects;
 	}
 
-	std::vector<std::vector<std::string>> SqlAdapter::getGrades(std::string filter)
+	std::vector<Grade> SqlAdapter::getGrades(std::string filter)
 	{
 		LOG((*logger_), "Fetching grades from the SQL DB");
-		std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(g_tableGrades, {}, filter);
+		std::vector<std::string> rawEntries =
+			sManager_->getEntriesFromTable(g_tableGrades, { "id", "grade", "studentId", "subjectId" }, filter);
 		if (rawEntries.empty())
 		{
 			LOG((*logger_), "Called grades, but got no entries!");
@@ -160,12 +163,54 @@ namespace Utilities::Sql
 			return {};
 		}
 
-		std::vector<std::vector<std::string>> listOfGrades;
+		std::vector<Grade> listOfGrades;
 		LOG((*logger_), "Got n=", rawEntries.size(), " grades entries");
-		for (auto e : rawEntries) { listOfGrades.push_back(Utilities::Common::tokenize(e, '|')); }
+		for (auto e : rawEntries)
+		{
+			std::vector<std::string> tokenizedGrade = Utilities::Common::tokenize(e, '|');
+			Grade tmpGrade;
+			tmpGrade.id_          = std::stoul(tokenizedGrade.at(0));
+			tmpGrade.value_       = std::stold(tokenizedGrade.at(1));
+			tmpGrade.studentId_   = std::stoul(tokenizedGrade.at(2));
+			tmpGrade.studentName_ = "";
+			tmpGrade.subjectId_   = std::stoul(tokenizedGrade.at(3));
+			tmpGrade.subjectName_ = "";
+			listOfGrades.push_back(tmpGrade);
+		}
+
 		LOG((*logger_), "Grades tokenized and pushed into the list. Final vector size = ", listOfGrades.size(),
 			" Raw entries size = ", rawEntries.size());
 		return listOfGrades;
+	}
+
+	std::vector<CourseSubjectWeight> SqlAdapter::getCourseSubjectWeight(std::string filter)
+	{
+		std::vector<CourseSubjectWeight> weights;
+		LOG((*logger_), "Fetching CourseSubjectWeights from the SQL DB");
+		std::vector<std::string> rawEntries =
+			sManager_->getEntriesFromTable(g_tableCourseSubjectWeight, { "id", "weight", "subjectId", "courseId" });
+		if (rawEntries.empty())
+		{
+			LOG((*logger_), "Called CourseSubjectWeight, but got no entries")
+			std::cout << "No courses! Either fail or sql has no courses\n";
+			return {};
+		}
+
+		LOG((*logger_), "Got n=", rawEntries.size(), " entries");
+		for (auto e : rawEntries)
+		{
+			std::vector<std::string> tokenizedWeight = Utilities::Common::tokenize(e, '|');
+			Core::Types::CourseSubjectWeight tmpWeight;
+			tmpWeight.id_        = std::stoul(tokenizedWeight.at(0));
+			tmpWeight.weight_    = std::stod(tokenizedWeight.at(1));
+			tmpWeight.subjectId_ = std::stoul(tokenizedWeight.at(2));
+			tmpWeight.courseId_  = std::stoul(tokenizedWeight.at(3));
+
+			weights.push_back(tmpWeight);
+		}
+		LOG((*logger_), "CourseSubjectWeight tokenized and pushed into the list. Final vector size = ", weights.size(),
+			" Raw entries size = ", rawEntries.size());
+		return weights;
 	}
 
 	std::vector<Core::Types::Course> SqlAdapter::getCourses(std::string filter)
@@ -173,7 +218,7 @@ namespace Utilities::Sql
 		std::vector<Core::Types::Course> courses;
 		LOG((*logger_), "Fetching courses from the SQL DB");
 		std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(
-			g_tableCourses, { "id", "minStudentCount", "maxStudentCount", "baseMinimalPoints", "name" }, filter);
+			g_tableCourses, { "id", "minStudents", "maxStudents", "baseMinimalPoints", "name" }, filter);
 		if (rawEntries.empty())
 		{
 			LOG((*logger_), "Called courses, but got no entries!");
@@ -197,8 +242,6 @@ namespace Utilities::Sql
 			tmpCourse.name_                 = tokenizedCourse.at(4);
 			tmpCourse.subjectWithWeight_    = {};
 
-			// For each course get the aproporiate
-			mapSubjectToCourseWeight(tmpCourse);
 			courses.push_back(std::move(tmpCourse));  // It's quite big move makes more sense here
 		}
 		LOG((*logger_), "Courses tokenized and pushed into the list. Final vector size = ", courses.size(),
@@ -235,27 +278,6 @@ namespace Utilities::Sql
 		LOG((*logger_), "Courses tokenized and pushed into the list. Final vector size = ", sRequests.size(),
 			" Raw entries size = ", rawEntries.size());
 		return sRequests;
-	}
-
-	void SqlAdapter::mapSubjectToCourseWeight(Core::Types::Course& targetCourse)
-	{
-		LOG((*logger_), "Fetching subject to course weight");
-		std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(
-			g_tableCourseSubjectWeight, { "subjectId", "weight" }, ("courseId =" + std::to_string(targetCourse.id_)));
-		if (rawEntries.empty())
-		{
-			LOG((*logger_), "Course ", targetCourse.name_, " has no weights assigned to it.");
-			return;
-		}
-		LOG((*logger_), "Mapping subjects to courses. Got n=", rawEntries.size(), " entries");
-		for (auto e : rawEntries)
-		{
-			std::vector<std::string> tokenizedEntry = Utilities::Common::tokenize(e, '|');
-			targetCourse.subjectWithWeight_.push_back(
-				std::make_pair(std::stoul(tokenizedEntry.at(0)), std::stod(tokenizedEntry.at(1))));
-		}
-		LOG((*logger_), "Courses weight have been updated. New mapped subjects size = ", targetCourse.subjectWithWeight_.size());
-		return;
 	}
 
 	uint16_t SqlAdapter::getLatestIdFromTable(std::string tblName)

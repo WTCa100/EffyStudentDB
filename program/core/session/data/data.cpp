@@ -80,7 +80,7 @@ std::shared_ptr<Entry> SessionData::getEntry(const uint16_t targetId, const std:
 	return nullptr;
 }
 
-std::unique_ptr<abstractTypeList> SessionData::getEntries(const std::string& table)
+std::shared_ptr<abstractTypeList> SessionData::getEntries(const std::string& table)
 {
 	if (!verifyTable(table))
 	{
@@ -88,32 +88,5 @@ std::unique_ptr<abstractTypeList> SessionData::getEntries(const std::string& tab
 		return nullptr;
 	}
 
-	return std::make_unique<std::map<uint16_t, std::shared_ptr<Entry>>>(entryList_.at(table));
-}
-
-void SessionData::addGrade(const uint16_t targetSubject, const uint16_t targetStudent, float value)
-{
-	abstractTypeList studentList = entryList_.at(g_tableGrades);
-	abstractTypeList subjectList = entryList_.at(g_tableStudents);
-
-	if (!studentList.contains(targetStudent) || !subjectList.contains(targetSubject)) { return; }
-
-	std::shared_ptr<Student> concreteStudent            = std::dynamic_pointer_cast<Student>(studentList.at(targetStudent));
-	std::map<std::string, float>& concreteStudentGrades = concreteStudent->grades_;
-	std::string subjectName = std::dynamic_pointer_cast<Subject>(subjectList.at(targetSubject))->name_;
-	if (concreteStudentGrades.contains(subjectName)) { return; }
-	concreteStudentGrades.insert(std::make_pair(subjectName, value));
-}
-
-void SessionData::removeGrade(const uint16_t targetSubject, const uint16_t targetStudent)
-{
-	abstractTypeList studentList = entryList_.at("Students");
-	abstractTypeList subjectList = entryList_.at("Subjects");
-
-	if (!studentList.contains(targetStudent) || !subjectList.contains(targetSubject)) { return; }
-
-	std::shared_ptr<Student> concreteStudent   = std::dynamic_pointer_cast<Student>(studentList.at(targetStudent));
-	std::map<std::string, float>& targetGrades = (*concreteStudent).grades_;
-	std::shared_ptr<Subject> targetSub         = std::dynamic_pointer_cast<Subject>(subjectList.at(targetSubject));
-	if (targetGrades.contains(targetSub->name_)) { targetGrades.erase(targetSub->name_); }
+	return std::make_shared<abstractTypeList>(entryList_.at(table));
 }

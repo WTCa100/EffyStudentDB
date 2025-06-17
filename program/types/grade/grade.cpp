@@ -29,7 +29,7 @@ namespace Core::Types
 	std::map<std::string, std::string> Grade::getAttrs() const
 	{
 		std::map<std::string, std::string> mappedAttrs;
-		mappedAttrs.insert(std::make_pair("grades", std::to_string(value_)));
+		mappedAttrs.insert(std::make_pair("grade", std::to_string(value_)));
 		mappedAttrs.insert(std::make_pair("subjectId", std::to_string(subjectId_)));
 		mappedAttrs.insert(std::make_pair("studentId", std::to_string(studentId_)));
 		return mappedAttrs;

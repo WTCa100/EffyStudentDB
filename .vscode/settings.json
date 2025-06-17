@@ -66,5 +66,6 @@
         "set": "cpp",
         "unordered_set": "cpp"
     },
-    "C_Cpp.default.compilerPath": "/usr/bin/clang++"
+    "C_Cpp.default.compilerPath": "/usr/bin/clang++",
+    "cmake.sourceDirectory": "/home/biejan/Projects/EffyStudentDB/program"
 }

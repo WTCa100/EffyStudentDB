@@ -141,7 +141,7 @@ namespace Utilities::Sql::Types
 		studentReq.addToSchema({ "id", "INTEGER", { Types::AttributeFlag::PRIMARY_KEY } });
 		studentReq.addToSchema({ "studentId", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
 		studentReq.addToSchema({ "courseId", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
-		studentReq.addToSchema({ "requstStatus", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
+		studentReq.addToSchema({ "requestStatus", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
 		studentReq.linkAttributes(studentReq.getAttributeByName("studentId"), "Students", "id");
 		studentReq.linkAttributes(studentReq.getAttributeByName("courseId"), "Courses", "id");
 		return studentReq;

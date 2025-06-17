@@ -86,16 +86,16 @@ namespace Core::Display
 	Action Menu::createAction()
 	{
 		LOG((*logger_), "Creating action");
-		std::string rawInput = Utilities::InputHandler::getStringBeauty("Instruction");
+		std::string rawInput = inHandler_->getStringBeauty("Instruction");
 		LOG((*logger_), "Received input to assemble action: \"", rawInput, "\"");
-		Action userAction = Action(Utilities::InputHandler::toUpper(rawInput));
+		Action userAction = Action(inHandler_->toUpper(rawInput));
 		return userAction;
 	}
 
 	void Menu::showEntries(const std::string& target) const
 	{
 		LOG((*logger_), "Showing entries from table: ", target);
-		const std::unique_ptr<abstractTypeList> concreteList = sesData_->getEntries(target);
+		const std::shared_ptr<abstractTypeList> concreteList = sesData_->getEntries(target);
 
 		if (!concreteList)
 		{
@@ -143,6 +143,22 @@ namespace Core::Display
 
 		// @TODO add optional handle
 		return true;
+	}
+
+	bool Menu::promptDeleteAll(std::string filter, uint16_t count) const
+	{
+		LOG((*logger_), "Delete all detected - double check prompt");
+		std::cout << "You are about to delete every entry (" << count << ") matching filter: \"" << filter << "\".\n";
+		std::cout << "Are you sure? - this cannot be undone.\n";
+		if (inHandler_->getYesOrNo() == 'Y')
+		{
+			LOG((*logger_), "User agreed");
+			std::cout << "Agreed\n";
+			return true;
+		}
+		LOG((*logger_), "User aborted")
+		std::cout << "Abort\n";
+		return false;
 	}
 
 	std::string Menu::getManagementOption() const

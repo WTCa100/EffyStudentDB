@@ -5,7 +5,7 @@
 
 namespace Utilities
 {
-	constexpr int g_Reserved = INT16_MAX;
+	constexpr int g_Reserved = UINT16_MAX;
 
 	class InputHandler
 	{
@@ -26,6 +26,7 @@ namespace Utilities
 		static std::string getAttrAsStringNonEmpty(std::string attrName = "Attribute");
 		static std::string getStringBeauty(std::optional<std::string> prompt = std::nullopt);
 		static std::string getStringUgly(std::optional<std::string> prompt = std::nullopt);
+		static char getYesOrNo();
 
 		static void beautify(std::string& target);
 		static std::string toLower(std::string& target);

@@ -7,7 +7,7 @@ namespace Core::Display
 {
     Menu::Menu(std::shared_ptr<Utilities::Logger> logger, std::shared_ptr<SessionData> sesData)
     {
-        logger_ = logger;
+        logger_  = logger;
         sesData_ = sesData;
         LOG((*logger_), "Menu object created");
         inHandler_ = std::make_unique<Utilities::InputHandler>();
@@ -18,7 +18,7 @@ namespace Core::Display
         Then return the new Action object, and let the session handle it
         Example:
         Enum Value ()
-        Action: 
+        Action:
             - Tokenized Action (vector of strings)
             - static Tokenize
             + getAction (1st token)
@@ -31,27 +31,17 @@ namespace Core::Display
         Action userAction;
         std::string cmd;
         bool isValidAction;
-        do
-        {
-            userAction = createAction();
-            cmd = userAction.getCommand();
+        do {
+            userAction    = createAction();
+            cmd           = userAction.getCommand();
             isValidAction = validateAction(userAction);
             // Handle help and entry display here
             LOG((*logger_), "Action got command: ", cmd);
-            if(isValidAction)
+            if (isValidAction)
             {
-                if(cmd == "SHOW")
-                {
-                    showEntries(userAction.getTarget());
-                }
-                else if(cmd == "HELP")
-                {
-                    showHelp();
-                }
-                else if(cmd == "LIST")
-                {
-                    listTables();
-                }
+                if (cmd == "SHOW") { showEntries(userAction.getTarget()); }
+                else if (cmd == "HELP") { showHelp(); }
+                else if (cmd == "LIST") { listTables(); }
                 LOG((*logger_), "Valid Action command: ", cmd, " target: ", userAction.getTarget());
             }
             else
@@ -70,9 +60,12 @@ namespace Core::Display
         helpMsg << "Management mode allows the user to alter entries inside the database with given commands.\n";
         helpMsg << "Commend & their usage:\n";
         helpMsg << "ADD <TargetTable> - Will launch prompt to insert new entry into given table.\n";
-        helpMsg << "REMOVE <TargetTable> <TargetId - opt> - Will launch a prompt and delete every entry matching given patterns.\n";
+        helpMsg
+            << "REMOVE <TargetTable> <TargetId - opt> - Will launch a prompt and delete every entry matching given patterns.\n";
         helpMsg << "If an ID is provided it will delete only that one entry.\n";
-        helpMsg << "EDIT <TargetTable> <TargetId - opt> - Will launch a prompt and alter every entry matching given patterns with new values.\n";
+        helpMsg << "EDIT <TargetTable> <TargetId - opt> - Will launch a prompt and alter every entry matching given patterns "
+                   "with new "
+                   "values.\n";
         helpMsg << "If an ID is provided it will only update that one entry.\n";
         helpMsg << "FIND <TargetTable> <TargetId - opt> - WIll launch a prompt and display every entry matching given pattern.\n";
         helpMsg << "If an ID is provided it will only display that one entry\n";
@@ -80,34 +73,31 @@ namespace Core::Display
         helpMsg << "SHOW <TargetTable> - Will show entries from a given table.\n";
         helpMsg << "HELP - Displays this message.\n";
         std::cout << helpMsg.str();
-        return; 
+        return;
     }
 
     void Menu::listTables() const
     {
         LOG((*logger_), "Printing current tables");
         std::cout << "Current tables:\n";
-        for(const auto& tables : sesData_->getTableNames())
-        {
-            std::cout << tables << "\n";
-        }
+        for (const auto& tables : sesData_->getTableNames()) { std::cout << tables << "\n"; }
     }
 
     Action Menu::createAction()
     {
         LOG((*logger_), "Creating action");
-        std::string rawInput  = Utilities::InputHandler::getStringBeauty("Instruction");
+        std::string rawInput = inHandler_->getStringBeauty("Instruction");
         LOG((*logger_), "Received input to assemble action: \"", rawInput, "\"");
-        Action userAction = Action(Utilities::InputHandler::toUpper(rawInput));
+        Action userAction = Action(inHandler_->toUpper(rawInput));
         return userAction;
     }
 
     void Menu::showEntries(const std::string& target) const
     {
         LOG((*logger_), "Showing entries from table: ", target);
-        const std::unique_ptr<abstractTypeList> concreteList = sesData_->getEntries(target);
+        const std::shared_ptr<abstractTypeList> concreteList = sesData_->getEntries(target);
 
-        if(!concreteList) 
+        if (!concreteList)
         {
             LOG((*logger_), "Could not find table: ", target);
             return;
@@ -115,49 +105,37 @@ namespace Core::Display
 
         std::cout << "Displaying " << target << ": \n";
         std::cout << concreteList->size() << " entries\n";
-        for(const auto& entry : *concreteList)
-        {
-            std::cout << entry.second.get()->toString() << "\n";
-        }
+        for (const auto& entry : *concreteList) { std::cout << entry.second.get()->toString() << "\n"; }
     }
 
     bool Menu::validateAction(const Action& act)
     {
         const std::string& command = act.getCommand();
-        
-        if(command.empty())
+
+        if (command.empty())
         {
             LOG((*logger_), "Action command empty - aborting");
             return false;
         }
-        
-        // First check the shortest commands
-        if(command  == "LIST" ||
-            command == "HELP" ||
-            command == "EXIT")
-            {
-                return true;
-            }
 
-        if(command != "SHOW"   &&
-           command != "FIND"   &&
-           command != "ADD"    &&
-           command != "REMOVE" &&
-           command != "UPDATE")
-           {
+        // First check the shortest commands
+        if (command == "LIST" || command == "HELP" || command == "EXIT") { return true; }
+
+        if (command != "SHOW" && command != "FIND" && command != "ADD" && command != "REMOVE" && command != "UPDATE")
+        {
             return false;
-           }
+        }
 
         const std::string& target = act.getTarget();
         // Look for 2nd arg
-        if(target.empty())
+        if (target.empty())
         {
             LOG((*logger_), "Action target empty while command == ", command);
             return false;
-        }        
-        
+        }
+
         // 2nd Arg is always a table name
-        if(!sesData_->getTableNames().contains(target))
+        if (!sesData_->getTableNames().contains(target))
         {
             LOG((*logger_), "Attempted to operate on non-existent target table: ", target);
             return false;
@@ -167,20 +145,36 @@ namespace Core::Display
         return true;
     }
 
+    bool Menu::promptDeleteAll(std::string filter, uint16_t count) const
+    {
+        LOG((*logger_), "Delete all detected - double check prompt");
+        std::cout << "You are about to delete every entry (" << count << ") matching filter: \"" << filter << "\".\n";
+        std::cout << "Are you sure? - this cannot be undone.\n";
+        if (inHandler_->getYesOrNo() == 'Y')
+        {
+            LOG((*logger_), "User agreed");
+            std::cout << "Agreed\n";
+            return true;
+        }
+        LOG((*logger_), "User aborted")
+        std::cout << "Abort\n";
+        return false;
+    }
+
     std::string Menu::getManagementOption() const
     {
-            LOG((*logger_), "Getting management option");
-            std::cout << "Options:\n";
-            std::cout << "NEXT - move 1 page fruther\n";
-            std::cout << "PREV - move 1 page back\n";
-            std::cout << "ADD - proceed to create a new entry\n";
-            std::cout << "ALTER <targetID> - proceed to update entry with provided targetId with new values\n";
-            std::cout << "REMOVE <targetID> - proceed to delete a given entry\n";
-            std::cout << "FIND - proceed to get entries that match at least one parameter\n";
-            std::cout << "EXIT - exits this view\n";
-            std::string buf;
-            std::getline(std::cin, buf);
-            return buf;
+        LOG((*logger_), "Getting management option");
+        std::cout << "Options:\n";
+        std::cout << "NEXT - move 1 page fruther\n";
+        std::cout << "PREV - move 1 page back\n";
+        std::cout << "ADD - proceed to create a new entry\n";
+        std::cout << "ALTER <targetID> - proceed to update entry with provided targetId with new values\n";
+        std::cout << "REMOVE <targetID> - proceed to delete a given entry\n";
+        std::cout << "FIND - proceed to get entries that match at least one parameter\n";
+        std::cout << "EXIT - exits this view\n";
+        std::string buf;
+        std::getline(std::cin, buf);
+        return buf;
     }
 
     MainMenuOption Menu::showMainMenu()
@@ -195,4 +189,4 @@ namespace Core::Display
         LOG((*logger_), "Got option ", op);
         return op;
     }
-}
+}  // namespace Core::Display

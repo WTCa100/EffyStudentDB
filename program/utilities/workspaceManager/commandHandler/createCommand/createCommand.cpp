@@ -11,18 +11,17 @@ namespace Utilities::Command
 
         switch (type_)
         {
-        case targetType::directory:
-        {
-            std::filesystem::create_directory(fullPath);
-            return true;
-        }
-        case targetType::file:
-        {
-            std::ofstream fileOut(fullPath);
-            return true;
-        }
-        default:
-            return false;
+            case targetType::directory :
+                {
+                    std::filesystem::create_directory(fullPath);
+                    return true;
+                }
+            case targetType::file :
+                {
+                    std::ofstream fileOut(fullPath);
+                    return true;
+                }
+            default : return false;
         }
     }
-} // namespace Utilities::Command
+}  // namespace Utilities::Command

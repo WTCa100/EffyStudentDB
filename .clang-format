@@ -1,0 +1,101 @@
+# Minimal version required (Ubuntu clang-format version 14.0.0-1ubuntu1.1)
+AlignAfterOpenBracket: DontAlign
+AlignArrayOfStructures: Left
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveBitFields: None
+AlignConsecutiveDeclarations: None
+AlignConsecutiveMacros: Consecutive
+AlignEscapedNewlines: Left
+AlignOperands: Align
+AllowAllParametersOfDeclarationOnNextLine: True
+AllowShortBlocksOnASingleLine: Always
+AllowShortCaseLabelsOnASingleLine: True
+AllowShortEnumsOnASingleLine: False
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: True
+AlwaysBreakBeforeMultilineStrings: False
+BinPackArguments: True
+BinPackParameters: False
+BitFieldColonSpacing: After
+BreakAfterReturnType: Automatic
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: True
+  AfterCaseLabel: True
+  AfterControlStatement: Always
+  AfterEnum: True
+  AfterFunction: True
+  AfterNamespace: True
+  AfterStruct: True
+  AfterUnion: True
+  AfterExternBlock: True
+  BeforeCatch: True
+  BeforeElse: True
+  BeforeLambdaBody: False
+  BeforeWhile: False
+  SplitEmptyFunction: False
+  SplitEmptyRecord: False
+  SplitEmptyNamespace: False
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: True
+BreakConstructorInitializers: AfterColon
+BreakInheritanceList : AfterColon
+ColumnLimit: 130 # Adjust at your own liking
+CommentPragmas: '^ Biejan pragma:'
+CompactNamespaces: True
+Cpp11BracedListStyle: False
+DerivePointerAlignment: True # Verify
+EmptyLineAfterAccessModifier: Never
+EmptyLineBeforeAccessModifier: LogicalBlock
+FixNamespaceComments: True
+IncludeBlocks: Regroup
+IndentAccessModifiers: False
+IndentCaseBlocks: True
+IndentCaseLabels: True
+IndentExternBlock: AfterExternBlock
+IndentGotoLabels: False # I don't think I have ever seen a goto instruction
+IndentPPDirectives: None
+IndentWidth: 4 # Verify if 4 spaces are enough
+IndentWrappedFunctionNames: False # Verify
+InsertTrailingCommas: None
+KeepEmptyLines:
+  AtEndOfFile: True
+  AtStartOfBlock: False
+  AtStartOfFile: False
+Language: Cpp
+NamespaceIndentation: All
+# OneLineFormatOffRegex: ^// NOLINT$ # For clang-format 21
+PackConstructorInitializers: Never
+PointerAlignment: Left
+ReferenceAlignment: Left
+ReflowComments: True
+# RemoveEmptyLinesInUnwrappedLines: False # For clang-format 20
+SeparateDefinitionBlocks: Always
+ShortNamespaceLines: 0
+SortUsingDeclarations: Lexicographic
+SpaceAfterCStyleCast: False
+SpaceAfterLogicalNot: False
+# SpaceAfterOperatorKeyword: True # For clang-format 21
+SpaceAfterTemplateKeyword: False
+SpaceAroundPointerQualifiers: Default
+SpaceBeforeAssignmentOperators: True
+SpaceBeforeCaseColon: True
+SpaceBeforeCpp11BracedList: False
+SpaceBeforeCtorInitializerColon: False
+SpaceBeforeInheritanceColon: True
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterControlStatements: True
+  AfterIfMacros: True
+  AfterOverloadedOperator: True
+SpaceBeforeRangeBasedForLoopColon: True
+SpaceBeforeSquareBrackets: False
+SpaceInEmptyBlock: False
+SpacesBeforeTrailingComments: 2
+SpacesInContainerLiterals: False
+SpacesInSquareBrackets: False
+Standard: c++20
+TabWidth: 4
+UseTab: Never

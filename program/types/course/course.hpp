@@ -1,18 +1,20 @@
 #pragma once
 
-#include <inttypes.h>
-#include <string>
-#include <vector>
-
-#include "../entry.hpp"
 #include "../../utilities/common/constants.hpp"
+#include "../courseSubjectWeight/courseSubjectWeight.hpp"
+#include "../entry.hpp"
+
+#include <inttypes.h>
+#include <memory>
+#include <string>
 
 using Utilities::Common::Constants::g_tableCourses;
+
 namespace Core::Types
 {
     struct Course : public Entry
     {
-        std::vector<std::pair<uint16_t, uint16_t>> subjectWithWeight_;
+        std::map<uint16_t, std::shared_ptr<CourseSubjectWeight>> subjectWithWeight_;
         std::string name_;
         uint16_t minStudents_;
         uint16_t maxStudents_;
@@ -26,11 +28,12 @@ namespace Core::Types
         std::string toString() const override;
         std::map<std::string, std::string> getAttrs() const override;
         std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;
+        std::shared_ptr<Entry> fillGaps(const std::shared_ptr<Entry> other) override;
 
-        Course() : Entry(0, g_tableCourses) {}
+        Course();
         Course(uint16_t id, uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name);
         Course(uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name);
-        Entry& operator=(const Entry& other) override;
-    };    
-} // namespace Core::Types
+        Entry& operator= (const Entry& other) override;
+    };
+}  // namespace Core::Types
 

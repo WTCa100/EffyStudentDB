@@ -1,31 +1,29 @@
-#include <fstream>
-#include <string>
-#include <sstream>
 #include "logger.hpp"
+
+#include <fstream>
+#include <sstream>
+#include <string>
 
 namespace Utilities
 {
     Logger::Logger(std::string logPath)
     {
-        if(logPath.at(logPath.size() - 1) != '/') logPath += '/';
+        if (logPath.at(logPath.size() - 1) != '/') logPath += '/';
 
         fileName_ = "EffyStudentDb-" + getFileTimestamp(createCurrentTimestamp());
-        if(!touch((std::filesystem::path(logPath)), fileName_))
-        {
-            std::cout << "Could not create a log file!\n";
-        }
+        if (!touch((std::filesystem::path(logPath)), fileName_)) { std::cout << "Could not create a log file!\n"; }
     };
 
     bool Logger::touch(std::filesystem::path path, std::string fileName)
     {
         filePtr_.open(std::string(path.c_str() + fileName + logExt));
-        if(filePtr_.good())
+        if (filePtr_.good())
         {
             std::cout << "Log file at " << path.c_str() + fileName + logExt << "\n";
             LOG((*this), "File created");
             return true;
         }
-        
+
         std::cout << "Could not create a log file!\n";
         filePtr_.close();
         return false;
@@ -34,14 +32,13 @@ namespace Utilities
     bool Logger::close()
     {
         LOG((*this), "Closing Log file");
-        if(filePtr_.is_open())
+        if (filePtr_.is_open())
         {
             filePtr_.close();
-            if(!filePtr_.is_open())
+            if (!filePtr_.is_open())
             {
                 std::cout << "Success.\n";
                 return true;
-                
             }
         }
         else
@@ -68,17 +65,14 @@ namespace Utilities
         return formatTs.str();
     }
 
-    Logger::~Logger()
-    {
-        std::cout << (close() ? "Logger closed successfully\n" : "Logger failed to close the logfile!\n");
-    }
-    
+    Logger::~Logger() { std::cout << (close() ? "Logger closed successfully\n" : "Logger failed to close the logfile!\n"); }
+
     const std::tm Logger::createCurrentTimestamp()
     {
-        const auto now = std::chrono::system_clock::now();
+        const auto now       = std::chrono::system_clock::now();
         std::time_t fullDate = std::chrono::system_clock::to_time_t(now);
-        std::tm timestamp = *std::localtime(&fullDate);
+        std::tm timestamp    = *std::localtime(&fullDate);
         return timestamp;
-    } 
-} // namespace Utilities
+    }
+}  // namespace Utilities
 

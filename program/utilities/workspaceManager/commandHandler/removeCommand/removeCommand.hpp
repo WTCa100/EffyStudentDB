@@ -1,10 +1,10 @@
 #pragma once
 
-#include <iostream>
-#include <filesystem>
-#include <optional>
-
 #include "../commandHandler.hpp"
+
+#include <filesystem>
+#include <iostream>
+#include <optional>
 
 namespace Utilities::Command
 {
@@ -15,17 +15,21 @@ namespace Utilities::Command
      */
     class RemoveCommand : public CommandHandler
     {
-    private:
+      private:
         std::string target_;
         targetType type_;
         std::optional<std::filesystem::path> subPath_;
-    public:
-        RemoveCommand(std::string target, targetType type, std::optional<std::filesystem::path> subPath = std::nullopt) : target_(target), type_(type), subPath_(subPath) {}
+
+      public:
+        RemoveCommand(std::string target, targetType type, std::optional<std::filesystem::path> subPath = std::nullopt):
+            target_(target),
+            type_(type),
+            subPath_(subPath)
+        {}
+
         ~RemoveCommand() = default;
         bool execute() override;
-
-
     };
-    
-} // namespace Utilities::Command
+
+}  // namespace Utilities::Command
 

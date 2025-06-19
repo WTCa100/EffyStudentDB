@@ -1,17 +1,17 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include <filesystem>
 #include <map>
 #include <memory>
+#include <string>
 #include <unordered_map>
-#include <filesystem>
+#include <vector>
 
 // Get types
-#include "../../../utilities/logger/logger.hpp"
 #include "../../../types/school/school.hpp"
-#include "../../../types/subject/subject.hpp"
 #include "../../../types/student/student.hpp"
+#include "../../../types/subject/subject.hpp"
+#include "../../../utilities/logger/logger.hpp"
 #include "types/attribute/attribute.hpp"
 #include "types/table/table.hpp"
 
@@ -30,16 +30,17 @@ namespace Utilities::Sql
         dflt_value = 4,
         pk         = 5
     };
+
     class SqlManager
     {
-    private:
+      private:
         std::unordered_map<std::string, Sql::Types::Table> tables_;
         std::shared_ptr<Logger> logger_;
         std::filesystem::path dbPath_;
         sqlite3* currentDb_;
         bool isDbOpen_;
-        
-    public:
+
+      public:
         void initialTablesLoad(std::fstream& schemaPtr);
 
         // Low level methods
@@ -51,9 +52,12 @@ namespace Utilities::Sql
         bool moveSchemaToDatabase(const Sql::Types::Table& table);
         bool insertTable(const Sql::Types::Table& newTbl);
         Sql::Types::Table getTableSchema(std::string tableName);
+
         // Object related methods
         inline void addTable(const Sql::Types::Table& newTbl) { tables_.insert(std::make_pair(newTbl.getName(), newTbl)); }
+
         const Sql::Types::Table getTable(const std::string& name) const;
+
         std::unordered_map<std::string, Sql::Types::Table> getTables() const { return tables_; }
 
         // Move it to adapter
@@ -61,13 +65,11 @@ namespace Utilities::Sql
         bool updateEntryFromTable(std::string tableName, AttrsValues newVals, std::string condition);
         bool removeEntryFromTable(std::string tableName, uint16_t entryId);
         bool removeEntryFromTable(std::string tableName, std::string condition);
-        std::vector<std::string> getEntriesFromTable(std::string tableName, std::vector<std::string> attributes = {}, std::string filter = "");
+        std::vector<std::string> getEntriesFromTable(
+            std::string tableName, std::vector<std::string> attributes = {}, std::string filter = "");
 
-        
         bool isTableInDatabase(const Sql::Types::Table& table);
         bool isTableInDatabase(const std::string& tableName);
-
-
 
         // bool addEntryToTable(std::string tableName /*, Entry*/);
 
@@ -76,10 +78,10 @@ namespace Utilities::Sql
 
         bool openDb();
         void closeDb();
-        bool isDbOpen() const { return isDbOpen_; }
 
+        bool isDbOpen() const { return isDbOpen_; }
 
         void printTables();
     };
-    
-}
+
+}  // namespace Utilities::Sql

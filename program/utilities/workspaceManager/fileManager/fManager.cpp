@@ -4,16 +4,20 @@
 #include "../commandHandler/removeCommand/removeCommand.hpp"
 #include "../commandHandler/verifyCommand/verifyCommand.hpp"
 
-
 using namespace Utilities::Command;
+
 namespace Utilities::Workspace
 {
-    FileManager::FileManager(std::string rootPath) : appRoot_(std::filesystem::path(rootPath)), cwd_(appRoot_)
+    FileManager::FileManager(std::string rootPath):
+        appRoot_(std::filesystem::path(rootPath)),
+        cwd_(appRoot_)
     {
-        std::cout << "fManager :ctor: appRoot_ = " << appRoot_.string() << " (from specialized ctor)\n"; 
+        std::cout << "fManager :ctor: appRoot_ = " << appRoot_.string() << " (from specialized ctor)\n";
     }
 
-    FileManager::FileManager() : appRoot_(std::filesystem::current_path()), cwd_(appRoot_)
+    FileManager::FileManager():
+        appRoot_(std::filesystem::current_path()),
+        cwd_(appRoot_)
     {
         std::cout << "fManager :ctor: appRoot_ " << appRoot_.string() << "\n";
     }
@@ -32,10 +36,7 @@ namespace Utilities::Workspace
 
     std::unique_ptr<std::fstream> FileManager::getFile(std::string fileName, std::optional<std::filesystem::path> subPath)
     {
-        if(!exist(fileName, subPath))
-        {
-            return nullptr;
-        }
+        if (!exist(fileName, subPath)) { return nullptr; }
         std::unique_ptr<std::fstream> ptrRet = std::make_unique<std::fstream>();
         ptrRet->open(CommandHandler::assambleFullPath(fileName, subPath));
         return ptrRet;
@@ -47,7 +48,7 @@ namespace Utilities::Workspace
         std::ifstream fPtr;
         std::string line;
 
-        while(std::getline(fPtr, line))
+        while (std::getline(fPtr, line))
         {
             std::cout << line << "\n";
             content.push_back(line);
@@ -61,4 +62,4 @@ namespace Utilities::Workspace
         return comHandler_->execute();
     }
 
-} // namespace Utilities::Workspace
+}  // namespace Utilities::Workspace

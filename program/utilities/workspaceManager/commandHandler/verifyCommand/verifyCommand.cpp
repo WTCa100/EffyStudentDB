@@ -1,7 +1,5 @@
 #include "verifyCommand.hpp"
 
-
-
 namespace Utilities::Command
 {
     bool verifyCommand::execute()
@@ -10,4 +8,4 @@ namespace Utilities::Command
         return std::filesystem::exists(fullPath);
     }
 
-} // namespace Utilities::Command
+}  // namespace Utilities::Command

@@ -1,9 +1,10 @@
+#include "sqlManager.hpp"
+
+#include "../../common/stringManip.hpp"
+
+#include <fstream>
 #include <iostream>
 #include <sstream>
-#include <fstream>
-
-#include "sqlManager.hpp"
-#include "../../common/stringManip.hpp"
 
 // @TODO Make a univeresal Sql Call to DB, that would just execute a given command
 
@@ -13,37 +14,33 @@ namespace Utilities::Sql
 
     std::vector<std::string> SqlManager::executeIn(const std::string& sqlQuery)
     {
-        sqlite3_stmt *result;
+        sqlite3_stmt* result;
         LOG((*logger_), "Executing query \"", sqlQuery, "\"");
-        std::cout << "Executing query: \"" << sqlQuery << "\n"; 
-        if(int rc = !sqlite3_prepare_v2(currentDb_, sqlQuery.c_str(), sqlQuery.size(), &result, nullptr) == SQLITE_OK)
+        std::cout << "Executing query: \"" << sqlQuery << "\n";
+        if (int rc = !sqlite3_prepare_v2(currentDb_, sqlQuery.c_str(), sqlQuery.size(), &result, nullptr) == SQLITE_OK)
         {
-            LOG((*logger_),  "Query failed at preparation stage with exit code: ", rc);
+            LOG((*logger_), "Query failed at preparation stage with exit code: ", rc);
             return {};
         }
         LOG((*logger_), "Query prepared without any issues.");
 
         std::vector<std::string> output;
         int sqlStep;
-        while((sqlStep = sqlite3_step(result)) == SQLITE_ROW)
+        while ((sqlStep = sqlite3_step(result)) == SQLITE_ROW)
         {
             std::string rowContent = "";
-            for(int i = 0; i < sqlite3_column_count(result); i++)
+            for (int i = 0; i < sqlite3_column_count(result); i++)
             {
-                
-                const unsigned char *columnInfo = sqlite3_column_text(result, i);
+                const unsigned char* columnInfo = sqlite3_column_text(result, i);
 
                 rowContent += (columnInfo ? reinterpret_cast<const char*>(columnInfo) : "NULL");
 
-                if(i < sqlite3_column_count(result) - 1)
-                {
-                    rowContent += "|";
-                }
+                if (i < sqlite3_column_count(result) - 1) { rowContent += "|"; }
             }
             output.push_back(rowContent);
         }
 
-        if(sqlStep != SQLITE_DONE)
+        if (sqlStep != SQLITE_DONE)
         {
             const char* sqlErrMsg = sqlite3_errmsg(currentDb_);
             LOG((*logger_), "Query: \"", sqlQuery, "\" failed! Details: ", sqlErrMsg);
@@ -62,13 +59,13 @@ namespace Utilities::Sql
 
     bool SqlManager::executeOut(const std::string& sqlCommand)
     {
-        sqlite3_stmt *result;
+        sqlite3_stmt* result;
         LOG((*logger_), "Executing command: \"", sqlCommand, "\"");
-        std::cout << "Executing command: \"" << sqlCommand << "\"\n"; 
+        std::cout << "Executing command: \"" << sqlCommand << "\"\n";
         int rc = sqlite3_prepare_v2(currentDb_, sqlCommand.c_str(), sqlCommand.length(), &result, nullptr);
-        if(rc != SQLITE_OK)
+        if (rc != SQLITE_OK)
         {
-            LOG((*logger_),  "Command failed at preparation stage with exit code: ", rc);
+            LOG((*logger_), "Command failed at preparation stage with exit code: ", rc);
             std::cout << "Command failed at preparation stage with exit code: " << rc << "\n";
             sqlite3_finalize(result);
             return false;
@@ -76,7 +73,7 @@ namespace Utilities::Sql
         LOG((*logger_), "Command prepared without any issues.");
 
         rc = sqlite3_step(result);
-        if(rc != SQLITE_DONE)
+        if (rc != SQLITE_DONE)
         {
             const char* sqlErrMsg = sqlite3_errmsg(currentDb_);
             LOG((*logger_), "Command: \"", sqlCommand, "\" failed with result: ", rc, " Details: ", sqlErrMsg);
@@ -94,18 +91,15 @@ namespace Utilities::Sql
         return rc == SQLITE_DONE;
     }
 
-    bool SqlManager::isTableInDatabase(const Sql::Types::Table& table)
-    {
-        return isTableInDatabase(table.getName());
-    }
+    bool SqlManager::isTableInDatabase(const Sql::Types::Table& table) { return isTableInDatabase(table.getName()); }
 
     bool SqlManager::isTableInDatabase(const std::string& tableName)
     {
         LOG((*logger_), "Looking for table ", tableName, " in the database");
-        std::vector<std::string> presentTables = getEntriesFromTable("sqlite_master", {"name"}, "type = 'table'");
-        for(size_t i = 0; i < presentTables.size(); ++i)
+        std::vector<std::string> presentTables = getEntriesFromTable("sqlite_master", { "name" }, "type = 'table'");
+        for (size_t i = 0; i < presentTables.size(); ++i)
         {
-            if(presentTables.at(i) == tableName)
+            if (presentTables.at(i) == tableName)
             {
                 LOG((*logger_), "Found table in the database");
                 return true;
@@ -119,10 +113,7 @@ namespace Utilities::Sql
     {
         LOG((*logger_), "Moving all schemas to database");
         bool isEverythingInserted = false;
-        for(const auto& tbl : tables_)
-        {
-            isEverythingInserted = (moveSchemaToDatabase(tbl.second) && isEverythingInserted);
-        }
+        for (const auto& tbl : tables_) { isEverythingInserted = (moveSchemaToDatabase(tbl.second) && isEverythingInserted); }
         return isEverythingInserted;
     }
 
@@ -131,14 +122,11 @@ namespace Utilities::Sql
         LOG((*logger_), "Adding new table ", table.getName(), " to database");
         std::cout << "Adding table: " << table.getName() << "\n";
         // Check if a given table exist in the tables map
-        if(!tables_.contains(table.getName()))
-        {
-            addTable(table);
-        }
+        if (!tables_.contains(table.getName())) { addTable(table); }
 
         // @todo check if a given table is already inside .db file
 
-        if(!insertTable(table))
+        if (!insertTable(table))
         {
             LOG((*logger_), "Error: Could not insert table!");
             return false;
@@ -153,12 +141,17 @@ namespace Utilities::Sql
         return executeOut(formula);
     }
 
-    SqlManager::SqlManager(std::shared_ptr<Logger> extLogger, std::filesystem::path dbPath) : logger_(extLogger), dbPath_(dbPath), currentDb_(), isDbOpen_(false) {}
+    SqlManager::SqlManager(std::shared_ptr<Logger> extLogger, std::filesystem::path dbPath):
+        logger_(extLogger),
+        dbPath_(dbPath),
+        currentDb_(),
+        isDbOpen_(false)
+    {}
 
     bool SqlManager::openDb()
     {
         LOG((*logger_), "Opening db at: ", dbPath_.string());
-        if(isDbOpen_)
+        if (isDbOpen_)
         {
             std::cout << "Database is already open\n";
             LOG((*logger_), "Database is already open");
@@ -166,10 +159,10 @@ namespace Utilities::Sql
         }
 
         int rc = sqlite3_open_v2(dbPath_.c_str(), &currentDb_, SQLITE_OPEN_READWRITE, nullptr);
-        
-        if(rc != SQLITE_OK)
+
+        if (rc != SQLITE_OK)
         {
-            LOG((*logger_), "Sqlite failed to open a db with error code ", rc );
+            LOG((*logger_), "Sqlite failed to open a db with error code ", rc);
             std::cout << "Sqlite failed to open a db with error code " << rc << "\n";
         }
         else
@@ -184,7 +177,7 @@ namespace Utilities::Sql
 
     void SqlManager::closeDb()
     {
-        if(isDbOpen_)
+        if (isDbOpen_)
         {
             sqlite3_close_v2(currentDb_);
             isDbOpen_ = false;
@@ -194,10 +187,7 @@ namespace Utilities::Sql
 
     const Sql::Types::Table SqlManager::getTable(const std::string& name) const
     {
-        if(tables_.contains(name))
-        {
-            return tables_.at(name);
-        }
+        if (tables_.contains(name)) { return tables_.at(name); }
         return Table("");
     }
 
@@ -206,53 +196,37 @@ namespace Utilities::Sql
         LOG((*logger_), "Adding entry to table ", tableName);
         std::stringstream ss;
         ss << "INSERT INTO " << tableName << "(";
-        for(size_t pos = 0; pos < newVals.size(); ++pos)
+        for (size_t pos = 0; pos < newVals.size(); ++pos)
         {
             const Attribute& attr = newVals.at(pos).first;
             ss << attr.name_;
-            if(pos < newVals.size() - 1)
-            {
-                ss << ", ";
-            }
+            if (pos < newVals.size() - 1) { ss << ", "; }
         }
         ss << ") VALUES (";
-        for(size_t pos = 0; pos < newVals.size(); ++pos)
+        for (size_t pos = 0; pos < newVals.size(); ++pos)
         {
             const Attribute& attr = newVals.at(pos).first;
-            std::string val = newVals.at(pos).second;
-            if(attr.type_ == "TEXT")
-            {
-                ss << "'" << val << "'";
-            }
-            else
-            {
-                ss << val;
-            }
+            std::string val       = newVals.at(pos).second;
+            if (attr.type_ == "TEXT") { ss << "'" << val << "'"; }
+            else { ss << val; }
 
-            if(pos < newVals.size() - 1)
-            {
-                ss << ", ";
-            }
+            if (pos < newVals.size() - 1) { ss << ", "; }
         }
         ss << ");";
         return executeOut(ss.str());
     }
 
-
     bool SqlManager::updateEntryFromTable(std::string tableName, AttrsValues newVals, std::string condition)
     {
-        LOG((*logger_), "Executing update. Target table: ", tableName ," condition:", condition)
+        LOG((*logger_), "Executing update. Target table: ", tableName, " condition:", condition)
         std::string command = "UPDATE " + tableName + " SET ";
-        for(size_t valuePos = 0; valuePos < newVals.size(); valuePos++)
+        for (size_t valuePos = 0; valuePos < newVals.size(); valuePos++)
         {
-            const Attribute& currentAtr = newVals.at(valuePos).first;
+            const Attribute& currentAtr      = newVals.at(valuePos).first;
             const std::string& currentAtrVal = newVals.at(valuePos).second;
             command += currentAtr.name_ + " = \"" + currentAtrVal + "\" ";
 
-            if(valuePos != newVals.size() - 1)
-            {
-                command += ", ";
-            }
+            if (valuePos != newVals.size() - 1) { command += ", "; }
         }
         command += "WHERE " + condition + ";";
         return executeOut(command);
@@ -274,43 +248,33 @@ namespace Utilities::Sql
     {
         LOG((*logger_), "Initializing all tables from the schema file");
         // Get all table names from the DB
-        std::vector<std::string> tableNames = getEntriesFromTable("sqlite_master", {"name"}, "type = 'table'");
+        std::vector<std::string> tableNames = getEntriesFromTable("sqlite_master", { "name" }, "type = 'table'");
 
         LOG((*logger_), "Got ", tableNames.size(), " tables");
-        for(auto name : tableNames)
-        {
-            addTable(getTableSchema(name));
-        }
+        for (auto name : tableNames) { addTable(getTableSchema(name)); }
         LOG((*logger_), "Tables have been added into the tables_");
     }
 
-    std::vector<std::string> SqlManager::getEntriesFromTable(std::string tableName, std::vector<std::string> attributes, std::string filter)
+    std::vector<std::string> SqlManager::getEntriesFromTable(
+        std::string tableName, std::vector<std::string> attributes, std::string filter)
     {
-        LOG((*logger_), "Fetching entries from table: ", tableName, " attributes count: ", attributes.size(), " filter: ", filter);
+        LOG((*logger_), "Fetching entries from table: ", tableName, " attributes count: ", attributes.size(),
+            " filter: ", filter);
         std::string selectWhat = "";
-        std::string sqlFormat = "SELECT ";
-        if(attributes.empty())
-        {
-            selectWhat = "*";
-        }
+        std::string sqlFormat  = "SELECT ";
+        if (attributes.empty()) { selectWhat = "*"; }
         else
         {
-            for(size_t i = 0; i < attributes.size(); i++)
+            for (size_t i = 0; i < attributes.size(); i++)
             {
                 selectWhat += attributes.at(i);
-                if(i < attributes.size() - 1)
-                {
-                    selectWhat += ",";
-                }
+                if (i < attributes.size() - 1) { selectWhat += ","; }
             }
         }
 
         sqlFormat += selectWhat + " FROM " + tableName;
 
-        if(!filter.empty())
-        {
-            sqlFormat += " WHERE " + filter;
-        }
+        if (!filter.empty()) { sqlFormat += " WHERE " + filter; }
         sqlFormat += ";";
 
         return executeIn(sqlFormat);
@@ -320,8 +284,8 @@ namespace Utilities::Sql
     {
         LOG((*logger_), "Getting table \"", tableName, "\" schema");
         // First check if we got the table already in memory.
-        if(tables_.contains(tableName))
-        {  
+        if (tables_.contains(tableName))
+        {
             LOG((*logger_), "Table already in memory");
             return tables_.at(tableName);
         }
@@ -330,69 +294,59 @@ namespace Utilities::Sql
         std::string commandAttr = "PRAGMA table_info(" + tableName + ");";
         // The output of this pragma is id|seq|table|from|to|on_update|on_delete|match
         std::string commandForKeys = "PRAGMA foreign_key_list(" + tableName + ");";
-        
+
         Table resultTbl(tableName);
-        
-        std::vector<std::string> outputAttr = executeIn(commandAttr);
+
+        std::vector<std::string> outputAttr  = executeIn(commandAttr);
         std::vector<std::string> outputFkeys = executeIn(commandForKeys);
 
         LOG((*logger_), "Mapping attributes");
-        for(const auto& attr : outputAttr)
+        for (const auto& attr : outputAttr)
         {
             std::vector<std::string> tokenizedAttr = Common::tokenize(attr, '|');
             Attribute finalAttr;
-            for(size_t elementId = 1; elementId < tokenizedAttr.size(); elementId++)
+            for (size_t elementId = 1; elementId < tokenizedAttr.size(); elementId++)
             {
                 switch (static_cast<PragmaTableFormat>(elementId))
                 {
-                case PragmaTableFormat::name:
-                    finalAttr.name_ = tokenizedAttr.at(elementId);
-                    break;
-                case PragmaTableFormat::type:
-                    finalAttr.type_ = tokenizedAttr.at(elementId);
-                case PragmaTableFormat::notnull:
-                    if(tokenizedAttr.at(elementId) == "1")
-                    {
-                        finalAttr.flags_.push_back(AttributeFlag::NOT_NULL);
-                    }
-                    break;
-                case PragmaTableFormat::dflt_value:
-                    if(tokenizedAttr.at(elementId) != "NULL")
-                    {
-                        std::cout << "Default value is not supported yet - skipping.\n";
-                    }
-                    break;
-                case PragmaTableFormat::pk:
-                    if(tokenizedAttr.at(elementId) == "1")
-                    {
-                        finalAttr.flags_.push_back(AttributeFlag::PRIMARY_KEY);
-                    }
-                    break;
-                default:
-                    std::cout << "Unknown element id - skipping\n";
-                    break;
+                    case PragmaTableFormat::name : finalAttr.name_ = tokenizedAttr.at(elementId); break;
+                    case PragmaTableFormat::type : finalAttr.type_ = tokenizedAttr.at(elementId);
+                    case PragmaTableFormat::notnull :
+                        if (tokenizedAttr.at(elementId) == "1") { finalAttr.flags_.push_back(AttributeFlag::NOT_NULL); }
+                        break;
+                    case PragmaTableFormat::dflt_value :
+                        if (tokenizedAttr.at(elementId) != "NULL")
+                        {
+                            std::cout << "Default value is not supported yet - skipping.\n";
+                        }
+                        break;
+                    case PragmaTableFormat::pk :
+                        if (tokenizedAttr.at(elementId) == "1") { finalAttr.flags_.push_back(AttributeFlag::PRIMARY_KEY); }
+                        break;
+                    default : std::cout << "Unknown element id - skipping\n"; break;
                 }
             }
             resultTbl.addToSchema(std::move(finalAttr));
         }
 
-        if(!outputFkeys.empty())
+        if (!outputFkeys.empty())
         {
             LOG((*logger_), "Mapping foreign kets");
-            for(const auto& fKey : outputFkeys)
+            for (const auto& fKey : outputFkeys)
             {
                 std::vector<std::string> tokenizedKeys = Common::tokenize(fKey, '|');
-                Attribute linkAttr = resultTbl.getAttributeByName(tokenizedKeys.at(3));
-                if(!linkAttr.isValid())
+                Attribute linkAttr                     = resultTbl.getAttributeByName(tokenizedKeys.at(3));
+                if (!linkAttr.isValid())
                 {
-                    std::cout << "No such attribute " << tokenizedKeys.at(3) << " in Table " << resultTbl.getName() << ". Skipping entry...\n";
+                    std::cout << "No such attribute " << tokenizedKeys.at(3) << " in Table " << resultTbl.getName()
+                              << ". Skipping entry...\n";
                     continue;
                 }
                 resultTbl.linkAttributes(linkAttr, tokenizedKeys.at(5), tokenizedKeys.at(4));
             }
-
         }
-        LOG((*logger_), "Returning table: name=", resultTbl.getName(), " attrCount=", resultTbl.getSchema().size(), " foreignKeyCount=", resultTbl.getForeignKeys().size());
+        LOG((*logger_), "Returning table: name=", resultTbl.getName(), " attrCount=", resultTbl.getSchema().size(),
+            " foreignKeyCount=", resultTbl.getForeignKeys().size());
         return resultTbl;
     }
 
@@ -405,16 +359,13 @@ namespace Utilities::Sql
     void SqlManager::printTables()
     {
         LOG((*logger_), "Trying to print all tables");
-        if(tables_.empty())
+        if (tables_.empty())
         {
             std::cout << "No tables present\n";
             return;
         }
 
-        for(const auto& tbl : tables_)
-        {
-            std::cout << tbl.second.makeFormula() << "\n";
-        }
+        for (const auto& tbl : tables_) { std::cout << tbl.second.makeFormula() << "\n"; }
     }
 
-} // namespace Utilities::Sql
+}  // namespace Utilities::Sql

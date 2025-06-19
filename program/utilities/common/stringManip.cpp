@@ -1,7 +1,7 @@
 #include "stringManip.hpp"
 
-#include <sstream>
 #include <iostream>
+#include <sstream>
 
 namespace Utilities::Common
 {
@@ -11,10 +11,7 @@ namespace Utilities::Common
         std::string token;
         std::istringstream iss(rawFormat);
 
-        while(std::getline(iss, token, delim))
-        {
-            tokens.push_back(token);
-        }
+        while (std::getline(iss, token, delim)) { tokens.push_back(token); }
         return tokens;
     }
-} // namespace Utilities::Common
+}  // namespace Utilities::Common

@@ -1,22 +1,22 @@
 #pragma once
 
-#include <map>
-#include <set>
-
+#include "../../../types/course/course.hpp"
 #include "../../../types/entry.hpp"
 #include "../../../types/school/school.hpp"
 #include "../../../types/student/student.hpp"
-#include "../../../types/subject/subject.hpp"
-#include "../../../types/course/course.hpp"
 #include "../../../types/studentRequest/request.hpp"
+#include "../../../types/subject/subject.hpp"
+
+#include <map>
+#include <set>
 
 using namespace Core::Types;
 using namespace Core::Types::Request;
 using abstractTypeList = std::map<uint16_t, std::shared_ptr<Entry>>;
+
 class SessionData
 {
-private:
-
+  private:
     std::map<std::string, abstractTypeList> entryList_;
     // @TODO consider inserting maps from types to here
     // Like Students inside schools
@@ -24,7 +24,7 @@ private:
     // Each School can appear only once as well as each student ID can appear only exactly once inside a given entry.
     bool verifyTable(std::string tableName) const;
 
-public:
+  public:
     SessionData();
     ~SessionData() = default;
 
@@ -34,8 +34,5 @@ public:
     void updateEntry(const uint16_t targetId, const std::shared_ptr<Entry> alteredEntry);
     bool isPresent(const uint16_t targetId, const std::string& associatedTable) const;
     std::shared_ptr<Entry> getEntry(const uint16_t targetId, const std::string& associatedTable);
-    std::unique_ptr<abstractTypeList> getEntries(const std::string& table);
-
-    void addGrade(const uint16_t targetSubject, const uint16_t targetStudent, float value);
-    void removeGrade(const uint16_t targetSubject, const uint16_t targetStudent);
+    std::shared_ptr<abstractTypeList> getEntries(const std::string& table);
 };

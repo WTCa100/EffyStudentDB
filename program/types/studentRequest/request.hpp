@@ -14,7 +14,8 @@ namespace Core::Types::Request
 	{
 		Approved = 0,
 		Denied,
-		Pending
+		Pending,
+		Unknown
 	};
 
 	struct Srequest : public Entry
@@ -23,7 +24,12 @@ namespace Core::Types::Request
 		uint16_t courseId_;
 		requestStatus status_;
 
-		Srequest() = delete;
+		Srequest():
+			Entry(0, g_tableStudentRequest),
+			studentId_(0),
+			courseId_(0),
+			status_(requestStatus::Unknown)
+		{}
 
 		Srequest(uint32_t reqId, uint16_t stdId, uint16_t corId):
 			Srequest(reqId, stdId, corId, requestStatus::Pending)
@@ -40,6 +46,7 @@ namespace Core::Types::Request
 		std::map<std::string, std::string> getAttrs() const override;
 		std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;
 		Entry& operator= (const Entry& other) override;
+		std::shared_ptr<Entry> fillGaps(const std::shared_ptr<Entry> other) override;
 	};
 
 	std::string statusToString(const requestStatus& status);

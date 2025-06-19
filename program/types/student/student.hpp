@@ -30,7 +30,13 @@ namespace Core::Types
 		std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;
 
 		Student():
-			Entry(0, g_tableStudents)
+			Entry(0, g_tableStudents),
+			firstName_(""),
+			secondName_(std::nullopt),
+			lastName_(""),
+			email_(""),
+			grades_({}),
+			schoolId_(0)
 		{}
 
 		Student(uint16_t id,
@@ -45,5 +51,6 @@ namespace Core::Types
 			uint16_t schoolId,
 			std::optional<std::string> secondName = std::nullopt);
 		Entry& operator= (const Entry& other) override;
+		std::shared_ptr<Entry> fillGaps(const std::shared_ptr<Entry> other) override;
 	};
 }  // namespace Core::Types

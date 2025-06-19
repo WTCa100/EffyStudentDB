@@ -20,7 +20,9 @@ namespace Core::Types
 		std::map<uint16_t, std::shared_ptr<Student>> students_;
 
 		School():
-			Entry(g_tableSchools)
+			Entry(g_tableSchools),
+			name_(""),
+			students_({})
 		{}
 
 		School(std::string name):
@@ -45,6 +47,7 @@ namespace Core::Types
 		std::map<std::string, std::string> getAttrs() const override;
 		std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;
 		Entry& operator= (const Entry& other) override;
+		std::shared_ptr<Entry> fillGaps(const std::shared_ptr<Entry> other) override;
 	};
 }  // namespace Core::Types
 

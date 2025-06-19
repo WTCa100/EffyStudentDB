@@ -25,7 +25,7 @@ namespace Utilities::Sql::Types
 	Attribute Table::getAttributeByName(const std::string attrName)
 	{
 		if (schema_.contains(attrName)) { return schema_.at(attrName); }
-		return Attribute{ "" };
+		return Attribute{ "", attrFlagToString(Types::AttributeFlag::MISSING), {} };
 	}
 
 	std::string Table::makeFormula() const

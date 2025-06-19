@@ -13,6 +13,7 @@ namespace Utilities::Sql::Types
 			case AttributeFlag::PRIMARY_KEY : return "PRIMARY KEY";
 			case AttributeFlag::REFERENCE : return "REFFERENCE";
 			case AttributeFlag::UNIQUE : return "UNIQUE";
+			case AttributeFlag::MISSING : return "MISSING";
 			default : return "";
 		}
 	}

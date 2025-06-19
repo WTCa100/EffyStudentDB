@@ -8,6 +8,7 @@
 
 namespace Core::Types
 {
+
 	CourseSubjectWeight::CourseSubjectWeight(
 		uint16_t id, double weight, uint16_t courseId, uint16_t subjectId, std::string courseName, std::string subjectName):
 		Entry(id, g_tableCourseSubjectWeight),
@@ -17,6 +18,26 @@ namespace Core::Types
 		courseName_(courseName),
 		subjectName_(subjectName)
 	{}
+
+	CourseSubjectWeight::CourseSubjectWeight():
+		Entry(0, g_tableCourseSubjectWeight),
+		weight_(0.0f),
+		courseId_(0),
+		subjectId_(0),
+		courseName_(""),
+		subjectName_("")
+	{}
+
+	std::shared_ptr<Entry> CourseSubjectWeight::fillGaps(const std::shared_ptr<Entry> other)
+	{
+		std::shared_ptr<CourseSubjectWeight> concrete = std::static_pointer_cast<CourseSubjectWeight>(other);
+		std::shared_ptr<CourseSubjectWeight> refObj   = std::make_shared<CourseSubjectWeight>();
+		refObj->id_                                   = id_ == 0 ? concrete->id_ : id_;
+		refObj->weight_                               = weight_ == 0.0f ? concrete->weight_ : weight_;
+		refObj->courseId_                             = courseId_ == 0 ? concrete->courseId_ : courseId_;
+		refObj->subjectId_                            = subjectId_ == 0 ? concrete->subjectId_ : subjectId_;
+		return refObj;
+	}
 
 	std::string CourseSubjectWeight::toString() const
 	{

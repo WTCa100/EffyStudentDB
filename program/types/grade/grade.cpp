@@ -56,6 +56,17 @@ namespace Core::Types
 		return mappedNewAttrs;
 	}
 
+	std::shared_ptr<Entry> Grade::fillGaps(const std::shared_ptr<Entry> other)
+	{
+		std::shared_ptr<Grade> concrete = std::static_pointer_cast<Grade>(other);
+		std::shared_ptr<Grade> refObj   = std::make_shared<Grade>();
+
+		refObj->id_        = id_ == 0 ? concrete->id_ : id_;
+		refObj->studentId_ = studentId_ == 0 ? concrete->studentId_ : studentId_;
+		refObj->subjectId_ = subjectId_ == 0 ? concrete->subjectId_ : subjectId_;
+		return refObj;
+	}
+
 	Entry& Grade::operator= (const Entry& other)
 	{
 		if (this == &other) return *this;

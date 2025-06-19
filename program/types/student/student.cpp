@@ -73,13 +73,38 @@ namespace Core::Types
 		return mappedNewAttrs;
 	}
 
+	std::shared_ptr<Entry> Student::fillGaps(const std::shared_ptr<Entry> other)
+	{
+		std::shared_ptr<Student> concrete = std::static_pointer_cast<Student>(other);
+		std::shared_ptr<Student> refObj   = std::make_shared<Student>();
+		refObj->id_                       = id_ == 0 ? concrete->id_ : id_;
+		refObj->firstName_                = firstName_.empty() ? concrete->firstName_ : firstName_;
+		if (concrete->secondName_.has_value())
+		{
+			if (secondName_.has_value())
+			{
+				refObj->secondName_ = secondName_.value().empty() ? concrete->secondName_ : secondName_;
+			}
+			else { refObj->secondName_ = concrete->secondName_; }
+		}
+		else
+		{
+			if (secondName_.has_value()) { refObj->secondName_ = concrete->secondName_; }
+			// No else as by default secondName_ is set to nullopt
+		}
+		refObj->lastName_ = lastName_.empty() ? concrete->lastName_ : lastName_;
+		refObj->email_    = email_.empty() ? concrete->email_ : email_;
+		refObj->schoolId_ = schoolId_ == 0 ? concrete->schoolId_ : schoolId_;
+		return refObj;
+	}
+
 	Student::Student(uint16_t id,
 		std::string name,
 		std::string lastName,
 		std::string email,
 		uint16_t schoolId,
 		std::optional<std::string> secondName):
-		Entry(id_, g_tableStudents),
+		Entry(id, g_tableStudents),
 		firstName_(name),
 		secondName_(secondName),
 		lastName_(lastName),

@@ -33,10 +33,12 @@ namespace Core::Types
 
 		inline std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override
 		{
-			name_ = Utilities::InputHandler::getAttrAsStringNonEmpty("Name");
+			name_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Name")
+							 : Utilities::InputHandler::getAttrAsString("Name");
 			return { std::make_pair("Name", name_) };
 		}
 
+		std::shared_ptr<Entry> fillGaps(const std::shared_ptr<Entry> other) override;
 		Entry& operator= (const Entry& other) override;
 	};
 

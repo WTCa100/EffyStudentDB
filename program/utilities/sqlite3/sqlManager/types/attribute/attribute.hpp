@@ -13,7 +13,8 @@ namespace Utilities::Sql::Types
 		DEFAULT     = 3,
 		// Check - not supported
 		// Collate - not supported
-		REFERENCE  // Not sure if we will be diving into it
+		REFERENCE,  // Not sure if we will be diving into it
+		MISSING
 	};
 
 	struct Attribute

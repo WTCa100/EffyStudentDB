@@ -322,7 +322,7 @@ namespace Utilities::Sql
 		LOG((*logger_), "Could not add entry to a table: ", targetTableName);
 		return true;
 	}
-
+ 
 	bool SqlAdapter::updateEntry(const Entry& oldEntry, const Entry& newEntry)
 	{
 		std::string targetTableName = oldEntry.associatedTable_;

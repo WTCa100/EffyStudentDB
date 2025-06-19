@@ -44,6 +44,29 @@ namespace Core::Types
 		return {};
 	}
 
+	std::shared_ptr<Entry> Course::fillGaps(const std::shared_ptr<Entry> other)
+	{
+		std::shared_ptr<Course> concrete = std::static_pointer_cast<Course>(other);
+		std::shared_ptr<Course> retObj   = std::make_shared<Course>();
+		retObj->id_                      = id_ == 0 ? concrete->id_ : id_;
+		retObj->name_                    = name_.empty() ? concrete->name_ : name_;
+		retObj->minStudents_             = minStudents_ == 0 ? concrete->minStudents_ : minStudents_;
+		retObj->maxStudents_             = maxStudents_ == 0 ? concrete->maxStudents_ : maxStudents_;
+		retObj->baseMinimalPoints_       = baseMinimalPoints_ == 0 ? concrete->baseMinimalPoints_ : baseMinimalPoints_;
+		retObj->averageStudentPoints_    = averageStudentPoints_ == 0 ? concrete->averageStudentPoints_ : averageStudentPoints_;
+		return retObj;
+	}
+
+	Course::Course():
+		Entry(0, g_tableCourses),
+		subjectWithWeight_({}),
+		name_(""),
+		minStudents_(0),
+		maxStudents_(0),
+		baseMinimalPoints_(0),
+		averageStudentPoints_(0)
+	{}
+
 	Course::Course(uint16_t id, uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name):
 		Entry(id, g_tableCourses),
 		subjectWithWeight_({}),

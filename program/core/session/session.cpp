@@ -141,7 +141,6 @@ bool Session::handleAction(const Action& userAction)
 		}
 	}
 
-	// Now TMP will act as filter holder
 	std::cout << "Matching values:\n";
 	std::unordered_map<std::string, std::string> attrs = concreteEntry->userConstruct(false);
 	std::string filter                                 = sAdapter_->makeFilter(attrs, Utilities::Sql::filterAnyMatch);
@@ -186,16 +185,22 @@ bool Session::handleAction(const Action& userAction)
 	if (userCommand == "UPDATE")
 	{
 		// Get new values 1st
-		std::cout << "Insert new values:\n";
-		std::shared_ptr<Entry> updatedValues = makeConcreteType(userTarget);
-		std::cout << "DBG!: Always leave update\n";
-		return true;
+		std::cout << "Modifying existing values.\n";
+		std::shared_ptr<Entry> entriesNew = makeConcreteType(userTarget);
+		entriesNew->userConstruct(false);
+		for (auto& val : affectedEntries)
+		{
+			std::shared_ptr<Entry> changedEntries = makeConcreteType(userTarget);
+			*changedEntries = *entriesNew->fillGaps(val);
+			// Make a copy of a given filter entry
+			if(sAdapter_->updateEntry(*val, *changedEntries))
+			{
+				onUpdate(val, changedEntries);
+				sesData_->updateEntry(val->id_, changedEntries);
 
-		// Update each affected entry
-		for (const auto& val : affectedEntries) { sesData_->updateEntry(val->id_, updatedValues); }
+			}
+		}
 	}
-
-	//@TODO verify linking
 
 	return false;
 }
@@ -412,6 +417,118 @@ void Session::onDelete(const std::shared_ptr<Entry> targetEntry)
 	}
 }
 
+void Session::onUpdate(std::shared_ptr<Entry> oldEntry, const std::shared_ptr<Entry> newEntry)
+{
+	const uint16_t id             = oldEntry->id_;
+	newEntry->id_                 = id;
+	const std::string targetTable = oldEntry->associatedTable_;
+	LOG((*logger_), "Editing entry id:", id, " targetTable:", targetTable);
+
+	// I think that this is useless
+	if (targetTable == g_tableSchools)
+	{
+		updateSingleEntry<School>(oldEntry, newEntry);
+	}
+
+	if (targetTable == g_tableSubjects)
+	{
+		updateSingleEntry<Subject>(oldEntry, newEntry);
+	}
+
+	if (targetTable == g_tableCourses)
+	{
+		updateSingleEntry<Course>(oldEntry, newEntry);
+	}
+	// Until here
+
+
+	// If a student is changed - Assign to new school if neede
+	if (targetTable == g_tableStudents)
+	{
+		std::shared_ptr<Student> concreteStudentOld = std::dynamic_pointer_cast<Student>(oldEntry);
+		std::shared_ptr<Student> concreteStudentNew =
+			std::dynamic_pointer_cast<Student>(newEntry);
+		uint16_t schoolIdOld = concreteStudentOld->schoolId_;
+		uint16_t schoolIdNew = concreteStudentNew->schoolId_;
+		if (schoolIdNew != schoolIdOld)
+		{
+			LOG((*logger_), "Entry has a different link. Id= ", id);
+			std::shared_ptr<School> schoolOld = std::dynamic_pointer_cast<School>(sesData_->getEntry(schoolIdOld, g_tableSchools));
+			std::shared_ptr<School> schoolNew = std::dynamic_pointer_cast<School>(sesData_->getEntry(schoolIdNew, g_tableSchools));
+			schoolOld->students_.erase(id);
+			schoolNew->students_.insert(std::make_pair(id, concreteStudentOld));
+		}
+	}
+
+	// If a grade is edited - reassign to different student or subject if needed
+	if(targetTable == g_tableGrades)
+	{
+		std::shared_ptr<Grade> concreteGradeOld = std::dynamic_pointer_cast<Grade>(oldEntry);
+		std::shared_ptr<Grade> concreteGradeNew = std::dynamic_pointer_cast<Grade>(newEntry);
+		uint16_t studentIdOld = concreteGradeOld->studentId_;
+		uint16_t studentIdNew = concreteGradeNew->studentId_;
+		if(studentIdOld != studentIdNew)
+		{
+			// Todo update name
+			LOG((*logger_), "Entry has a different link. Id= ", id);
+			std::shared_ptr<Student> studentOld = std::dynamic_pointer_cast<Student>(sesData_->getEntry(studentIdOld, g_tableStudents));
+			std::shared_ptr<Student> studentNew = std::dynamic_pointer_cast<Student>(sesData_->getEntry(studentIdNew, g_tableStudents));
+			studentOld->grades_.erase(id);
+			studentNew->grades_.insert(std::make_pair(id, concreteGradeOld));
+		}
+
+		uint16_t subjectIdOld = concreteGradeOld->subjectId_;
+		uint16_t subjectIdNew = concreteGradeNew->subjectId_;
+		if(subjectIdOld != subjectIdNew)
+		{
+			// Todo update name
+		}
+
+	}
+
+	// If a CourseSubjectWeight is changed - reasign to different course
+	if(targetTable == g_tableCourseSubjectWeight)
+	{
+		std::shared_ptr<CourseSubjectWeight> concreteWeightOld = std::dynamic_pointer_cast<CourseSubjectWeight>(oldEntry);
+		std::shared_ptr<CourseSubjectWeight> concreteWeightNew = std::dynamic_pointer_cast<CourseSubjectWeight>(newEntry);
+		uint16_t courseIdOld = concreteWeightOld->courseId_;
+		uint16_t courseIdNew = concreteWeightNew->courseId_;
+		if(courseIdOld != courseIdNew)
+		{
+			// Todo update name
+			LOG((*logger_), "Entry has a different link. Id= ", id);
+			std::shared_ptr<Course> courseOld = std::dynamic_pointer_cast<Course>(sesData_->getEntry(courseIdOld, g_tableCourses));
+			std::shared_ptr<Course> courseNew = std::dynamic_pointer_cast<Course>(sesData_->getEntry(courseIdNew, g_tableCourses));
+			courseOld->subjectWithWeight_.erase(id);
+			courseNew->subjectWithWeight_.insert(std::make_pair(id, concreteWeightOld));
+		}
+
+		// Todo subject name
+	}
+
+	
+	// If a srequest is changed - student or course have to be reasigned
+	if(targetTable == g_tableStudentRequest)
+	{
+		std::shared_ptr<Srequest> concreteRequestOld = std::dynamic_pointer_cast<Srequest>(oldEntry);
+		std::shared_ptr<Srequest> concreteRequestNew = std::dynamic_pointer_cast<Srequest>(newEntry);
+		uint16_t studentIdOld = concreteRequestOld->studentId_;
+		uint16_t studentIdNew = concreteRequestNew->studentId_;
+		if(studentIdOld != studentIdNew)
+		{
+			// Todo update name
+		}
+
+		uint16_t subjectIdOld = concreteRequestOld->courseId_;
+		uint16_t subjectIdNew = concreteRequestNew->courseId_;
+		if(subjectIdOld != subjectIdNew)
+		{
+			// Todo update name
+		}
+	}
+
+}
+
 void Session::deleteCourseSubjectWeight(const std::shared_ptr<CourseSubjectWeight> targetWeight)
 {
 	LOG((*logger_), "Common CourseSubjectWeight deletion");
@@ -424,27 +541,6 @@ void Session::deleteGrade(std::shared_ptr<Grade> targetGrade)
 	LOG((*logger_), "Common Grade deletion");
 	std::shared_ptr<abstractTypeList> gradeStudent = sesData_->getEntries(g_tableStudents);
 	if (gradeStudent->contains(targetGrade->studentId_)) { gradeStudent->erase(targetGrade->studentId_); }
-}
-
-void Session::onUpdate(const std::shared_ptr<Entry> oldEntry, const std::shared_ptr<Entry> newEntry)
-{
-	const uint16_t id             = oldEntry->id_;
-	const std::string targetTable = oldEntry->associatedTable_;
-	LOG((*logger_), "Editing entry id:", id, " targetTable:", targetTable);
-
-	// If a student is changed - Assign to new school if neede
-
-	// If a school is changed - nothing really needs to be done
-
-	// If a course is edited - maybe student requests will have to be updated?
-
-	// If a grade is edited - reassign to different student or subject if needed
-
-	// If a CourseSubjectWeight is changed - reasign to different course or subject
-
-	// If a subject is changed - nothing really needs to be done
-
-	// If a srequest is changed - student or course have to be reasigned
 }
 
 std::shared_ptr<Entry> Session::makeConcreteType(const std::string& tableName) const
@@ -462,27 +558,6 @@ std::shared_ptr<Entry> Session::makeConcreteType(const std::string& tableName) c
 	return tmp;
 }
 
-bool Session::updateSchool(School& targetSchool, School& newSchool)
-{
-	LOG((*logger_), "Editing existing school");
-	if (sAdapter_->updateEntry(targetSchool, newSchool))
-	{
-		sesData_->updateEntry(targetSchool.id_, std::make_shared<School>(newSchool));
-		return true;
-	}
-	return false;
-}
-
-bool Session::updateCourse(Course& targetCourse, Course& newCourse)
-{
-	LOG((*logger_), "Updating existing course.");
-	if (sAdapter_->updateEntry(targetCourse, newCourse))
-	{
-		sesData_->updateEntry(targetCourse.id_, std::make_shared<Course>(newCourse));
-		return true;
-	}
-	return false;
-}
 
 void Session::fetchGrades()
 {

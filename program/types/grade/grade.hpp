@@ -19,9 +19,15 @@ namespace Core::Types
 		std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;
 		std::map<std::string, std::string> getAttrs() const override;
 		Entry& operator= (const Entry& other) override;
+		std::shared_ptr<Entry> fillGaps(const std::shared_ptr<Entry> other) override;
 
 		Grade():
-			Entry(0, g_tableGrades)
+			Entry(0, g_tableGrades),
+			value_(0.0f),
+			studentId_(0),
+			subjectId_(0),
+			studentName_(""),
+			subjectName_("")
 		{}
 
 		Grade(uint16_t id,

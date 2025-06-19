@@ -17,22 +17,22 @@ using abstractTypeList = std::map<uint16_t, std::shared_ptr<Entry>>;
 class SessionData
 {
   private:
-	std::map<std::string, abstractTypeList> entryList_;
-	// @TODO consider inserting maps from types to here
-	// Like Students inside schools
-	// std::map<uint16_t, std::set<uint16_t>> schoolsWithStudents_;
-	// Each School can appear only once as well as each student ID can appear only exactly once inside a given entry.
-	bool verifyTable(std::string tableName) const;
+    std::map<std::string, abstractTypeList> entryList_;
+    // @TODO consider inserting maps from types to here
+    // Like Students inside schools
+    // std::map<uint16_t, std::set<uint16_t>> schoolsWithStudents_;
+    // Each School can appear only once as well as each student ID can appear only exactly once inside a given entry.
+    bool verifyTable(std::string tableName) const;
 
   public:
-	SessionData();
-	~SessionData() = default;
+    SessionData();
+    ~SessionData() = default;
 
-	std::set<std::string> getTableNames() const;
-	void addEntry(const std::shared_ptr<Entry> newEntry);
-	void removeEntry(const uint16_t targetId, const std::string& associatedTable);
-	void updateEntry(const uint16_t targetId, const std::shared_ptr<Entry> alteredEntry);
-	bool isPresent(const uint16_t targetId, const std::string& associatedTable) const;
-	std::shared_ptr<Entry> getEntry(const uint16_t targetId, const std::string& associatedTable);
-	std::shared_ptr<abstractTypeList> getEntries(const std::string& table);
+    std::set<std::string> getTableNames() const;
+    void addEntry(const std::shared_ptr<Entry> newEntry);
+    void removeEntry(const uint16_t targetId, const std::string& associatedTable);
+    void updateEntry(const uint16_t targetId, const std::shared_ptr<Entry> alteredEntry);
+    bool isPresent(const uint16_t targetId, const std::string& associatedTable) const;
+    std::shared_ptr<Entry> getEntry(const uint16_t targetId, const std::string& associatedTable);
+    std::shared_ptr<abstractTypeList> getEntries(const std::string& table);
 };

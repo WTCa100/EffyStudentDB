@@ -98,4 +98,4 @@ SpacesInContainerLiterals: False
 SpacesInSquareBrackets: False
 Standard: c++20
 TabWidth: 4
-UseTab: ForContinuationAndIndentation
+UseTab: Never

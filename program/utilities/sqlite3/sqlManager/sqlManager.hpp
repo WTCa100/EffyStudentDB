@@ -41,7 +41,7 @@ namespace Utilities::Sql
         bool isDbOpen_;
 
       public:
-        void initialTablesLoad(std::fstream& schemaPtr);
+        void initialTablesLoad();
 
         // Low level methods
         std::vector<std::string> executeIn(const std::string& sqlQuery);

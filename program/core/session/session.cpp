@@ -154,18 +154,20 @@ bool Session::handleAction(const Action& userAction)
         return true;
     }
 
-    if (!display_->promptDeleteAll(filter, affectedEntries.size()))
-    {
-        LOG((*logger_), "Aborting procedure");
-        return true;
-    }
-
-    if (userCommand == "REMOVE" || userCommand == "UPDATE") { std::cout << "Affected entries:\n"; }
-
-    for (const auto& entry : affectedEntries) { std::cout << entry->toString() << "\n"; }
-
     // Nothing much has to be done while finding
     if (userCommand == "FIND") { return true; }
+
+    if (userCommand == "REMOVE" || userCommand == "UPDATE")
+    {
+        if (!display_->promptAlterAll(filter, affectedEntries.size()))
+        {
+            LOG((*logger_), "Aborting procedure");
+            return true;
+        }
+        std::cout << "Affected entries:\n";
+    }
+
+    for (const auto& entry : affectedEntries) { std::cout << entry->toString() << "\n"; }
 
     // For each affected entry delete
     if (userCommand == "REMOVE")
@@ -423,14 +425,6 @@ void Session::onUpdate(std::shared_ptr<Entry> oldEntry, const std::shared_ptr<En
     const std::string targetTable = oldEntry->associatedTable_;
     LOG((*logger_), "Editing entry id:", id, " targetTable:", targetTable);
 
-    // I think that this is useless
-    if (targetTable == g_tableSchools) { updateSingleEntry<School>(oldEntry, newEntry); }
-
-    if (targetTable == g_tableSubjects) { updateSingleEntry<Subject>(oldEntry, newEntry); }
-
-    if (targetTable == g_tableCourses) { updateSingleEntry<Course>(oldEntry, newEntry); }
-    // Until here
-
     // If a student is changed - Assign to new school if neede
     if (targetTable == g_tableStudents)
     {
@@ -459,7 +453,6 @@ void Session::onUpdate(std::shared_ptr<Entry> oldEntry, const std::shared_ptr<En
         uint16_t studentIdNew                   = concreteGradeNew->studentId_;
         if (studentIdOld != studentIdNew)
         {
-            // Todo update name
             LOG((*logger_), "Entry has a different link. Id= ", id);
             std::shared_ptr<Student> studentOld =
                 std::dynamic_pointer_cast<Student>(sesData_->getEntry(studentIdOld, g_tableStudents));
@@ -467,13 +460,16 @@ void Session::onUpdate(std::shared_ptr<Entry> oldEntry, const std::shared_ptr<En
                 std::dynamic_pointer_cast<Student>(sesData_->getEntry(studentIdNew, g_tableStudents));
             studentOld->grades_.erase(id);
             studentNew->grades_.insert(std::make_pair(id, concreteGradeOld));
+            concreteGradeNew->studentName_;
         }
 
         uint16_t subjectIdOld = concreteGradeOld->subjectId_;
         uint16_t subjectIdNew = concreteGradeNew->subjectId_;
         if (subjectIdOld != subjectIdNew)
         {
-            // Todo update name
+            std::shared_ptr<Subject> subjectNew =
+                std::dynamic_pointer_cast<Subject>(sesData_->getEntry(subjectIdNew, g_tableSubjects));
+            concreteGradeNew->subjectName_ = subjectNew->name_;
         }
     }
 
@@ -486,7 +482,6 @@ void Session::onUpdate(std::shared_ptr<Entry> oldEntry, const std::shared_ptr<En
         uint16_t courseIdNew                                   = concreteWeightNew->courseId_;
         if (courseIdOld != courseIdNew)
         {
-            // Todo update name
             LOG((*logger_), "Entry has a different link. Id= ", id);
             std::shared_ptr<Course> courseOld =
                 std::dynamic_pointer_cast<Course>(sesData_->getEntry(courseIdOld, g_tableCourses));
@@ -494,32 +489,21 @@ void Session::onUpdate(std::shared_ptr<Entry> oldEntry, const std::shared_ptr<En
                 std::dynamic_pointer_cast<Course>(sesData_->getEntry(courseIdNew, g_tableCourses));
             courseOld->subjectWithWeight_.erase(id);
             courseNew->subjectWithWeight_.insert(std::make_pair(id, concreteWeightOld));
+            courseNew->name_ = concreteWeightNew->courseName_;
         }
 
-        // Todo subject name
-    }
-
-    // If a srequest is changed - student or course have to be reasigned
-    if (targetTable == g_tableStudentRequest)
-    {
-        std::shared_ptr<Srequest> concreteRequestOld = std::dynamic_pointer_cast<Srequest>(oldEntry);
-        std::shared_ptr<Srequest> concreteRequestNew = std::dynamic_pointer_cast<Srequest>(newEntry);
-        uint16_t studentIdOld                        = concreteRequestOld->studentId_;
-        uint16_t studentIdNew                        = concreteRequestNew->studentId_;
-        if (studentIdOld != studentIdNew)
-        {
-            // Todo update name
-        }
-
-        uint16_t subjectIdOld = concreteRequestOld->courseId_;
-        uint16_t subjectIdNew = concreteRequestNew->courseId_;
+        uint16_t subjectIdOld = concreteWeightOld->subjectId_;
+        uint16_t subjectIdNew = concreteWeightNew->subjectId_;
         if (subjectIdOld != subjectIdNew)
         {
-            // Todo update name
+            std::shared_ptr<Subject> subjectNew =
+                std::dynamic_pointer_cast<Subject>(sesData_->getEntry(subjectIdNew, g_tableSubjects));
+            concreteWeightNew->subjectName_ = subjectNew->name_;
         }
     }
 }
 
+// Todo turn deletes into lambdas inside func where there are used
 void Session::deleteCourseSubjectWeight(const std::shared_ptr<CourseSubjectWeight> targetWeight)
 {
     LOG((*logger_), "Common CourseSubjectWeight deletion");

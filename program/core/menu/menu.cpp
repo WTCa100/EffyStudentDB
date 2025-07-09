@@ -145,7 +145,7 @@ namespace Core::Display
         return true;
     }
 
-    bool Menu::promptDeleteAll(std::string filter, uint16_t count) const
+    bool Menu::promptAlterAll(std::string filter, uint16_t count) const
     {
         LOG((*logger_), "Delete all detected - double check prompt");
         std::cout << "You are about to delete every entry (" << count << ") matching filter: \"" << filter << "\".\n";

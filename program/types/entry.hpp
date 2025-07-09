@@ -14,6 +14,8 @@ namespace Core::Types
         uint16_t id_;
         const std::string associatedTable_;
 
+        Entry(const Entry&) = default;
+
         Entry(std::string table):
             id_(0),
             associatedTable_(table)

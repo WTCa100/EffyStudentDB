@@ -6,7 +6,7 @@
 
 using Utilities::WsManager;
 
-int main(int argc, char const *argv[])
+int main()
 {
     std::shared_ptr<WsManager> coreManager = std::make_shared<WsManager>();
     Session coreSession(coreManager);

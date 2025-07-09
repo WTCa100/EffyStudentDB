@@ -29,9 +29,8 @@ namespace Utilities
         else
         {
             LOG((*logger_), "Initialization not required. Will extract data from existing files");
-            auto schemaPtr = fManager_->getFile(fileBase, fileBaseSubdir);
             sManager_->openDb();
-            sManager_->initialTablesLoad(*schemaPtr);
+            sManager_->initialTablesLoad();
         }
 
         LOG((*logger_), "WsManager :ctor: specialized - with working directory: ", workingDir_);

@@ -188,7 +188,7 @@ namespace Utilities::Sql
         std::vector<CourseSubjectWeight> weights;
         LOG((*logger_), "Fetching CourseSubjectWeights from the SQL DB");
         std::vector<std::string> rawEntries =
-            sManager_->getEntriesFromTable(g_tableCourseSubjectWeight, { "id", "weight", "subjectId", "courseId" });
+            sManager_->getEntriesFromTable(g_tableCourseSubjectWeight, { "id", "weight", "subjectId", "courseId" }, filter);
         if (rawEntries.empty())
         {
             LOG((*logger_), "Called CourseSubjectWeight, but got no entries")
@@ -352,7 +352,9 @@ namespace Utilities::Sql
             if (newVal != entryComp.second)
             {
                 LOG((*logger_), entryComp.first, " mismatch: ", entryComp.second, " <-> ", newVal);
-                newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute(entryComp.first), newVal));
+                newValPacket.push_back(std::make_pair(
+                    Utilities::Sql::Types::Attribute(entryComp.first, Types::attrFlagToString(Types::AttributeFlag::MISSING), {}),
+                    newVal));
             }
         }
 

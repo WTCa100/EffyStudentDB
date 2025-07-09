@@ -244,7 +244,7 @@ namespace Utilities::Sql
         return executeOut(command);
     }
 
-    void SqlManager::initialTablesLoad(std::fstream& schemaPtr)
+    void SqlManager::initialTablesLoad()
     {
         LOG((*logger_), "Initializing all tables from the schema file");
         // Get all table names from the DB
@@ -310,7 +310,7 @@ namespace Utilities::Sql
                 switch (static_cast<PragmaTableFormat>(elementId))
                 {
                     case PragmaTableFormat::name : finalAttr.name_ = tokenizedAttr.at(elementId); break;
-                    case PragmaTableFormat::type : finalAttr.type_ = tokenizedAttr.at(elementId);
+                    case PragmaTableFormat::type : finalAttr.type_ = tokenizedAttr.at(elementId); break;
                     case PragmaTableFormat::notnull :
                         if (tokenizedAttr.at(elementId) == "1") { finalAttr.flags_.push_back(AttributeFlag::NOT_NULL); }
                         break;

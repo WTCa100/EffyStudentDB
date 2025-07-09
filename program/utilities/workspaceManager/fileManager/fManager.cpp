@@ -46,6 +46,19 @@ namespace Utilities::Workspace
     {
         std::vector<std::string> content;
         std::ifstream fPtr;
+
+        if (subPath.has_value())
+        {
+            std::filesystem::path& subjectPath = subPath.value();
+            if (subjectPath.has_filename())
+            {
+                std::cout << "subPath already has a filename. Replacing it with: " << subjectPath.filename() << std::endl;
+                fPtr.open(subjectPath);
+            }
+            else { fPtr.open(subjectPath.string() + "/" + fileName); }
+        }
+        else { fPtr.open(fileName); }
+
         std::string line;
 
         while (std::getline(fPtr, line))

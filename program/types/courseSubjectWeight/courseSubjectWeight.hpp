@@ -4,6 +4,7 @@
 
 #include <string>
 
+using Utilities::Common::Constants::g_inputMissingValue;
 using Utilities::Common::Constants::g_tableCourseSubjectWeight;
 
 namespace Core::Types
@@ -13,9 +14,12 @@ namespace Core::Types
      */
     struct CourseSubjectWeight : public Entry
     {
+        // SQL attribute members
         double weight_;
         uint16_t courseId_;
         uint16_t subjectId_;
+
+        // Non-SQL attribute members
         std::string courseName_;
         std::string subjectName_;
 

@@ -67,8 +67,8 @@ namespace Core::Types
 
         int tmpSchoolId = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Associated School (ID)")
                                    : Utilities::InputHandler::getAttrAsNumber("Associated School (ID)");
-        schoolId_       = tmpSchoolId >= 0 ? tmpSchoolId : 0;
-        if (schoolId_ != 0) mappedNewAttrs.insert(std::make_pair("schoolId", std::to_string(schoolId_)));
+        schoolId_       = tmpSchoolId != g_inputMissingValue ? tmpSchoolId : 0;
+        if (schoolId_ != g_inputMissingValue) mappedNewAttrs.insert(std::make_pair("schoolId", std::to_string(schoolId_)));
 
         return mappedNewAttrs;
     }

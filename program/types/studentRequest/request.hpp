@@ -6,6 +6,7 @@
 #include <inttypes.h>
 #include <string>
 
+using Utilities::Common::Constants::g_inputMissingValue;
 using Utilities::Common::Constants::g_tableStudentRequest;
 
 namespace Core::Types::Request
@@ -20,6 +21,7 @@ namespace Core::Types::Request
 
     struct Srequest : public Entry
     {
+        // SQL attribute members
         uint16_t studentId_;
         uint16_t courseId_;
         requestStatus status_;

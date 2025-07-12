@@ -139,6 +139,9 @@ bool Session::handleAction(const Action& userAction)
             onAdd(concreteEntry);
             return true;
         }
+
+        std::cout << "Failed to add given entry due to database error.\n";
+        return false;
     }
 
     std::cout << "Matching values:\n";
@@ -148,6 +151,9 @@ bool Session::handleAction(const Action& userAction)
     LOG((*logger_), "Filter to lookup: ", filter);
     std::vector<std::shared_ptr<Entry>> affectedEntries = sAdapter_->getEntries(userTarget, filter);
 
+    LOG((*logger_), "Link affected entries with data sessions")
+    for (auto e : affectedEntries) { *e = *e->fillGaps(sesData_->getEntry(e->id_, e->associatedTable_)); }
+
     if (affectedEntries.empty())
     {
         std::cout << "No match was found in the database!\n";
@@ -155,6 +161,8 @@ bool Session::handleAction(const Action& userAction)
     }
 
     // Nothing much has to be done while finding
+    std::cout << "Selected entries:\n";
+    display_->showSelection(affectedEntries);
     if (userCommand == "FIND") { return true; }
 
     if (userCommand == "REMOVE" || userCommand == "UPDATE")
@@ -164,10 +172,7 @@ bool Session::handleAction(const Action& userAction)
             LOG((*logger_), "Aborting procedure");
             return true;
         }
-        std::cout << "Affected entries:\n";
     }
-
-    for (const auto& entry : affectedEntries) { std::cout << entry->toString() << "\n"; }
 
     // For each affected entry delete
     if (userCommand == "REMOVE")
@@ -529,7 +534,7 @@ std::shared_ptr<Entry> Session::makeConcreteType(const std::string& tableName) c
     else if (tableName == g_tableCourses) { tmp = std::make_shared<Course>(); }
     else if (tableName == g_tableGrades) { tmp = std::make_shared<Grade>(); }
     else if (tableName == g_tableCourseSubjectWeight) { tmp = std::make_shared<CourseSubjectWeight>(); }
-    // else { tmp = std::make_shared<Srequest>(); }
+    else { tmp = std::make_shared<Srequest>(); }
     return tmp;
 }
 

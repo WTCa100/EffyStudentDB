@@ -36,6 +36,8 @@ namespace Core::Types
         refObj->weight_                               = weight_ == 0.0f ? concrete->weight_ : weight_;
         refObj->courseId_                             = courseId_ == 0 ? concrete->courseId_ : courseId_;
         refObj->subjectId_                            = subjectId_ == 0 ? concrete->subjectId_ : subjectId_;
+        refObj->courseName_                           = courseName_.empty() ? concrete->courseName_ : courseName_;
+        refObj->subjectName_                          = subjectName_.empty() ? concrete->subjectName_ : subjectName_;
         return refObj;
     }
 
@@ -53,17 +55,17 @@ namespace Core::Types
         std::unordered_map<std::string, std::string> mappedNewAttrs;
         int tmpHolder = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Subject Id")
                                  : Utilities::InputHandler::getAttrAsNumber("Subject Id");
-        subjectId_    = tmpHolder != INT16_MAX ? tmpHolder : 0;
+        subjectId_    = tmpHolder != g_inputMissingValue ? tmpHolder : 0;
         if (subjectId_) mappedNewAttrs.insert(std::make_pair("subjectId", std::to_string(subjectId_)));
 
         tmpHolder = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Course Id")
                              : Utilities::InputHandler::getAttrAsNumber("Course Id");
-        courseId_ = tmpHolder != INT16_MAX ? tmpHolder : 0;
+        courseId_ = tmpHolder != g_inputMissingValue ? tmpHolder : 0;
         if (courseId_) mappedNewAttrs.insert(std::make_pair("courseId", std::to_string(courseId_)));
         // @TODO add float handling. So far that is just a placeholder
         double tmpGrade = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Weight")
                                    : Utilities::InputHandler::getAttrAsNumber("Weight");
-        weight_         = tmpGrade != INT16_MAX ? tmpGrade : 0.0f;
+        weight_         = tmpGrade != g_inputMissingValue ? tmpGrade : 0.0f;
         if (weight_) mappedNewAttrs.insert(std::make_pair("weight", std::to_string(weight_)));
         return mappedNewAttrs;
     }

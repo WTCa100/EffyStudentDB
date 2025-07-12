@@ -3,15 +3,19 @@
 #include "../../utilities/common/constants.hpp"
 #include "../entry.hpp"
 
+using Utilities::Common::Constants::g_inputMissingValue;
 using Utilities::Common::Constants::g_tableGrades;
 
 namespace Core::Types
 {
     struct Grade : public Entry
     {
+        // SQL attribute members
         double value_;
         uint16_t studentId_;
         uint16_t subjectId_;
+
+        // Non-SQL attribute members
         std::string studentName_;
         std::string subjectName_;
 

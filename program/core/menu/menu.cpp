@@ -13,18 +13,6 @@ namespace Core::Display
         inHandler_ = std::make_unique<Utilities::InputHandler>();
     }
 
-    /* @TODO
-        Add class `Action` that would be handling the user input and parsing, tokenizing it etc.
-        Then return the new Action object, and let the session handle it
-        Example:
-        Enum Value ()
-        Action:
-            - Tokenized Action (vector of strings)
-            - static Tokenize
-            + getAction (1st token)
-            + getTable (2nd token)
-            + getOptionalTags (3rd + tokens: as vector)
-    */
     Action Menu::manageDatabase()
     {
         LOG((*logger_), "Entering Database management mode");
@@ -76,6 +64,11 @@ namespace Core::Display
         return;
     }
 
+    void Menu::showSelection(const std::vector<std::shared_ptr<Entry>>& selection) const
+    {
+        for (const auto& e : selection) { std::cout << e->toString() << "\n"; }
+    }
+
     void Menu::listTables() const
     {
         LOG((*logger_), "Printing current tables");
@@ -121,6 +114,7 @@ namespace Core::Display
         // First check the shortest commands
         if (command == "LIST" || command == "HELP" || command == "EXIT") { return true; }
 
+        // @TODO change magick strings to variables
         if (command != "SHOW" && command != "FIND" && command != "ADD" && command != "REMOVE" && command != "UPDATE")
         {
             return false;

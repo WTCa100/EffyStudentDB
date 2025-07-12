@@ -1,11 +1,12 @@
 #pragma once
 
+#include "../common/constants.hpp"
+
 #include <memory>
 #include <optional>
 
 namespace Utilities
 {
-    constexpr int g_Reserved = UINT16_MAX;
 
     class InputHandler
     {

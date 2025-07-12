@@ -54,7 +54,6 @@ void SessionData::updateEntry(const uint16_t targetId, const std::shared_ptr<Ent
 {
     if (!verifyTable(alteredEntry->associatedTable_)) { return; }
 
-    std::cout << "DBG: Target altered entry: " << alteredEntry.get()->toString() << "\n";
     abstractTypeList& concreteMap = entryList_.at(alteredEntry->associatedTable_);
     if (concreteMap.contains(targetId))
     {

@@ -8,12 +8,14 @@
 #include <memory>
 #include <string>
 
+using Utilities::Common::Constants::g_inputMissingValue;
 using Utilities::Common::Constants::g_tableCourses;
 
 namespace Core::Types
 {
     struct Course : public Entry
     {
+        // SQL attribute members
         std::map<uint16_t, std::shared_ptr<CourseSubjectWeight>> subjectWithWeight_;
         std::string name_;
         uint16_t minStudents_;

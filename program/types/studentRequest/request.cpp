@@ -28,20 +28,25 @@ namespace Core::Types::Request
 
     std::map<std::string, std::string> Srequest::getAttrs() const
     {
+        // @TODO - Change all the magic numbers into global variables
         return {
-            { "studentId", std::to_string(studentId_) },
-            { "courseId",  std::to_string(courseId_)  },
-            { "status",    std::to_string(status_)    }
+            { "studentId",     std::to_string(studentId_) },
+            { "courseId",      std::to_string(courseId_)  },
+            { "requestStatus", std::to_string(status_)    }
         };
     }
 
     std::unordered_map<std::string, std::string> Srequest::userConstruct([[maybe_unused]] bool makeFull)
     {
         std::cout << "Creating student request from user input\n";
+        std::unordered_map<std::string, std::string> attrs{};
         studentId_ = Utilities::InputHandler::getAttrAsNumberNonEmpty("Student ID");
-        courseId_  = Utilities::InputHandler::getAttrAsNumberNonEmpty("Course ID");
-        status_    = requestStatus::Pending;
-        return {};
+        attrs.insert(std::make_pair("studentId", std::to_string(studentId_)));
+        courseId_ = Utilities::InputHandler::getAttrAsNumberNonEmpty("Course ID");
+        attrs.insert(std::make_pair("courseId", std::to_string(courseId_)));
+        status_ = requestStatus::Pending;
+        attrs.insert(std::make_pair("requestStatus", std::to_string(status_)));
+        return attrs;
     }
 
     std::shared_ptr<Entry> Srequest::fillGaps(const std::shared_ptr<Entry> other)

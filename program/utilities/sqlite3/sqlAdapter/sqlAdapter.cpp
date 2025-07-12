@@ -258,8 +258,8 @@ namespace Utilities::Sql
 
         if (rawEntries.empty())
         {
-            LOG((*logger_), "Called courses, but got no entries!");
-            std::cout << "No courses! Either fail or sql has no courses\n";
+            LOG((*logger_), "Called student requests, but got no entries!");
+            std::cout << "No student requests! Either fail or sql has no courses\n";
             return {};
         }
 
@@ -320,7 +320,7 @@ namespace Utilities::Sql
             return true;
         }
         LOG((*logger_), "Could not add entry to a table: ", targetTableName);
-        return true;
+        return false;
     }
 
     bool SqlAdapter::updateEntry(const Entry& oldEntry, const Entry& newEntry)

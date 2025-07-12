@@ -11,12 +11,14 @@
 #include <string>
 #include <vector>
 
+using Utilities::Common::Constants::g_inputMissingValue;
 using Utilities::Common::Constants::g_tableStudents;
 
 namespace Core::Types
 {
     struct Student : public Entry
     {
+        // SQL attribute members
         std::string firstName_;
         std::optional<std::string> secondName_;
         std::string lastName_;

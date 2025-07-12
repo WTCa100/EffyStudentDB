@@ -12,6 +12,7 @@ namespace Core::Types
 {
     struct Subject : public Entry
     {
+        // SQL attribute members
         std::string name_;
 
         Subject():

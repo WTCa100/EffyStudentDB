@@ -13,10 +13,10 @@ namespace Core::Types
 {
     struct School : public Entry
     {
-        // SQL-related attribute members
+        // SQL attribute members
         std::string name_;
 
-        // Non-SQL-related attribute members
+        // Non-SQL attribute members
         std::map<uint16_t, std::shared_ptr<Student>> students_;
 
         School():

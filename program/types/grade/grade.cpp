@@ -41,17 +41,17 @@ namespace Core::Types
         std::unordered_map<std::string, std::string> mappedNewAttrs;
         int tmpHolder = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Student Id")
                                  : Utilities::InputHandler::getAttrAsNumber("Student Id");
-        studentId_    = tmpHolder != INT16_MAX ? tmpHolder : 0;
+        studentId_    = tmpHolder != g_inputMissingValue ? tmpHolder : 0;
         if (studentId_) mappedNewAttrs.insert(std::make_pair("studentId", std::to_string(studentId_)));
         tmpHolder  = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Subject Id")
                               : Utilities::InputHandler::getAttrAsNumber("Subject Id");
-        subjectId_ = tmpHolder != INT16_MAX ? tmpHolder : 0;
+        subjectId_ = tmpHolder != g_inputMissingValue ? tmpHolder : 0;
         if (subjectId_) mappedNewAttrs.insert(std::make_pair("subjectId", std::to_string(subjectId_)));
 
         // @TODO add float handling. So far that is just a placeholder
         double tmpGrade = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Grade value")
                                    : Utilities::InputHandler::getAttrAsNumber("Grade value");
-        value_          = tmpGrade != INT16_MAX ? tmpGrade : 0.0f;
+        value_          = tmpGrade != g_inputMissingValue ? tmpGrade : 0.0f;
         if (value_) mappedNewAttrs.insert(std::make_pair("grade", std::to_string(value_)));
         return mappedNewAttrs;
     }
@@ -61,9 +61,12 @@ namespace Core::Types
         std::shared_ptr<Grade> concrete = std::static_pointer_cast<Grade>(other);
         std::shared_ptr<Grade> refObj   = std::make_shared<Grade>();
 
-        refObj->id_        = id_ == 0 ? concrete->id_ : id_;
-        refObj->studentId_ = studentId_ == 0 ? concrete->studentId_ : studentId_;
-        refObj->subjectId_ = subjectId_ == 0 ? concrete->subjectId_ : subjectId_;
+        // @TODO add function that will do the filling of a given type
+        refObj->id_          = id_ == 0 ? concrete->id_ : id_;
+        refObj->studentId_   = studentId_ == 0 ? concrete->studentId_ : studentId_;
+        refObj->subjectId_   = subjectId_ == 0 ? concrete->subjectId_ : subjectId_;
+        refObj->studentName_ = studentName_.empty() ? concrete->studentName_ : studentName_;
+        refObj->subjectName_ = subjectName_.empty() ? concrete->subjectName_ : subjectName_;
         return refObj;
     }
 

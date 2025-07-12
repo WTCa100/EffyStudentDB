@@ -23,12 +23,12 @@ namespace Utilities
 
     int InputHandler::getNumber()
     {
-        int ans         = g_Reserved;
+        int ans         = Common::Constants::g_inputMissingValue;
         std::string buf = "";
         do {
             std::cout << "Enter a number: ";
             std::getline(std::cin, buf);
-            if (buf.empty()) { return g_Reserved; }
+            if (buf.empty()) { return Common::Constants::g_inputMissingValue; }
         } while (!isNumber(buf));
         return ans = std::stoi(buf);
     }

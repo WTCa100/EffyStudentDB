@@ -89,3 +89,11 @@ std::shared_ptr<abstractTypeList> SessionData::getEntries(const std::string& tab
 
     return std::make_shared<abstractTypeList>(entryList_.at(table));
 }
+
+void SessionData::clearEntries()
+{
+    for(auto tableEntries : entryList_)
+    {
+        tableEntries.second.clear();
+    }
+}

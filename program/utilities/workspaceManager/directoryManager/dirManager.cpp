@@ -15,9 +15,7 @@ namespace Utilities::Workspace
     DirectoryManager::DirectoryManager(std::string rootPath):
         appRoot_(std::filesystem::path(rootPath)),
         cwd_(appRoot_)
-    {
-        std::cout << "DirManager :ctor: appRoot_=" << appRoot_.string() << " (from specialized ctor)\n";
-    }
+    {}
 
     DirectoryManager::DirectoryManager():
         DirectoryManager(std::filesystem::current_path())

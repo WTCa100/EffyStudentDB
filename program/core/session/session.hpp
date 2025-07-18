@@ -39,6 +39,8 @@ class Session
     void fetchCourses();
     void fetchSrequests();
 
+    void dropAll();
+
     // Some common procedures
     void deleteCourseSubjectWeight(const std::shared_ptr<CourseSubjectWeight> targetWeight);
     void deleteGrade(std::shared_ptr<Grade> targetGrade);

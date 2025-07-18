@@ -13,9 +13,13 @@ Session::Session(std::shared_ptr<WsManager> wsMgr):
     sesData_(std::make_shared<SessionData>()),
     display_(std::make_unique<Menu>(logger_, sesData_))
 {
-    LOG((*logger_), "Loading initial database entries");
-    fetchAll();
     LOG((*logger_), "Session established");
+}
+
+void Session::dropAll()
+{
+    LOG((*logger_), "Dropping locally allocated entries");
+    sesData_->clearEntries();
 }
 
 void Session::fetchAll()
@@ -89,13 +93,13 @@ void Session::run()
             case Core::Display::MainMenuOption::manageDb :
                 {
                     // TODO: Load every entry here
+                    fetchAll();
                     Action command;
                     do {
                         command = display_->manageDatabase();
                         handleAction(command);
                     } while (command.getCommand() != "EXIT");
-
-                    // TODO: Deallocate every entry here
+                    dropAll();
                     break;
                 }
             case Core::Display::MainMenuOption::handleRqs : break;
@@ -542,7 +546,6 @@ void Session::fetchGrades()
 {
     LOG((*logger_), "Fetching grades");
 
-    // Fetch all students
     std::shared_ptr<abstractTypeList> students = sesData_->getEntries(g_tableStudents);
     std::shared_ptr<abstractTypeList> subjects = sesData_->getEntries(g_tableSubjects);
     std::vector<Grade> grades                  = sAdapter_->getGrades();

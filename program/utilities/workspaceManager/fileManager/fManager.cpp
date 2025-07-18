@@ -12,14 +12,12 @@ namespace Utilities::Workspace
         appRoot_(std::filesystem::path(rootPath)),
         cwd_(appRoot_)
     {
-        std::cout << "fManager :ctor: appRoot_ = " << appRoot_.string() << " (from specialized ctor)\n";
     }
 
     FileManager::FileManager():
         appRoot_(std::filesystem::current_path()),
         cwd_(appRoot_)
     {
-        std::cout << "fManager :ctor: appRoot_ " << appRoot_.string() << "\n";
     }
 
     bool FileManager::createFile(std::string fileName, std::optional<std::filesystem::path> subPath)

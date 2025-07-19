@@ -28,7 +28,7 @@ namespace Core::Types
         subjectName_("")
     {}
 
-    std::shared_ptr<Entry> CourseSubjectWeight::fillGaps(const std::shared_ptr<Entry> other)
+    std::shared_ptr<Entry> CourseSubjectWeight::mirrorMissing(const std::shared_ptr<Entry> other)
     {
         std::shared_ptr<CourseSubjectWeight> concrete = std::static_pointer_cast<CourseSubjectWeight>(other);
         std::shared_ptr<CourseSubjectWeight> refObj   = std::make_shared<CourseSubjectWeight>();

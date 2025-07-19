@@ -38,6 +38,7 @@ class Session
     void fetchCourseSubjectWeight();
     void fetchCourses();
     void fetchSrequests();
+    void fetchAttendees();
 
     void dropAll();
 
@@ -48,6 +49,8 @@ class Session
   public:
     void run();
     bool handleAction(const Action& userAction);
+    bool handleIndirectAction(const Action& userAction);
+    bool handleDirectAction(const Action& userAction);
     void onAdd(const std::shared_ptr<Entry> newEntry);
     void onDelete(const std::shared_ptr<Entry> targetEntry);
     void onUpdate(std::shared_ptr<Entry> oldEntry, const std::shared_ptr<Entry> newEntry);
@@ -60,7 +63,7 @@ class Session
         std::shared_ptr<T> concreteOld = std::dynamic_pointer_cast<T>(entryOld);
         std::shared_ptr<T> concreteNew = std::dynamic_pointer_cast<T>(entryNew);
         LOG((*logger_), "Entry update trigger. Id= ", entryOld->id_);
-        *concreteOld = *concreteNew->fillGaps(concreteOld);
+        *concreteOld = *concreteNew->mirrorMissing(concreteOld);
         LOG((*logger_), "Entry update completed.")
     }
 

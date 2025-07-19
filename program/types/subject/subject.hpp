@@ -39,7 +39,7 @@ namespace Core::Types
             return { std::make_pair("Name", name_) };
         }
 
-        std::shared_ptr<Entry> fillGaps(const std::shared_ptr<Entry> other) override;
+        std::shared_ptr<Entry> mirrorMissing(const std::shared_ptr<Entry> other) override;
         Entry& operator= (const Entry& other) override;
     };
 

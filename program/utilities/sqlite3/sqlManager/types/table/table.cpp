@@ -147,4 +147,13 @@ namespace Utilities::Sql::Types
         return studentReq;
     }
 
+    Types::Table defaultCourseAttendeesTable()
+    {
+        Types::Table attendees(g_tableCourseAttendees);
+        attendees.addToSchema({ "id", "INTEGER", { Types::AttributeFlag::PRIMARY_KEY } });
+        attendees.addToSchema({ "studentId", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
+        attendees.addToSchema({ "courseId", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
+        return attendees;
+    }
+
 }  // namespace Utilities::Sql::Types

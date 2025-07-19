@@ -11,14 +11,12 @@ namespace Utilities::Workspace
     FileManager::FileManager(std::string rootPath):
         appRoot_(std::filesystem::path(rootPath)),
         cwd_(appRoot_)
-    {
-    }
+    {}
 
     FileManager::FileManager():
         appRoot_(std::filesystem::current_path()),
         cwd_(appRoot_)
-    {
-    }
+    {}
 
     bool FileManager::createFile(std::string fileName, std::optional<std::filesystem::path> subPath)
     {

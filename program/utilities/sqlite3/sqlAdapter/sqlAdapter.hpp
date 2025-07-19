@@ -41,6 +41,7 @@ namespace Utilities::Sql
         std::vector<Course> getCourses(std::string filter = "");
         std::vector<Request::Srequest> getSrequests(std::string filter = "");
         std::vector<std::shared_ptr<Entry>> getEntries(std::string tableName, std::string filter = "");
+        std::vector<std::pair<uint16_t, uint16_t>> getAttendees();
 
         uint16_t getLatestIdFromTable(std::string tblName);
 
@@ -50,6 +51,8 @@ namespace Utilities::Sql
         bool addGrade(Student& targetStudent, Subject& targetSubject, const float& grade);
         bool removeGrade(const Student& targetStudent, const Subject& targetSubject);
 
+        bool addAttendee(const uint16_t& studentId, const uint16_t& courseId);
+        bool removeAttendee(const uint16_t& studentId, const uint16_t& courseId);
         std::string makeFilter(std::unordered_map<std::string, std::string> attrs, bool exact = filterExactMatch);
     };
 

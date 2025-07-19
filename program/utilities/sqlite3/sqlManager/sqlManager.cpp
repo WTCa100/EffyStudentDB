@@ -46,11 +46,7 @@ namespace Utilities::Sql
             LOG((*logger_), "Query: \"", sqlQuery, "\" failed! Details: ", sqlErrMsg);
             std::cout << "Could not complete your request! Execution state fail!\n";
         }
-        else
-        {
-            LOG((*logger_), "Query \"", sqlQuery, "\" executed without any errors.");
-            std::cout << "Request complete!\n";
-        }
+        else { LOG((*logger_), "Query \"", sqlQuery, "\" executed without any errors."); }
 
         sqlite3_finalize(result);
         return output;
@@ -77,11 +73,7 @@ namespace Utilities::Sql
             LOG((*logger_), "Command: \"", sqlCommand, "\" failed with result: ", rc, " Details: ", sqlErrMsg);
             std::cout << "Could not complete your request! Execution state failed.\n";
         }
-        else
-        {
-            LOG((*logger_), "Command \"", sqlCommand, "\" executed without any errors.");
-            std::cout << "Request complete!\n";
-        }
+        else { LOG((*logger_), "Command \"", sqlCommand, "\" executed without any errors."); }
 
         sqlite3_finalize(result);
 

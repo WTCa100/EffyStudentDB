@@ -47,7 +47,7 @@ namespace Core::Types
         /// @note This function will only pupulate the SQL related members.
         /// @warning Make sure that the passed Entry reference has all the values initialized
         /// @param other Specifies what values will be placed in the missing parts
-        virtual std::shared_ptr<Entry> fillGaps(const std::shared_ptr<Entry> other) = 0;
+        virtual std::shared_ptr<Entry> mirrorMissing(const std::shared_ptr<Entry> other) = 0;
 
         virtual Entry& operator= (const Entry& other) = 0;
     };

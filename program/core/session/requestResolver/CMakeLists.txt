@@ -1,0 +1,1 @@
+add_library(RequestResolver STATIC requestResolver.cpp requestResolver.hpp)

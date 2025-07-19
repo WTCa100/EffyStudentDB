@@ -90,6 +90,7 @@ namespace Utilities
         tables.push_back(defaultCoursesTable());
         tables.push_back(defaultSubjectToCourseWeightTable());
         tables.push_back(defaultStudentRequestTable());
+        tables.push_back(defaultCourseAttendeesTable());
 
         *schemaPtr << "-- Effy.db - this file has been generated automatically\n";
         *schemaPtr << "-- Do not modify it!\n";

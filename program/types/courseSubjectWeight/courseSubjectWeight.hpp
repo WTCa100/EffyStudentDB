@@ -27,7 +27,7 @@ namespace Core::Types
         std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;
         std::map<std::string, std::string> getAttrs() const override;
         Entry& operator= (const Entry& other) override;
-        std::shared_ptr<Entry> fillGaps(const std::shared_ptr<Entry> other) override;
+        std::shared_ptr<Entry> mirrorMissing(const std::shared_ptr<Entry> other) override;
 
         CourseSubjectWeight();
         CourseSubjectWeight(uint16_t id,

@@ -18,7 +18,7 @@ namespace Core::Types
                 ss << ", Grades: \n";
                 for (const auto& grade : grades_) { ss << grade.second->studentName_ << ":" << grade.second->value_ << "\n"; }
             }
-            else { ss << "No grades."; }
+            else { ss << "No grades.\n"; }
         }
         return ss.str();
     }
@@ -31,6 +31,12 @@ namespace Core::Types
         ss << "Last name: " << lastName_ << ", ";
         ss << "Email: " << email_ << ", ";
         ss << "Associated School: " << schoolId_ << " ";
+        if (!attendingCourses_.empty())
+        {
+            ss << "Attends " << attendingCourses_.size() << " courses: \n";
+            for (const auto& course : attendingCourses_) { ss << course.second << " "; }
+        }
+        else { ss << "No attending courses."; }
         return ss.str();
     }
 
@@ -73,7 +79,7 @@ namespace Core::Types
         return mappedNewAttrs;
     }
 
-    std::shared_ptr<Entry> Student::fillGaps(const std::shared_ptr<Entry> other)
+    std::shared_ptr<Entry> Student::mirrorMissing(const std::shared_ptr<Entry> other)
     {
         std::shared_ptr<Student> concrete = std::static_pointer_cast<Student>(other);
         std::shared_ptr<Student> refObj   = std::make_shared<Student>();

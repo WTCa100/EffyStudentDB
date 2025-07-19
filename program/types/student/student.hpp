@@ -24,6 +24,7 @@ namespace Core::Types
         std::string lastName_;
         std::string email_;
         std::map<uint16_t, std::shared_ptr<Grade>> grades_;
+        std::map<uint16_t, std::string> attendingCourses_;
         uint16_t schoolId_;
 
         std::string toString(bool showGrades) const;
@@ -53,6 +54,6 @@ namespace Core::Types
             uint16_t schoolId,
             std::optional<std::string> secondName = std::nullopt);
         Entry& operator= (const Entry& other) override;
-        std::shared_ptr<Entry> fillGaps(const std::shared_ptr<Entry> other) override;
+        std::shared_ptr<Entry> mirrorMissing(const std::shared_ptr<Entry> other) override;
     };
 }  // namespace Core::Types

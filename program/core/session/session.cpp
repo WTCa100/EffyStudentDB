@@ -32,6 +32,7 @@ void Session::fetchAll()
     fetchCourses();
     fetchSrequests();
     fetchCourseSubjectWeight();
+    fetchAttendees();
     LOG((*logger_), "Fetching done");
 }
 
@@ -82,6 +83,23 @@ void Session::fetchSrequests()
     for (const auto& entry : dbSrequests) { sesData_->addEntry(std::make_shared<Srequest>(entry)); }
 }
 
+void Session::fetchAttendees()
+{
+    LOG((*logger_), "Fetch course attendees");
+    std::vector<std::pair<uint16_t, uint16_t>> dbStudentCoursePair = sAdapter_->getAttendees();
+    for (const auto& entry : dbStudentCoursePair)
+    {
+        uint16_t courseId, studentId;
+        studentId = entry.first;
+        courseId  = entry.second;
+        std::shared_ptr<Student> targetStudent =
+            std::static_pointer_cast<Student>(sesData_->getEntry(studentId, g_tableStudents));
+        std::shared_ptr<Course> targetCourse = std::static_pointer_cast<Course>(sesData_->getEntry(courseId, g_tableCourses));
+        targetStudent->attendingCourses_.insert(std::make_pair(courseId, targetCourse->name_));
+        targetCourse->attendees_.insert(std::make_pair(studentId, targetStudent));
+    }
+}
+
 void Session::run()
 {
     LOG((*logger_), "Main run function called");
@@ -92,7 +110,6 @@ void Session::run()
         {
             case Core::Display::MainMenuOption::manageDb :
                 {
-                    // TODO: Load every entry here
                     fetchAll();
                     Action command;
                     do {
@@ -110,9 +127,17 @@ void Session::run()
     } while (!exit);
 }
 
-bool Session::handleAction(const Action& userAction)
+bool Session::handleIndirectAction(const Action& userAction)
 {
-    LOG((*logger_), "Executing action");
+    LOG((*logger_), "Handling Indirect Action");
+
+    std::cout << "DBG: " << userAction.getCommand() << " :=> target " << userAction.getTarget() << "\n";
+    return true;
+}
+
+bool Session::handleDirectAction(const Action& userAction)
+{
+    LOG((*logger_), "Executing direct action");
     // Action is correct here - guaranteed
     std::string userCommand = userAction.getCommand();
 
@@ -130,7 +155,6 @@ bool Session::handleAction(const Action& userAction)
     std::shared_ptr<Entry> concreteEntry = makeConcreteType(userTarget);
 
     // Select correct function
-    // This is WIP
     if (userCommand == "ADD")
     {
         LOG((*logger_), "Abstract add: ", userAction.getTarget());
@@ -156,7 +180,7 @@ bool Session::handleAction(const Action& userAction)
     std::vector<std::shared_ptr<Entry>> affectedEntries = sAdapter_->getEntries(userTarget, filter);
 
     LOG((*logger_), "Link affected entries with data sessions")
-    for (auto e : affectedEntries) { *e = *e->fillGaps(sesData_->getEntry(e->id_, e->associatedTable_)); }
+    for (auto e : affectedEntries) { *e = *e->mirrorMissing(sesData_->getEntry(e->id_, e->associatedTable_)); }
 
     if (affectedEntries.empty())
     {
@@ -202,7 +226,7 @@ bool Session::handleAction(const Action& userAction)
         for (auto& val : affectedEntries)
         {
             std::shared_ptr<Entry> changedEntries = makeConcreteType(userTarget);
-            *changedEntries                       = *entriesNew->fillGaps(val);
+            *changedEntries                       = *entriesNew->mirrorMissing(val);
             // Make a copy of a given filter entry
             if (sAdapter_->updateEntry(*val, *changedEntries))
             {
@@ -213,6 +237,13 @@ bool Session::handleAction(const Action& userAction)
     }
 
     return false;
+}
+
+bool Session::handleAction(const Action& userAction)
+{
+    LOG((*logger_), "Handling action");
+    if (Action::isCommandIndirect(userAction.getCommand())) { return handleIndirectAction(userAction); }
+    else { return handleDirectAction(userAction); }
 }
 
 void Session::onAdd(const std::shared_ptr<Entry> newEntry)

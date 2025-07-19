@@ -56,7 +56,7 @@ namespace Core::Types
         return mappedNewAttrs;
     }
 
-    std::shared_ptr<Entry> Grade::fillGaps(const std::shared_ptr<Entry> other)
+    std::shared_ptr<Entry> Grade::mirrorMissing(const std::shared_ptr<Entry> other)
     {
         std::shared_ptr<Grade> concrete = std::static_pointer_cast<Grade>(other);
         std::shared_ptr<Grade> refObj   = std::make_shared<Grade>();

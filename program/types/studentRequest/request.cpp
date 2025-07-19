@@ -49,7 +49,7 @@ namespace Core::Types::Request
         return attrs;
     }
 
-    std::shared_ptr<Entry> Srequest::fillGaps(const std::shared_ptr<Entry> other)
+    std::shared_ptr<Entry> Srequest::mirrorMissing(const std::shared_ptr<Entry> other)
     {
         std::shared_ptr<Srequest> concrete = std::static_pointer_cast<Srequest>(other);
         std::shared_ptr<Srequest> refObj   = std::make_shared<Srequest>();

@@ -36,7 +36,7 @@ namespace Core::Types
             ss << "Attends " << attendingCourses_.size() << " courses: \n";
             for (const auto& course : attendingCourses_) { ss << course.second << " "; }
         }
-        else { ss << "No attending courses."; }
+        else { ss << "Not attending any courses."; }
         return ss.str();
     }
 
@@ -73,7 +73,7 @@ namespace Core::Types
 
         int tmpSchoolId = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Associated School (ID)")
                                    : Utilities::InputHandler::getAttrAsNumber("Associated School (ID)");
-        schoolId_       = tmpSchoolId != g_inputMissingValue ? tmpSchoolId : 0;
+        schoolId_       = tmpSchoolId != g_inputMissingValue ? tmpSchoolId : g_inputMissingValue;
         if (schoolId_ != g_inputMissingValue) mappedNewAttrs.insert(std::make_pair("schoolId", std::to_string(schoolId_)));
 
         return mappedNewAttrs;

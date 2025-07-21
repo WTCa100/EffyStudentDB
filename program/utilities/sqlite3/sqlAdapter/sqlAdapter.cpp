@@ -415,24 +415,23 @@ namespace Utilities::Sql
     std::string SqlAdapter::makeFilter(std::unordered_map<std::string, std::string> attrs, bool exact)
     {
         std::stringstream filter;
-        if (exact)
+        size_t currentAttr    = 0;
+        const size_t attrLast = attrs.size() - 1;
+        for (const auto& attr : attrs)
         {
-            for (const auto& attr : attrs) { filter << attr.first << " = '" << attr.second << "' "; }
-        }
-        else
-        {
-            size_t currentAttr    = 0;
-            const size_t attrLast = attrs.size() - 1;
-            for (const auto& attr : attrs)
+            if(exact)
+            {
+                filter << attr.first << " = '" << attr.second << "' ";
+            }
+            else
             {
                 filter << attr.first << " LIKE '%" << attr.second << "%' ";
-                if (currentAttr != attrLast) filter << "AND ";
-                ++currentAttr;
             }
+
+            if (currentAttr != attrLast) filter << "AND ";
+            ++currentAttr;
         }
 
-        // @TODO Add case for handling if a attribute value contians a string
-        // SELECT <attrsList> FROM <tableName> WHERE <targetAttrList> LIKE %"<DesiredValue>"%;
         return filter.str();
     }
 

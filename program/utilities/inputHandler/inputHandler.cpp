@@ -139,14 +139,14 @@ namespace Utilities
         target = mWsp;
     }
 
-    std::string InputHandler::toLower(std::string& target)
+    std::string InputHandler::toLower(const std::string& target)
     {
         std::string tmp;
         for (char c : target) { tmp += tolower(c); }
         return tmp;
     }
 
-    std::string InputHandler::toUpper(std::string& target)
+    std::string InputHandler::toUpper(const std::string& target)
     {
         std::string tmp;
         for (char c : target) { tmp += toupper(c); }

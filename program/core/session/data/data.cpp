@@ -57,9 +57,7 @@ void SessionData::updateEntry(const uint16_t targetId, const std::shared_ptr<Ent
     abstractTypeList& concreteMap = entryList_.at(alteredEntry->associatedTable_);
     if (concreteMap.contains(targetId))
     {
-        std::cout << "DBG: Before altering entry: " << concreteMap.at(targetId).get()->toString() << "\n";
         *concreteMap.at(targetId) = *alteredEntry->mirrorMissing(concreteMap.at(targetId));
-        std::cout << "DBG: Altered entry: " << concreteMap.at(targetId).get()->toString() << "\n";
     }
     else { std::cout << "!!! No such entry with id " << targetId << " in table " << alteredEntry->associatedTable_ << "\n"; }
 }

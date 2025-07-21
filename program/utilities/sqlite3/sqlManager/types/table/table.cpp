@@ -153,6 +153,7 @@ namespace Utilities::Sql::Types
         attendees.addToSchema({ "id", "INTEGER", { Types::AttributeFlag::PRIMARY_KEY } });
         attendees.addToSchema({ "studentId", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
         attendees.addToSchema({ "courseId", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
+        // Add table nammed: points. 
         return attendees;
     }
 

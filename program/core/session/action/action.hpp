@@ -66,15 +66,15 @@ namespace Core
         std::string getTarget() const;
         std::vector<std::string> getAdditionalValues() const;
 
-        static bool isCommandIndirect(const std::string command) { return validIndirectCommands_.contains(command); }
+        static bool isCommandIndirect(const std::string commandToken) { return validIndirectCommands_.contains(commandToken); }
 
-        static bool isCommandDirect(const std::string command) { return validDirectCommands_.contains(command); }
+        static bool isCommandDirect(const std::string commandToken) { return validDirectCommands_.contains(commandToken); }
 
-        static bool isCommandShort(const std::string command) { return validShortCommands_.contains(command); }
+        static bool isCommandShort(const std::string commandToken) { return validShortCommands_.contains(commandToken); }
 
-        static bool isCommandValid(const std::string command)
+        static bool isCommandValid(const std::string commandToken)
         {
-            return isCommandDirect(command) || isCommandIndirect(command) || isCommandShort(command);
+            return isCommandDirect(commandToken) || isCommandIndirect(commandToken) || isCommandShort(commandToken);
         }
     };
 

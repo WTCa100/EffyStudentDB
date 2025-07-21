@@ -30,7 +30,7 @@ namespace Utilities
         static char getYesOrNo();
 
         static void beautify(std::string& target);
-        static std::string toLower(std::string& target);
-        static std::string toUpper(std::string& target);
+        static std::string toLower(const std::string& target);
+        static std::string toUpper(const std::string& target);
     };
 }  // namespace Utilities

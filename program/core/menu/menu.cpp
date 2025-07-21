@@ -93,12 +93,18 @@ namespace Core::Display
     void Menu::handleIndirectAction(std::string& command)
     {
         LOG((*logger_), "Checking for indirect action in ", command);
-        if (!Action::isCommandIndirect(command))
+        std::vector<std::string> tokens = Utilities::Common::tokenize(command, ' ');
+        if (tokens.empty())
+        {
+            LOG((*logger_), "Command empty, skipping for validation check...");
+            return;
+        }
+        std::string commandToken = inHandler_->toUpper(tokens.at(0));
+        if (!Action::isCommandIndirect(commandToken))
         {
             LOG((*logger_), "Command is not DROP nor ASSIGN skipping...");
             return;
         }
-        std::vector<std::string> tokens = Utilities::Common::tokenize(command, ' ');
         // To properly handle request - table name is required at 2nd position
         tokens.insert(tokens.begin() + 1, Utilities::Common::Constants::g_tableCourseAttendees);
         command = Utilities::Common::assemble(tokens, ' ');

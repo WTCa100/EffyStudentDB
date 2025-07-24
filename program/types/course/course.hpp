@@ -11,16 +11,10 @@
 
 using Utilities::Common::Constants::g_inputMissingValue;
 using Utilities::Common::Constants::g_tableCourses;
+using Utilities::Common::Constants::OpenState;
 
 namespace Core::Types
 {
-
-    enum class OpenState
-    {
-        notSet = 0,
-        open   = 1,
-        closed = 2
-    };
 
     constexpr uint16_t turnNotSet = 0;
 

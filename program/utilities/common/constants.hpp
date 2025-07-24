@@ -15,4 +15,12 @@ namespace Utilities::Common::Constants
     const std::string g_tableCourseAttendees     = "COURSEATTENDEES";
 
     constexpr uint16_t g_inputMissingValue = UINT16_MAX;
+
+    enum class OpenState
+    {
+        notSet = 0,
+        opened   = 1,
+        closed = 2
+    };
+
 }  // namespace Utilities::Common::Constants

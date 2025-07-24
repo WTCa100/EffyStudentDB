@@ -142,13 +142,66 @@ bool Session::handleIndirectAction(const Action& userAction)
     }
 
     // For now the only indirect action we have would be assign and drop - they both have the same structure. command table
-    // (always the same here) studentId courseId This will probably never change thus this implementation choise
+    // (always the same here) studentId courseId This will probably never change thus this implementation choise - EDIT: It did change but I am leaving this here a warning for future me
     std::vector<std::string> userAdditionalValues = userAction.getAdditionalValues();
     uint16_t studentId, courseId;
     try
     {
-        studentId = std::stoul(userAdditionalValues.at(0));
-        courseId  = std::stoul(userAdditionalValues.at(1));
+        courseId  = std::stoul(userAdditionalValues.at(0));
+    }
+    catch (const std::exception& e)
+    {
+        LOG((*logger_), "Failed to handle action! Exception thrown: ", e.what());
+        std::cout << "An error occured while handling your action.\n";
+        return false;
+    }
+    LOG((*logger_), "Extracted value: courseId=", courseId);
+
+
+
+    std::shared_ptr<Course> targetCourse = std::static_pointer_cast<Course>(sesData_->getEntry(courseId, g_tableCourses));
+    if (!targetCourse)
+    {
+        LOG((*logger_), "Failed to handle action! No course found in the database. Id=", courseId);
+        std::cout << "Error, no such course with ID " << courseId << "\n";
+        return false;
+    }
+
+    if (userCommand == Core::ActionType::Indirect::actionOpen)
+    {
+        if(sAdapter_->openCourse(courseId))
+        {
+            std::cout << "Successfully opened coruse " << targetCourse->name_ << " (" << courseId << ") \n";
+            targetCourse->isOpen_ = Utilities::Common::Constants::OpenState::opened;
+            return true;
+        }
+        else
+        {
+            LOG((*logger_), "Failed to open the course ", courseId, " at SQL level");
+            std::cout << "An error occured while handling your action.\n";
+            return false;
+        }
+    }
+
+    if (userCommand == Core::ActionType::Indirect::actionClose)
+    {
+        if(sAdapter_->closeCourse(courseId))
+        {
+            std::cout << "Successfully closed coruse " << targetCourse->name_ << " (" << courseId << ") \n";
+            targetCourse->isOpen_ = Utilities::Common::Constants::OpenState::closed;
+            return true;
+        }
+        else
+        {
+            LOG((*logger_), "Failed to close the course ", courseId, " at SQL level");
+            std::cout << "An error occured while handling your action.\n";
+            return false;
+        }
+    }
+
+    try
+    {
+        studentId  = std::stoul(userAdditionalValues.at(1));
     }
     catch (const std::exception& e)
     {
@@ -157,7 +210,7 @@ bool Session::handleIndirectAction(const Action& userAction)
         return false;
     }
 
-    LOG((*logger_), "Extracted values: studentId=", studentId, " courseId=", courseId);
+    LOG((*logger_), "Extracted value: studentId=", studentId);
 
     std::shared_ptr<Student> targetStudent = std::static_pointer_cast<Student>(sesData_->getEntry(studentId, g_tableStudents));
     if (!targetStudent)
@@ -167,13 +220,6 @@ bool Session::handleIndirectAction(const Action& userAction)
         return false;
     }
 
-    std::shared_ptr<Course> targetCourse = std::static_pointer_cast<Course>(sesData_->getEntry(courseId, g_tableCourses));
-    if (!targetCourse)
-    {
-        LOG((*logger_), "Failed to handle action! No course found in the database. Id=", courseId);
-        std::cout << "Error, no such course with ID " << courseId << "\n";
-        return false;
-    }
 
     if (userCommand == Core::ActionType::Indirect::actionAssign)
     {
@@ -187,7 +233,7 @@ bool Session::handleIndirectAction(const Action& userAction)
         }
         else { return false; }
     }
-    else  // No more options are available
+    else
     {
         if (sAdapter_->removeAttendee(studentId, courseId))
         {

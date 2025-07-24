@@ -32,6 +32,8 @@ namespace Core
         {
             const std::string actionAssign = "ASSIGN";
             const std::string actionDrop   = "DROP";
+            const std::string actionClose  = "CLOSE";
+            const std::string actionOpen   = "OPEN";
         }  // namespace Indirect
 
     }  // namespace ActionType
@@ -43,7 +45,7 @@ namespace Core
         additionalValues = 2
     };
 
-    static std::set<std::string> validIndirectCommands_{ ActionType::Indirect::actionAssign, ActionType::Indirect::actionDrop };
+    static std::set<std::string> validIndirectCommands_{ ActionType::Indirect::actionAssign, ActionType::Indirect::actionDrop, ActionType::Indirect::actionClose, ActionType::Indirect::actionOpen };
     static std::set<std::string> validDirectCommands_{ ActionType::Direct::actionAdd, ActionType::Direct::actionEdit,
         ActionType::Direct::actionFind, ActionType::Direct::actionRemove };
     static std::set<std::string> validShortCommands_{ ActionType::Short::actionExit, ActionType::Short::actionHelp,

@@ -56,8 +56,10 @@ namespace Core::Display
         helpMsg << "EDIT <TargetTable> <TargetId - opt> - Will launch a prompt and alter every entry matching given patterns "
                    "with new "
                    "values.\n";
-        helpMsg << "ASSIGN <TargetStudentId> <TargetCourseId> - Assigns a student to a given course\n";
-        helpMsg << "DROP <TargetStudentId> <TargetCourseId> - Drop a student from a given course\n";
+        helpMsg << "ASSIGN <TargetCourseId> <TargetStudentId> - Assigns a student to a given course\n";
+        helpMsg << "DROP <TargetCourseId> <TargetStudentId> - Drop a student from a given course\n";
+        helpMsg << "CLOSE <TargetCourseId> - Closes recruitment for a given course\n";
+        helpMsg << "OPEN <TargetCourseId> - Opens recruitment for a given course\n";
         helpMsg << "If an ID is provided it will only update that one entry.\n";
         helpMsg << "FIND <TargetTable> <TargetId - opt> - WIll launch a prompt and display every entry matching given pattern.\n";
         helpMsg << "If an ID is provided it will only display that one entry\n";
@@ -92,6 +94,8 @@ namespace Core::Display
 
     void Menu::handleIndirectAction(std::string& command)
     {
+        using Utilities::Common::Constants::g_tableCourseAttendees;
+        using Utilities::Common::Constants::g_tableCourses;
         LOG((*logger_), "Checking for indirect action in ", command);
         std::vector<std::string> tokens = Utilities::Common::tokenize(command, ' ');
         if (tokens.empty())
@@ -102,11 +106,20 @@ namespace Core::Display
         std::string commandToken = inHandler_->toUpper(tokens.at(0));
         if (!Action::isCommandIndirect(commandToken))
         {
-            LOG((*logger_), "Command is not DROP nor ASSIGN skipping...");
+            LOG((*logger_), "Command is not indirect action skipping...");
             return;
         }
         // To properly handle request - table name is required at 2nd position
-        tokens.insert(tokens.begin() + 1, Utilities::Common::Constants::g_tableCourseAttendees);
+        std::string targetTable = ""; 
+        if(commandToken == ActionType::Indirect::actionDrop || commandToken == ActionType::Indirect::actionAssign)
+        {
+            targetTable = g_tableCourseAttendees;
+        }
+        else
+        {
+            targetTable = g_tableCourses;
+        }
+        tokens.insert(tokens.begin() + 1, g_tableCourseAttendees );
         command = Utilities::Common::assemble(tokens, ' ');
         LOG((*logger_), "Properly handled indirect action. New action =: \"", command, "\"");
     }

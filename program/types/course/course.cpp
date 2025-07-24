@@ -14,7 +14,7 @@ namespace Core::Types
            << " maximal student count: " << maxStudents_ << "\n"
            << "minimal points required: " << baseMinimalPoints_ << " average student points: " << averageStudentPoints_
            << "\n"  // Todo check if the dispaly is ok with the newline
-           << "Is open for assignment: " << (isOpen_ == OpenState::open ? "Yes" : "No")
+           << "Is open for assignment: " << (isOpen_ == OpenState::opened ? "Yes" : "No")
            << " - current recuritment turn: " << recrutingTurn_ << "\n";
         if (!attendees_.empty())
         {
@@ -51,6 +51,15 @@ namespace Core::Types
     {
         std::unordered_map<std::string, std::string> mappedNewAttrs;
         std::cout << "Creating course from user input\n";
+        name_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Name")
+                         : Utilities::InputHandler::getAttrAsString("Name");
+        if (!name_.empty()) mappedNewAttrs.insert(std::make_pair("name", name_)); 
+
+        baseMinimalPoints_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Minimal points required")
+                                      : Utilities::InputHandler::getAttrAsNumber("Minimal points required");
+        if (baseMinimalPoints_ != g_inputMissingValue)
+            mappedNewAttrs.insert(std::make_pair("baseMinimalPoints", std::to_string(baseMinimalPoints_)));
+
         minStudents_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Ammount of minimal students")
                                 : Utilities::InputHandler::getAttrAsNumber("Ammount of minimal students");
         if (minStudents_ != g_inputMissingValue)
@@ -63,16 +72,8 @@ namespace Core::Types
         if (maxStudents_ != g_inputMissingValue)
             mappedNewAttrs.insert(std::make_pair("maxStudents", std::to_string(maxStudents_)));
 
-        baseMinimalPoints_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Minimal points required")
-                                      : Utilities::InputHandler::getAttrAsNumber("Minimal points required");
-        if (baseMinimalPoints_ != g_inputMissingValue)
-            mappedNewAttrs.insert(std::make_pair("baseMinimalPoints", std::to_string(baseMinimalPoints_)));
-
-        name_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Name")
-                         : Utilities::InputHandler::getAttrAsString("Name");
-        if (!name_.empty()) mappedNewAttrs.insert(std::make_pair("name", name_));
         // Any freshly added course will be opened from the get-go
-        isOpen_        = OpenState::open;
+        isOpen_        = OpenState::opened;
         recrutingTurn_ = 1;
         mappedNewAttrs.insert(std::make_pair("isOpen", std::to_string(static_cast<uint8_t>(isOpen_))));
         mappedNewAttrs.insert(std::make_pair("recrutingTurn", std::to_string(recrutingTurn_)));

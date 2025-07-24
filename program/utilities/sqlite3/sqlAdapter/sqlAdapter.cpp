@@ -213,7 +213,7 @@ namespace Utilities::Sql
         std::vector<Core::Types::Course> courses;
         LOG((*logger_), "Fetching courses from the SQL DB");
         std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(
-            g_tableCourses, { "id", "minStudents", "maxStudents", "baseMinimalPoints", "name" }, filter);
+            g_tableCourses, { "id", "minStudents", "maxStudents", "baseMinimalPoints", "name", "isOpen", "recrutingTurn"}, filter);
         if (rawEntries.empty())
         {
             LOG((*logger_), "Called courses, but got no entries!");
@@ -225,8 +225,8 @@ namespace Utilities::Sql
         {
             std::vector<std::string> tokenizedCourse = Utilities::Common::tokenize(e, '|');
             // Tokens are:
-            // (0) id | (1) minStudentCount | (2) maxStudentsCount | (3) baseMinimalPoints | (4) avgStudentPoints | (5) name | (6)
-            // subjectWithWeight
+            // (0) id | (1) minStudentCount | (2) maxStudentsCount | (3) baseMinimalPoints | (4) avgStudentPoints | (5) name |
+            // (6) subjectWithWeight | (7) isOpen | (8) recrutingTurn
             Core::Types::Course tmpCourse;
             tmpCourse.id_                   = std::stoul(tokenizedCourse.at(0));
             tmpCourse.minStudents_          = std::stoi(tokenizedCourse.at(1));
@@ -235,6 +235,8 @@ namespace Utilities::Sql
             tmpCourse.averageStudentPoints_ = tmpCourse.baseMinimalPoints_;
             tmpCourse.name_                 = tokenizedCourse.at(4);
             tmpCourse.subjectWithWeight_    = {};
+            tmpCourse.isOpen_ = static_cast<OpenState>(std::stoi(tokenizedCourse.at(5)));
+            tmpCourse.recrutingTurn_ = std::stoi(tokenizedCourse.at(6));
 
             courses.push_back(std::move(tmpCourse));  // It's quite big move makes more sense here
         }
@@ -483,6 +485,27 @@ namespace Utilities::Sql
         }
         LOG((*logger_), "Could not delete attendee");
         return false;
+    }
+
+    bool SqlAdapter::changeCourseOpenState(const uint16_t& courseId, const std::string& newState)
+    {
+        Table targetTable = sManager_->getTableSchema(g_tableCourses);
+        Utilities::Sql::AttrsValues state = {std::make_pair(targetTable.getAttributeByName("isOpen"), newState)};
+        std::string condition = "id = " + std::to_string(courseId);
+        return sManager_->updateEntryFromTable(g_tableCourses, state, condition);
+    }
+
+
+    bool SqlAdapter::openCourse(const uint16_t& courseId)
+    {
+        LOG((*logger_), "Opening course: ", courseId);
+        return changeCourseOpenState(courseId, std::to_string(static_cast<uint8_t>(OpenState::opened)));
+    }
+
+    bool SqlAdapter::closeCourse(const uint16_t& courseId)
+    {
+        LOG((*logger_), "Closing course: ", courseId);
+        return changeCourseOpenState(courseId, std::to_string(static_cast<uint8_t>(OpenState::closed)));
     }
 
 }  // namespace Utilities::Sql

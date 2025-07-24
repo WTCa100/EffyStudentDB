@@ -419,14 +419,8 @@ namespace Utilities::Sql
         const size_t attrLast = attrs.size() - 1;
         for (const auto& attr : attrs)
         {
-            if(exact)
-            {
-                filter << attr.first << " = '" << attr.second << "' ";
-            }
-            else
-            {
-                filter << attr.first << " LIKE '%" << attr.second << "%' ";
-            }
+            if (exact) { filter << attr.first << " = '" << attr.second << "' "; }
+            else { filter << attr.first << " LIKE '%" << attr.second << "%' "; }
 
             if (currentAttr != attrLast) filter << "AND ";
             ++currentAttr;

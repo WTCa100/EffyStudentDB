@@ -120,6 +120,9 @@ namespace Utilities::Sql::Types
         courseTbl.addToSchema({ "minStudents", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
         courseTbl.addToSchema({ "maxStudents", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
         courseTbl.addToSchema({ "baseMinimalPoints", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
+        courseTbl.addToSchema({ "isOpen", "INTERGER",
+            { Types::AttributeFlag::NOT_NULL } });  // 0 - for internal usage only; 1 - Accepting; 2 - not accepting
+        courseTbl.addToSchema({ "recrutingTurn", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
         return courseTbl;
     }
 
@@ -153,7 +156,7 @@ namespace Utilities::Sql::Types
         attendees.addToSchema({ "id", "INTEGER", { Types::AttributeFlag::PRIMARY_KEY } });
         attendees.addToSchema({ "studentId", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
         attendees.addToSchema({ "courseId", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
-        // Add table nammed: points. 
+        // Add table nammed: points.
         return attendees;
     }
 

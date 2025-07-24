@@ -12,7 +12,10 @@ namespace Core::Types
         std::stringstream ss("");
         ss << "id: " << id_ << " name: " << name_ << " minimal student count: " << minStudents_
            << " maximal student count: " << maxStudents_ << "\n"
-           << "minimal points required: " << baseMinimalPoints_ << " average student points: " << averageStudentPoints_ << "\n";
+           << "minimal points required: " << baseMinimalPoints_ << " average student points: " << averageStudentPoints_
+           << "\n"  // Todo check if the dispaly is ok with the newline
+           << "Is open for assignment: " << (isOpen_ == OpenState::open ? "Yes" : "No")
+           << " - current recuritment turn: " << recrutingTurn_ << "\n";
         if (!attendees_.empty())
         {
             ss << "Has " << attendees_.size() << " attendees: \n";
@@ -24,6 +27,7 @@ namespace Core::Types
                 ss << count << ". " << currentStudent->firstName_ << " "
                    << (currentStudent->secondName_.has_value() ? currentStudent->secondName_.value() + " " : " ")
                    << currentStudent->lastName_;
+
                 if (count != attendees_.size()) ss << "\n";
             }
         }
@@ -34,10 +38,12 @@ namespace Core::Types
     std::map<std::string, std::string> Course::getAttrs() const
     {
         return {
-            { "minStudents",       std::to_string(minStudents_)       },
-            { "maxStudents",       std::to_string(maxStudents_)       },
-            { "baseMinimalPoints", std::to_string(baseMinimalPoints_) },
-            { "name",              name_                              }
+            { "minStudents",       std::to_string(minStudents_)                  },
+            { "maxStudents",       std::to_string(maxStudents_)                  },
+            { "baseMinimalPoints", std::to_string(baseMinimalPoints_)            },
+            { "name",              name_                                         },
+            { "isOpen",            std::to_string(static_cast<uint8_t>(isOpen_)) },
+            { "recrutingTurn",     std::to_string(recrutingTurn_)                }
         };
     }
 
@@ -47,21 +53,29 @@ namespace Core::Types
         std::cout << "Creating course from user input\n";
         minStudents_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Ammount of minimal students")
                                 : Utilities::InputHandler::getAttrAsNumber("Ammount of minimal students");
-        if (minStudents_ != g_inputMissingValue) mappedNewAttrs.insert(std::make_pair("minStudents", std::to_string(minStudents_)));
+        if (minStudents_ != g_inputMissingValue)
+            mappedNewAttrs.insert(std::make_pair("minStudents", std::to_string(minStudents_)));
         do {
             maxStudents_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Ammount of maximal students")
                                     : Utilities::InputHandler::getAttrAsNumber("Ammount of maximal students");
             if (maxStudents_ < minStudents_ && !makeFull) { std::cout << "Max students cannot be lesser than min students!\n"; }
         } while (maxStudents_ < minStudents_);
-        if (maxStudents_ != g_inputMissingValue) mappedNewAttrs.insert(std::make_pair("maxStudents", std::to_string(maxStudents_)));
+        if (maxStudents_ != g_inputMissingValue)
+            mappedNewAttrs.insert(std::make_pair("maxStudents", std::to_string(maxStudents_)));
 
         baseMinimalPoints_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Minimal points required")
                                       : Utilities::InputHandler::getAttrAsNumber("Minimal points required");
-        if (baseMinimalPoints_ != g_inputMissingValue) mappedNewAttrs.insert(std::make_pair("baseMinimalPoints", std::to_string(baseMinimalPoints_)));
-        
-        name_              = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Name")
-                                      : Utilities::InputHandler::getAttrAsString("Name");
+        if (baseMinimalPoints_ != g_inputMissingValue)
+            mappedNewAttrs.insert(std::make_pair("baseMinimalPoints", std::to_string(baseMinimalPoints_)));
+
+        name_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Name")
+                         : Utilities::InputHandler::getAttrAsString("Name");
         if (!name_.empty()) mappedNewAttrs.insert(std::make_pair("name", name_));
+        // Any freshly added course will be opened from the get-go
+        isOpen_        = OpenState::open;
+        recrutingTurn_ = 1;
+        mappedNewAttrs.insert(std::make_pair("isOpen", std::to_string(static_cast<uint8_t>(isOpen_))));
+        mappedNewAttrs.insert(std::make_pair("recrutingTurn", std::to_string(recrutingTurn_)));
         return mappedNewAttrs;
     }
 
@@ -76,6 +90,8 @@ namespace Core::Types
         retObj->baseMinimalPoints_       = baseMinimalPoints_ == 0 ? concrete->baseMinimalPoints_ : baseMinimalPoints_;
         retObj->averageStudentPoints_    = averageStudentPoints_ == 0 ? concrete->averageStudentPoints_ : averageStudentPoints_;
         retObj->attendees_               = attendees_.empty() ? concrete->attendees_ : attendees_;
+        retObj->isOpen_                  = isOpen_ == OpenState::notSet ? concrete->isOpen_ : isOpen_;
+        retObj->recrutingTurn_           = recrutingTurn_ == turnNotSet ? concrete->recrutingTurn_ : recrutingTurn_;
         return retObj;
     }
 
@@ -87,10 +103,18 @@ namespace Core::Types
         maxStudents_(0),
         baseMinimalPoints_(0),
         averageStudentPoints_(0),
-        attendees_({})
+        attendees_({}),
+        isOpen_(OpenState::notSet),
+        recrutingTurn_(turnNotSet)
     {}
 
-    Course::Course(uint16_t id, uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name):
+    Course::Course(uint16_t id,
+        uint16_t minStudents,
+        uint16_t maxStudents,
+        uint16_t baseMinimalPoints,
+        std::string name,
+        uint8_t isOpen,
+        uint16_t recrutingTurn):
         Entry(id, g_tableCourses),
         subjectWithWeight_({}),
         name_(name),
@@ -98,7 +122,9 @@ namespace Core::Types
         maxStudents_(maxStudents),
         baseMinimalPoints_(baseMinimalPoints),
         averageStudentPoints_(baseMinimalPoints),
-        attendees_({})
+        attendees_({}),
+        isOpen_(static_cast<OpenState>(isOpen)),
+        recrutingTurn_(recrutingTurn)
     {}
 
     Course::Course(uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name):
@@ -109,7 +135,9 @@ namespace Core::Types
         maxStudents_(maxStudents),
         baseMinimalPoints_(baseMinimalPoints),
         averageStudentPoints_(baseMinimalPoints),
-        attendees_({})
+        attendees_({}),
+        isOpen_(OpenState::notSet),
+        recrutingTurn_(turnNotSet)
     {}
 
     Entry& Course::operator= (const Entry& other)
@@ -125,7 +153,10 @@ namespace Core::Types
         maxStudents_          = otherCourse.maxStudents_;
         baseMinimalPoints_    = otherCourse.baseMinimalPoints_;
         averageStudentPoints_ = otherCourse.averageStudentPoints_;
+        isOpen_               = otherCourse.isOpen_;
+        recrutingTurn_        = otherCourse.recrutingTurn_;
         return *this;
     }
 
 }  // namespace Core::Types
+

@@ -47,20 +47,23 @@ namespace Core::Types
         std::cout << "Creating course from user input\n";
         minStudents_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Ammount of minimal students")
                                 : Utilities::InputHandler::getAttrAsNumber("Ammount of minimal students");
-        if (minStudents_ != g_inputMissingValue) mappedNewAttrs.insert(std::make_pair("minStudents", std::to_string(minStudents_)));
+        if (minStudents_ != g_inputMissingValue)
+            mappedNewAttrs.insert(std::make_pair("minStudents", std::to_string(minStudents_)));
         do {
             maxStudents_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Ammount of maximal students")
                                     : Utilities::InputHandler::getAttrAsNumber("Ammount of maximal students");
             if (maxStudents_ < minStudents_ && !makeFull) { std::cout << "Max students cannot be lesser than min students!\n"; }
         } while (maxStudents_ < minStudents_);
-        if (maxStudents_ != g_inputMissingValue) mappedNewAttrs.insert(std::make_pair("maxStudents", std::to_string(maxStudents_)));
+        if (maxStudents_ != g_inputMissingValue)
+            mappedNewAttrs.insert(std::make_pair("maxStudents", std::to_string(maxStudents_)));
 
         baseMinimalPoints_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Minimal points required")
                                       : Utilities::InputHandler::getAttrAsNumber("Minimal points required");
-        if (baseMinimalPoints_ != g_inputMissingValue) mappedNewAttrs.insert(std::make_pair("baseMinimalPoints", std::to_string(baseMinimalPoints_)));
-        
-        name_              = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Name")
-                                      : Utilities::InputHandler::getAttrAsString("Name");
+        if (baseMinimalPoints_ != g_inputMissingValue)
+            mappedNewAttrs.insert(std::make_pair("baseMinimalPoints", std::to_string(baseMinimalPoints_)));
+
+        name_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Name")
+                         : Utilities::InputHandler::getAttrAsString("Name");
         if (!name_.empty()) mappedNewAttrs.insert(std::make_pair("name", name_));
         return mappedNewAttrs;
     }

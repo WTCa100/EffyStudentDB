@@ -17,7 +17,7 @@ namespace Utilities::Sql::Types
 
     void Table::addToSchema(const Attribute& atr)
     {
-        // Duplicate or attribute with same name - either way invalid entry
+        // Duplicate - invalid entry
         if (schema_.contains(atr.name_)) { return; }
         schema_.insert(std::make_pair(atr.name_, atr));
     }
@@ -60,8 +60,6 @@ namespace Utilities::Sql::Types
         ss << "FOREIGN KEY (" << src.name_ << ") REFERENCES " << refferencedTblName << "(" << refferencedAttrName << ")";
         foreignKeys_.push_back(ss.str());
     }
-
-    // TODO: Avoid using magic values - change later to global variables
 
     Types::Table defaultSchoolsTable()
     {
@@ -153,7 +151,7 @@ namespace Utilities::Sql::Types
         attendees.addToSchema({ "id", "INTEGER", { Types::AttributeFlag::PRIMARY_KEY } });
         attendees.addToSchema({ "studentId", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
         attendees.addToSchema({ "courseId", "INTEGER", { Types::AttributeFlag::NOT_NULL } });
-        // Add table nammed: points. 
+        // Add table nammed: points.
         return attendees;
     }
 

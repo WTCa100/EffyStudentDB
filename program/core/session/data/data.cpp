@@ -55,10 +55,7 @@ void SessionData::updateEntry(const uint16_t targetId, const std::shared_ptr<Ent
     if (!verifyTable(alteredEntry->associatedTable_)) { return; }
 
     abstractTypeList& concreteMap = entryList_.at(alteredEntry->associatedTable_);
-    if (concreteMap.contains(targetId))
-    {
-        *concreteMap.at(targetId) = *alteredEntry->mirrorMissing(concreteMap.at(targetId));
-    }
+    if (concreteMap.contains(targetId)) { *concreteMap.at(targetId) = *alteredEntry->mirrorMissing(concreteMap.at(targetId)); }
     else { std::cout << "!!! No such entry with id " << targetId << " in table " << alteredEntry->associatedTable_ << "\n"; }
 }
 

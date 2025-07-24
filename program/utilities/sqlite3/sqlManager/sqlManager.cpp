@@ -244,8 +244,15 @@ namespace Utilities::Sql
         LOG((*logger_), "Tables have been added into the tables_");
     }
 
+    /// @brief This function will perform a SELECT statement with given parameters.
+    /// @param tableName from which table entries will be fetched.
+    /// @param attributes what attributes are desired to be fetched.
+    /// @param filter what filter should narrow the SELECT result. No filter means every entry will get fetched.
+    /// @param order how they should be ordered. This field shall only contain information about "<field_name> <order_type>"
+    /// @note By default every select is ordered by table primary key in ascending manner
+    /// @return List of every fetched entry in string format
     std::vector<std::string> SqlManager::getEntriesFromTable(
-        std::string tableName, std::vector<std::string> attributes, std::string filter)
+        std::string tableName, std::vector<std::string> attributes, std::string filter, std::optional<std::string> order)
     {
         LOG((*logger_), "Fetching entries from table: ", tableName, " attributes count: ", attributes.size(),
             " filter: ", filter);
@@ -264,6 +271,7 @@ namespace Utilities::Sql
         sqlFormat += selectWhat + " FROM " + tableName;
 
         if (!filter.empty()) { sqlFormat += " WHERE " + filter; }
+        if (order.has_value()) { sqlFormat += " ORDER BY " + order.value(); }
         sqlFormat += ";";
 
         return executeIn(sqlFormat);

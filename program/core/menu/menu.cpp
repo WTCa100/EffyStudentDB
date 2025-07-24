@@ -1,5 +1,6 @@
 #include "menu.hpp"
 
+#include "../../utilities/common/constants.hpp"
 #include "../../utilities/common/stringManip.hpp"
 #include "../../utilities/inputHandler/inputHandler.hpp"
 
@@ -13,20 +14,9 @@ namespace Core::Display
         inHandler_ = std::make_unique<Utilities::InputHandler>();
     }
 
-    /* @TODO
-        Add class `Action` that would be handling the user input and parsing, tokenizing it etc.
-        Then return the new Action object, and let the session handle it
-        Example:
-        Enum Value ()
-        Action:
-            - Tokenized Action (vector of strings)
-            - static Tokenize
-            + getAction (1st token)
-            + getTable (2nd token)
-            + getOptionalTags (3rd + tokens: as vector)
-    */
     Action Menu::manageDatabase()
     {
+        using namespace ActionType::Short;
         LOG((*logger_), "Entering Database management mode");
         Action userAction;
         std::string cmd;
@@ -39,17 +29,17 @@ namespace Core::Display
             LOG((*logger_), "Action got command: ", cmd);
             if (isValidAction)
             {
-                if (cmd == "SHOW") { showEntries(userAction.getTarget()); }
-                else if (cmd == "HELP") { showHelp(); }
-                else if (cmd == "LIST") { listTables(); }
+                if (cmd == actionShow) { showEntries(userAction.getTarget()); }
+                else if (cmd == actionHelp) { showHelp(); }
+                else if (cmd == actionList) { listTables(); }
                 LOG((*logger_), "Valid Action command: ", cmd, " target: ", userAction.getTarget());
             }
             else
             {
                 LOG((*logger_), "Got invalid action. Cmd = ", cmd, " target = ", userAction.getTarget());
-                std::cout << "Invalid action! Use \"HELP\" for available actions.\n";
+                std::cout << "Invalid action! Use \"" << actionHelp << "\" for available actions.\n";
             }
-        } while ((cmd == "SHOW" || cmd == "HELP" || cmd == "LIST") || !isValidAction);
+        } while ((cmd == actionShow || cmd == actionHelp || cmd == actionList) || !isValidAction);
         return userAction;
     }
 
@@ -66,6 +56,8 @@ namespace Core::Display
         helpMsg << "EDIT <TargetTable> <TargetId - opt> - Will launch a prompt and alter every entry matching given patterns "
                    "with new "
                    "values.\n";
+        helpMsg << "ASSIGN <TargetStudentId> <TargetCourseId> - Assigns a student to a given course\n";
+        helpMsg << "DROP <TargetStudentId> <TargetCourseId> - Drop a student from a given course\n";
         helpMsg << "If an ID is provided it will only update that one entry.\n";
         helpMsg << "FIND <TargetTable> <TargetId - opt> - WIll launch a prompt and display every entry matching given pattern.\n";
         helpMsg << "If an ID is provided it will only display that one entry\n";
@@ -74,6 +66,11 @@ namespace Core::Display
         helpMsg << "HELP - Displays this message.\n";
         std::cout << helpMsg.str();
         return;
+    }
+
+    void Menu::showSelection(const std::vector<std::shared_ptr<Entry>>& selection) const
+    {
+        for (const auto& e : selection) { std::cout << e->toString() << "\n"; }
     }
 
     void Menu::listTables() const
@@ -88,8 +85,30 @@ namespace Core::Display
         LOG((*logger_), "Creating action");
         std::string rawInput = inHandler_->getStringBeauty("Instruction");
         LOG((*logger_), "Received input to assemble action: \"", rawInput, "\"");
+        handleIndirectAction(rawInput);
         Action userAction = Action(inHandler_->toUpper(rawInput));
         return userAction;
+    }
+
+    void Menu::handleIndirectAction(std::string& command)
+    {
+        LOG((*logger_), "Checking for indirect action in ", command);
+        std::vector<std::string> tokens = Utilities::Common::tokenize(command, ' ');
+        if (tokens.empty())
+        {
+            LOG((*logger_), "Command empty, skipping for validation check...");
+            return;
+        }
+        std::string commandToken = inHandler_->toUpper(tokens.at(0));
+        if (!Action::isCommandIndirect(commandToken))
+        {
+            LOG((*logger_), "Command is not DROP nor ASSIGN skipping...");
+            return;
+        }
+        // To properly handle request - table name is required at 2nd position
+        tokens.insert(tokens.begin() + 1, Utilities::Common::Constants::g_tableCourseAttendees);
+        command = Utilities::Common::assemble(tokens, ' ');
+        LOG((*logger_), "Properly handled indirect action. New action =: \"", command, "\"");
     }
 
     void Menu::showEntries(const std::string& target) const
@@ -118,13 +137,10 @@ namespace Core::Display
             return false;
         }
 
-        // First check the shortest commands
-        if (command == "LIST" || command == "HELP" || command == "EXIT") { return true; }
+        if (!Action::isCommandValid(command)) { return false; }
 
-        if (command != "SHOW" && command != "FIND" && command != "ADD" && command != "REMOVE" && command != "UPDATE")
-        {
-            return false;
-        }
+        // First check the shortest commands
+        if (Action::isCommandShort(command)) { return true; }
 
         const std::string& target = act.getTarget();
         // Look for 2nd arg
@@ -134,18 +150,29 @@ namespace Core::Display
             return false;
         }
 
-        // 2nd Arg is always a table name
-        if (!sesData_->getTableNames().contains(target))
+        // 2nd Arg is always a table name for these commands
+        if (Action::isCommandDirect(command))
         {
-            LOG((*logger_), "Attempted to operate on non-existent target table: ", target);
-            return false;
+            if (!sesData_->getTableNames().contains(target))
+            {
+                LOG((*logger_), "Attempted to operate on non-existent target table: ", target);
+                return false;
+            }
+        }
+        else
+        {
+            if (act.getAdditionalValues().empty())
+            {
+                LOG((*logger_), "Action additional values empty while command == ", command);
+                return false;
+            }
         }
 
         // @TODO add optional handle
         return true;
     }
 
-    bool Menu::promptDeleteAll(std::string filter, uint16_t count) const
+    bool Menu::promptAlterAll(std::string filter, uint16_t count) const
     {
         LOG((*logger_), "Delete all detected - double check prompt");
         std::cout << "You are about to delete every entry (" << count << ") matching filter: \"" << filter << "\".\n";
@@ -159,22 +186,6 @@ namespace Core::Display
         LOG((*logger_), "User aborted")
         std::cout << "Abort\n";
         return false;
-    }
-
-    std::string Menu::getManagementOption() const
-    {
-        LOG((*logger_), "Getting management option");
-        std::cout << "Options:\n";
-        std::cout << "NEXT - move 1 page fruther\n";
-        std::cout << "PREV - move 1 page back\n";
-        std::cout << "ADD - proceed to create a new entry\n";
-        std::cout << "ALTER <targetID> - proceed to update entry with provided targetId with new values\n";
-        std::cout << "REMOVE <targetID> - proceed to delete a given entry\n";
-        std::cout << "FIND - proceed to get entries that match at least one parameter\n";
-        std::cout << "EXIT - exits this view\n";
-        std::string buf;
-        std::getline(std::cin, buf);
-        return buf;
     }
 
     MainMenuOption Menu::showMainMenu()

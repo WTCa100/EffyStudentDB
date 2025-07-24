@@ -2,7 +2,7 @@
 
 namespace Core::Types
 {
-    std::shared_ptr<Entry> Subject::fillGaps(const std::shared_ptr<Entry> other)
+    std::shared_ptr<Entry> Subject::mirrorMissing(const std::shared_ptr<Entry> other)
     {
         std::shared_ptr<Subject> concrete = std::static_pointer_cast<Subject>(other);
         std::shared_ptr<Subject> refObj   = std::make_shared<Subject>();

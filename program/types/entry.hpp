@@ -14,6 +14,8 @@ namespace Core::Types
         uint16_t id_;
         const std::string associatedTable_;
 
+        Entry(const Entry&) = default;
+
         Entry(std::string table):
             id_(0),
             associatedTable_(table)
@@ -31,7 +33,7 @@ namespace Core::Types
         virtual std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) = 0;
 
         /// @brief This function shall return all of the SQL related attributes such as
-        /// name, related IDs, float values etc. In most cases it will not include "id"
+        /// @brief name, related IDs, float values etc. In most cases it will not include "id"
         /// @return Attributes mapped "name" -> "value"
         /// @todo Consider changing this map to std::map<std::string, std::any>
         inline virtual std::map<std::string, std::string> getAttrs() const
@@ -45,7 +47,7 @@ namespace Core::Types
         /// @note This function will only pupulate the SQL related members.
         /// @warning Make sure that the passed Entry reference has all the values initialized
         /// @param other Specifies what values will be placed in the missing parts
-        virtual std::shared_ptr<Entry> fillGaps(const std::shared_ptr<Entry> other) = 0;
+        virtual std::shared_ptr<Entry> mirrorMissing(const std::shared_ptr<Entry> other) = 0;
 
         virtual Entry& operator= (const Entry& other) = 0;
     };

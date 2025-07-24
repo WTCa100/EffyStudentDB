@@ -1,11 +1,12 @@
 #pragma once
 
+#include "../common/constants.hpp"
+
 #include <memory>
 #include <optional>
 
 namespace Utilities
 {
-    constexpr int g_Reserved = UINT16_MAX;
 
     class InputHandler
     {
@@ -29,7 +30,7 @@ namespace Utilities
         static char getYesOrNo();
 
         static void beautify(std::string& target);
-        static std::string toLower(std::string& target);
-        static std::string toUpper(std::string& target);
+        static std::string toLower(const std::string& target);
+        static std::string toUpper(const std::string& target);
     };
 }  // namespace Utilities

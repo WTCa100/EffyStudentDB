@@ -4,6 +4,7 @@
 
 #include <string>
 
+using Utilities::Common::Constants::g_inputMissingValue;
 using Utilities::Common::Constants::g_tableCourseSubjectWeight;
 
 namespace Core::Types
@@ -13,9 +14,12 @@ namespace Core::Types
      */
     struct CourseSubjectWeight : public Entry
     {
+        // SQL attribute members
         double weight_;
         uint16_t courseId_;
         uint16_t subjectId_;
+
+        // Non-SQL attribute members
         std::string courseName_;
         std::string subjectName_;
 
@@ -23,7 +27,7 @@ namespace Core::Types
         std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;
         std::map<std::string, std::string> getAttrs() const override;
         Entry& operator= (const Entry& other) override;
-        std::shared_ptr<Entry> fillGaps(const std::shared_ptr<Entry> other) override;
+        std::shared_ptr<Entry> mirrorMissing(const std::shared_ptr<Entry> other) override;
 
         CourseSubjectWeight();
         CourseSubjectWeight(uint16_t id,

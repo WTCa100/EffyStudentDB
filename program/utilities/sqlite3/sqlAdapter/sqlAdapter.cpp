@@ -70,7 +70,6 @@ namespace Utilities::Sql
         if (rawEntries.empty())
         {
             LOG((*logger_), "Called schools, but got no entries!");
-            std::cout << "No schools! Either fail or sql has no schools\n";
             return {};
         }
 
@@ -97,7 +96,6 @@ namespace Utilities::Sql
         if (rawEntries.empty())
         {
             LOG((*logger_), "Called students, but got no entries!");
-            std::cout << "No students! Either fail or sql has no students\n";
             return {};
         }
 
@@ -133,7 +131,6 @@ namespace Utilities::Sql
         if (rawEntries.empty())
         {
             LOG((*logger_), "Called subjects, but got no entries!");
-            std::cout << "No subjects! Either fail or sql has no subjects\n";
             return {};
         }
 
@@ -159,7 +156,6 @@ namespace Utilities::Sql
         if (rawEntries.empty())
         {
             LOG((*logger_), "Called grades, but got no entries!");
-            std::cout << "No grades! Either fail or sql has no grades\n";
             return {};
         }
 
@@ -188,11 +184,10 @@ namespace Utilities::Sql
         std::vector<CourseSubjectWeight> weights;
         LOG((*logger_), "Fetching CourseSubjectWeights from the SQL DB");
         std::vector<std::string> rawEntries =
-            sManager_->getEntriesFromTable(g_tableCourseSubjectWeight, { "id", "weight", "subjectId", "courseId" });
+            sManager_->getEntriesFromTable(g_tableCourseSubjectWeight, { "id", "weight", "subjectId", "courseId" }, filter);
         if (rawEntries.empty())
         {
             LOG((*logger_), "Called CourseSubjectWeight, but got no entries")
-            std::cout << "No courses! Either fail or sql has no courses\n";
             return {};
         }
 
@@ -222,7 +217,6 @@ namespace Utilities::Sql
         if (rawEntries.empty())
         {
             LOG((*logger_), "Called courses, but got no entries!");
-            std::cout << "No courses! Either fail or sql has no courses\n";
             return {};
         }
 
@@ -258,8 +252,7 @@ namespace Utilities::Sql
 
         if (rawEntries.empty())
         {
-            LOG((*logger_), "Called courses, but got no entries!");
-            std::cout << "No courses! Either fail or sql has no courses\n";
+            LOG((*logger_), "Called student requests, but got no entries!");
             return {};
         }
 
@@ -320,7 +313,7 @@ namespace Utilities::Sql
             return true;
         }
         LOG((*logger_), "Could not add entry to a table: ", targetTableName);
-        return true;
+        return false;
     }
 
     bool SqlAdapter::updateEntry(const Entry& oldEntry, const Entry& newEntry)
@@ -352,7 +345,9 @@ namespace Utilities::Sql
             if (newVal != entryComp.second)
             {
                 LOG((*logger_), entryComp.first, " mismatch: ", entryComp.second, " <-> ", newVal);
-                newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute(entryComp.first), newVal));
+                newValPacket.push_back(std::make_pair(
+                    Utilities::Sql::Types::Attribute(entryComp.first, Types::attrFlagToString(Types::AttributeFlag::MISSING), {}),
+                    newVal));
             }
         }
 
@@ -387,7 +382,7 @@ namespace Utilities::Sql
     {
         LOG((*logger_), "Adding new grade from \"", targetSubject.name_, "\" to student ", targetStudent.firstName_, " ",
             targetStudent.lastName_);
-        Table targetTable = sManager_->getTableSchema("Grades");
+        Table targetTable = sManager_->getTableSchema(g_tableGrades);
         if (sManager_->addEntryToTable(targetTable.getName(),
                 { std::make_pair(targetTable.getAttributeByName("grade"), std::to_string(grade)),
                     std::make_pair(targetTable.getAttributeByName("subjectId"), std::to_string(targetSubject.id_)),
@@ -420,25 +415,80 @@ namespace Utilities::Sql
     std::string SqlAdapter::makeFilter(std::unordered_map<std::string, std::string> attrs, bool exact)
     {
         std::stringstream filter;
-        if (exact)
+        size_t currentAttr    = 0;
+        const size_t attrLast = attrs.size() - 1;
+        for (const auto& attr : attrs)
         {
-            for (const auto& attr : attrs) { filter << attr.first << " = '" << attr.second << "' "; }
-        }
-        else
-        {
-            size_t currentAttr    = 0;
-            const size_t attrLast = attrs.size() - 1;
-            for (const auto& attr : attrs)
+            if(exact)
+            {
+                filter << attr.first << " = '" << attr.second << "' ";
+            }
+            else
             {
                 filter << attr.first << " LIKE '%" << attr.second << "%' ";
-                if (currentAttr != attrLast) filter << "AND ";
-                ++currentAttr;
             }
+
+            if (currentAttr != attrLast) filter << "AND ";
+            ++currentAttr;
         }
 
-        // @TODO Add case for handling if a attribute value contians a string
-        // SELECT <attrsList> FROM <tableName> WHERE <targetAttrList> LIKE %"<DesiredValue>"%;
         return filter.str();
+    }
+
+    std::vector<std::pair<uint16_t, uint16_t>> SqlAdapter::getAttendees()
+    {
+        std::vector<std::pair<uint16_t, uint16_t>> attendees;
+        LOG((*logger_), "Fetching Attendees from the SQL DB");
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(g_tableCourseAttendees, { "studentId", "courseId" });
+        if (rawEntries.empty())
+        {
+            LOG((*logger_), "Called CourseAttendees but got no entries!");
+            return {};
+        }
+
+        LOG((*logger_), "Got n=", rawEntries.size(), " student entries");
+        for (auto entry : rawEntries)
+        {
+            std::vector<std::string> tokenizedEntries = Utilities::Common::tokenize(entry, '|');
+            uint16_t studentId                        = std::stoul(tokenizedEntries.at(0));
+            uint16_t courseId                         = std::stoul(tokenizedEntries.at(1));
+            attendees.push_back(std::make_pair(studentId, courseId));
+        }
+        LOG((*logger_), "Course attendees tokenized and pushed into the list. Final vector size = ", attendees.size(),
+            " Raw entries size = ", rawEntries.size());
+        return attendees;
+    }
+
+    bool SqlAdapter::addAttendee(const uint16_t& studentId, const uint16_t& courseId)
+    {
+        LOG((*logger_), "Adding attendee ", studentId, " to course ", courseId);
+        Table targetTable = sManager_->getTableSchema(g_tableCourseAttendees);
+        if (sManager_->addEntryToTable(targetTable.getName(),
+                { std::make_pair(targetTable.getAttributeByName("studentId"), std::to_string(studentId)),
+                    std::make_pair(targetTable.getAttributeByName("courseId"), std::to_string(courseId)) }))
+        {
+            LOG((*logger_), "Attendee added successfully");
+            return true;
+        }
+        LOG((*logger_), "Could not add attendee");
+        return false;
+    }
+
+    bool SqlAdapter::removeAttendee(const uint16_t& studentId, const uint16_t& courseId)
+    {
+        LOG((*logger_), "Removing attendee ", studentId, " from course ", courseId);
+        Table targetTable = sManager_->getTableSchema(g_tableCourseAttendees);
+        std::unordered_map<std::string, std::string> attrs;
+        attrs.insert(std::make_pair("studentId", std::to_string(studentId)));
+        attrs.insert(std::make_pair("courseId", std::to_string(courseId)));
+        std::string filter = makeFilter(attrs);
+        if (sManager_->removeEntryFromTable(targetTable.getName(), filter))
+        {
+            LOG((*logger_), "Successfully deleted attendee");
+            return true;
+        }
+        LOG((*logger_), "Could not delete attendee");
+        return false;
     }
 
 }  // namespace Utilities::Sql

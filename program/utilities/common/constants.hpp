@@ -12,4 +12,7 @@ namespace Utilities::Common::Constants
     const std::string g_tableCourses             = "COURSES";
     const std::string g_tableCourseSubjectWeight = "COURSESUBJECTWEIGHT";
     const std::string g_tableStudentRequest      = "STUDENTREQUEST";
+    const std::string g_tableCourseAttendees     = "COURSEATTENDEES";
+
+    constexpr uint16_t g_inputMissingValue = UINT16_MAX;
 }  // namespace Utilities::Common::Constants

@@ -23,12 +23,12 @@ namespace Utilities
 
     int InputHandler::getNumber()
     {
-        int ans         = g_Reserved;
+        int ans         = Common::Constants::g_inputMissingValue;
         std::string buf = "";
         do {
             std::cout << "Enter a number: ";
             std::getline(std::cin, buf);
-            if (buf.empty()) { return g_Reserved; }
+            if (buf.empty()) { return Common::Constants::g_inputMissingValue; }
         } while (!isNumber(buf));
         return ans = std::stoi(buf);
     }
@@ -139,14 +139,14 @@ namespace Utilities
         target = mWsp;
     }
 
-    std::string InputHandler::toLower(std::string& target)
+    std::string InputHandler::toLower(const std::string& target)
     {
         std::string tmp;
         for (char c : target) { tmp += tolower(c); }
         return tmp;
     }
 
-    std::string InputHandler::toUpper(std::string& target)
+    std::string InputHandler::toUpper(const std::string& target)
     {
         std::string tmp;
         for (char c : target) { tmp += toupper(c); }

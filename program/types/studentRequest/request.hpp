@@ -6,6 +6,7 @@
 #include <inttypes.h>
 #include <string>
 
+using Utilities::Common::Constants::g_inputMissingValue;
 using Utilities::Common::Constants::g_tableStudentRequest;
 
 namespace Core::Types::Request
@@ -20,6 +21,7 @@ namespace Core::Types::Request
 
     struct Srequest : public Entry
     {
+        // SQL attribute members
         uint16_t studentId_;
         uint16_t courseId_;
         requestStatus status_;
@@ -46,7 +48,7 @@ namespace Core::Types::Request
         std::map<std::string, std::string> getAttrs() const override;
         std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;
         Entry& operator= (const Entry& other) override;
-        std::shared_ptr<Entry> fillGaps(const std::shared_ptr<Entry> other) override;
+        std::shared_ptr<Entry> mirrorMissing(const std::shared_ptr<Entry> other) override;
     };
 
     std::string statusToString(const requestStatus& status);

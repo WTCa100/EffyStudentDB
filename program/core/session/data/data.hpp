@@ -35,4 +35,5 @@ class SessionData
     bool isPresent(const uint16_t targetId, const std::string& associatedTable) const;
     std::shared_ptr<Entry> getEntry(const uint16_t targetId, const std::string& associatedTable);
     std::shared_ptr<abstractTypeList> getEntries(const std::string& table);
+    void clearEntries();
 };

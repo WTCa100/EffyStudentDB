@@ -54,13 +54,10 @@ void SessionData::updateEntry(const uint16_t targetId, const std::shared_ptr<Ent
 {
     if (!verifyTable(alteredEntry->associatedTable_)) { return; }
 
-    std::cout << "DBG: Target altered entry: " << alteredEntry.get()->toString() << "\n";
     abstractTypeList& concreteMap = entryList_.at(alteredEntry->associatedTable_);
     if (concreteMap.contains(targetId))
     {
-        std::cout << "DBG: Before altering entry: " << concreteMap.at(targetId).get()->toString() << "\n";
-        *concreteMap.at(targetId) = *alteredEntry->fillGaps(concreteMap.at(targetId));
-        std::cout << "DBG: Altered entry: " << concreteMap.at(targetId).get()->toString() << "\n";
+        *concreteMap.at(targetId) = *alteredEntry->mirrorMissing(concreteMap.at(targetId));
     }
     else { std::cout << "!!! No such entry with id " << targetId << " in table " << alteredEntry->associatedTable_ << "\n"; }
 }
@@ -89,4 +86,9 @@ std::shared_ptr<abstractTypeList> SessionData::getEntries(const std::string& tab
     }
 
     return std::make_shared<abstractTypeList>(entryList_.at(table));
+}
+
+void SessionData::clearEntries()
+{
+    for (auto tableEntries : entryList_) { tableEntries.second.clear(); }
 }

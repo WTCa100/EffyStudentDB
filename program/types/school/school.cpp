@@ -31,11 +31,12 @@ namespace Core::Types
         return mappedNewAttrs;
     }
 
-    std::shared_ptr<Entry> School::fillGaps(const std::shared_ptr<Entry> other)
+    std::shared_ptr<Entry> School::mirrorMissing(const std::shared_ptr<Entry> other)
     {
         std::shared_ptr<School> concrete = std::static_pointer_cast<School>(other);
         std::shared_ptr<School> refObj   = std::make_shared<School>();
         refObj->id_                      = id_ == 0 ? concrete->id_ : id_;
+        refObj->students_                = students_.empty() ? concrete->students_ : students_;
         refObj->name_                    = name_.empty() ? concrete->name_ : name_;
         return refObj;
     }

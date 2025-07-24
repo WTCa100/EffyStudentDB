@@ -11,16 +11,12 @@ namespace Utilities::Workspace
     FileManager::FileManager(std::string rootPath):
         appRoot_(std::filesystem::path(rootPath)),
         cwd_(appRoot_)
-    {
-        std::cout << "fManager :ctor: appRoot_ = " << appRoot_.string() << " (from specialized ctor)\n";
-    }
+    {}
 
     FileManager::FileManager():
         appRoot_(std::filesystem::current_path()),
         cwd_(appRoot_)
-    {
-        std::cout << "fManager :ctor: appRoot_ " << appRoot_.string() << "\n";
-    }
+    {}
 
     bool FileManager::createFile(std::string fileName, std::optional<std::filesystem::path> subPath)
     {
@@ -46,6 +42,19 @@ namespace Utilities::Workspace
     {
         std::vector<std::string> content;
         std::ifstream fPtr;
+
+        if (subPath.has_value())
+        {
+            std::filesystem::path& subjectPath = subPath.value();
+            if (subjectPath.has_filename())
+            {
+                std::cout << "subPath already has a filename. Replacing it with: " << subjectPath.filename() << std::endl;
+                fPtr.open(subjectPath);
+            }
+            else { fPtr.open(subjectPath.string() + "/" + fileName); }
+        }
+        else { fPtr.open(fileName); }
+
         std::string line;
 
         while (std::getline(fPtr, line))

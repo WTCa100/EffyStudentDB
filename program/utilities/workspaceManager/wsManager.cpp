@@ -29,13 +29,11 @@ namespace Utilities
         else
         {
             LOG((*logger_), "Initialization not required. Will extract data from existing files");
-            auto schemaPtr = fManager_->getFile(fileBase, fileBaseSubdir);
             sManager_->openDb();
-            sManager_->initialTablesLoad(*schemaPtr);
+            sManager_->initialTablesLoad();
         }
 
         LOG((*logger_), "WsManager :ctor: specialized - with working directory: ", workingDir_);
-        std::cout << "WsManager :ctor: specialized - with working directory: " << workingDir_ << "\n";
     }
 
     void WsManager::initializeDatabase()
@@ -92,6 +90,7 @@ namespace Utilities
         tables.push_back(defaultCoursesTable());
         tables.push_back(defaultSubjectToCourseWeightTable());
         tables.push_back(defaultStudentRequestTable());
+        tables.push_back(defaultCourseAttendeesTable());
 
         *schemaPtr << "-- Effy.db - this file has been generated automatically\n";
         *schemaPtr << "-- Do not modify it!\n";

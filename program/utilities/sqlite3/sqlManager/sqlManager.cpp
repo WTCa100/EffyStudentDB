@@ -16,10 +16,10 @@ namespace Utilities::Sql
     {
         sqlite3_stmt* result;
         LOG((*logger_), "Executing query \"", sqlQuery, "\"");
-        std::cout << "Executing query: \"" << sqlQuery << "\n";
         if (int rc = !sqlite3_prepare_v2(currentDb_, sqlQuery.c_str(), sqlQuery.size(), &result, nullptr) == SQLITE_OK)
         {
             LOG((*logger_), "Query failed at preparation stage with exit code: ", rc);
+            std::cout << "Could not complete your request! Preparation state failed.\n";
             return {};
         }
         LOG((*logger_), "Query prepared without any issues.");
@@ -44,14 +44,9 @@ namespace Utilities::Sql
         {
             const char* sqlErrMsg = sqlite3_errmsg(currentDb_);
             LOG((*logger_), "Query: \"", sqlQuery, "\" failed! Details: ", sqlErrMsg);
-            std::cout << "Query failed at execution stage with\n";
-            std::cout << "Details: " << sqlErrMsg << "\n";
+            std::cout << "Could not complete your request! Execution state fail!\n";
         }
-        else
-        {
-            LOG((*logger_), "Query \"", sqlQuery, "\" executed without any errors.");
-            std::cout << "Command executed without any errors!\n";
-        }
+        else { LOG((*logger_), "Query \"", sqlQuery, "\" executed without any errors."); }
 
         sqlite3_finalize(result);
         return output;
@@ -61,12 +56,11 @@ namespace Utilities::Sql
     {
         sqlite3_stmt* result;
         LOG((*logger_), "Executing command: \"", sqlCommand, "\"");
-        std::cout << "Executing command: \"" << sqlCommand << "\"\n";
         int rc = sqlite3_prepare_v2(currentDb_, sqlCommand.c_str(), sqlCommand.length(), &result, nullptr);
         if (rc != SQLITE_OK)
         {
             LOG((*logger_), "Command failed at preparation stage with exit code: ", rc);
-            std::cout << "Command failed at preparation stage with exit code: " << rc << "\n";
+            std::cout << "Could not complete your request! Preparation state failed!\n";
             sqlite3_finalize(result);
             return false;
         }
@@ -77,14 +71,9 @@ namespace Utilities::Sql
         {
             const char* sqlErrMsg = sqlite3_errmsg(currentDb_);
             LOG((*logger_), "Command: \"", sqlCommand, "\" failed with result: ", rc, " Details: ", sqlErrMsg);
-            std::cout << "Command failed at execution stage with code " << rc << "\n";
-            std::cout << "Details: " << sqlErrMsg << "\n";
+            std::cout << "Could not complete your request! Execution state failed.\n";
         }
-        else
-        {
-            LOG((*logger_), "Command \"", sqlCommand, "\" executed without any errors.");
-            std::cout << "Command executed without any errors!\n";
-        }
+        else { LOG((*logger_), "Command \"", sqlCommand, "\" executed without any errors."); }
 
         sqlite3_finalize(result);
 
@@ -244,7 +233,7 @@ namespace Utilities::Sql
         return executeOut(command);
     }
 
-    void SqlManager::initialTablesLoad(std::fstream& schemaPtr)
+    void SqlManager::initialTablesLoad()
     {
         LOG((*logger_), "Initializing all tables from the schema file");
         // Get all table names from the DB
@@ -310,7 +299,7 @@ namespace Utilities::Sql
                 switch (static_cast<PragmaTableFormat>(elementId))
                 {
                     case PragmaTableFormat::name : finalAttr.name_ = tokenizedAttr.at(elementId); break;
-                    case PragmaTableFormat::type : finalAttr.type_ = tokenizedAttr.at(elementId);
+                    case PragmaTableFormat::type : finalAttr.type_ = tokenizedAttr.at(elementId); break;
                     case PragmaTableFormat::notnull :
                         if (tokenizedAttr.at(elementId) == "1") { finalAttr.flags_.push_back(AttributeFlag::NOT_NULL); }
                         break;

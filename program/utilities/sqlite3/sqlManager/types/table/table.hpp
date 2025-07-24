@@ -48,5 +48,6 @@ namespace Utilities::Sql::Types
     Types::Table defaultCoursesTable();
     Types::Table defaultSubjectToCourseWeightTable();
     Types::Table defaultStudentRequestTable();
+    Types::Table defaultCourseAttendeesTable();
 }  // namespace Utilities::Sql::Types
 

@@ -14,4 +14,11 @@ namespace Utilities::Common
         while (std::getline(iss, token, delim)) { tokens.push_back(token); }
         return tokens;
     }
+
+    std::string assemble(std::vector<std::string> tokens, const char delim)
+    {
+        std::stringstream result("");
+        for (std::string& word : tokens) { result << word << delim; }
+        return result.str();
+    }
 }  // namespace Utilities::Common

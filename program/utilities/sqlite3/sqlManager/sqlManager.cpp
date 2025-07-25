@@ -196,7 +196,7 @@ namespace Utilities::Sql
         {
             const Attribute& attr = newVals.at(pos).first;
             std::string val       = newVals.at(pos).second;
-            if (attr.type_ == "TEXT") { ss << "'" << val << "'"; }
+            if (attr.type_ == AttributeType::SQL_TEXT) { ss << "'" << val << "'"; }
             else { ss << val; }
 
             if (pos < newVals.size() - 1) { ss << ", "; }
@@ -307,18 +307,19 @@ namespace Utilities::Sql
                 switch (static_cast<PragmaTableFormat>(elementId))
                 {
                     case PragmaTableFormat::name : finalAttr.name_ = tokenizedAttr.at(elementId); break;
-                    case PragmaTableFormat::type : finalAttr.type_ = tokenizedAttr.at(elementId); break;
+                    case PragmaTableFormat::type : finalAttr.type_ = Utilities::Sql::stringToAttrType(tokenizedAttr.at(elementId)); break;
                     case PragmaTableFormat::notnull :
-                        if (tokenizedAttr.at(elementId) == "1") { finalAttr.flags_.push_back(AttributeFlag::NOT_NULL); }
+                        if (tokenizedAttr.at(elementId) == "1") { finalAttr.flags_.insert(AttributeFlag::NOT_NULL); }
                         break;
                     case PragmaTableFormat::dflt_value :
                         if (tokenizedAttr.at(elementId) != "NULL")
                         {
-                            std::cout << "Default value is not supported yet - skipping.\n";
+                            finalAttr.flags_.insert(AttributeFlag::DEFAULT);
+                            finalAttr.defaultValue_ = tokenizedAttr.at(elementId);
                         }
                         break;
                     case PragmaTableFormat::pk :
-                        if (tokenizedAttr.at(elementId) == "1") { finalAttr.flags_.push_back(AttributeFlag::PRIMARY_KEY); }
+                        if (tokenizedAttr.at(elementId) == "1") { finalAttr.flags_.insert(AttributeFlag::PRIMARY_KEY); }
                         break;
                     default : std::cout << "Unknown element id - skipping\n"; break;
                 }

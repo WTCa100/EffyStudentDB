@@ -20,10 +20,12 @@ namespace Core::Types
             for (const auto& attendee : attendees_)
             {
                 ++count;
-                std::shared_ptr<Student> currentStudent = attendee.second;
+                double attendeePoints = attendee.second.second;
+                std::shared_ptr<Student> currentStudent = attendee.second.first;
                 ss << count << ". " << currentStudent->firstName_ << " "
                    << (currentStudent->secondName_.has_value() ? currentStudent->secondName_.value() + " " : " ")
-                   << currentStudent->lastName_;
+                   << currentStudent->lastName_
+                   << ": " << attendeePoints << " points";
                 if (count != attendees_.size()) ss << "\n";
             }
         }

@@ -15,4 +15,12 @@ namespace Utilities::Common::Constants
     const std::string g_tableCourseAttendees     = "COURSEATTENDEES";
 
     constexpr uint16_t g_inputMissingValue = UINT16_MAX;
+
+    enum class AttendeeValuePosition
+    {
+        studentId = 0,
+        courseId  = 1,
+        points    = 2
+    };
+
 }  // namespace Utilities::Common::Constants

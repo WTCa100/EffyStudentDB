@@ -1,4 +1,5 @@
 #include "session.hpp"
+#include <tuple>
 
 #include "../../types/entry.hpp"
 #include "../../utilities/common/constants.hpp"
@@ -85,18 +86,21 @@ void Session::fetchSrequests()
 
 void Session::fetchAttendees()
 {
+    using Utilities::Common::Constants::AttendeeValuePosition;
     LOG((*logger_), "Fetch course attendees");
-    std::vector<std::pair<uint16_t, uint16_t>> dbStudentCoursePair = sAdapter_->getAttendees();
-    for (const auto& entry : dbStudentCoursePair)
+    std::vector<std::tuple<uint16_t, uint16_t, double>> dbAttendees = sAdapter_->getAttendees();
+    for (const auto& entry : dbAttendees)
     {
         uint16_t courseId, studentId;
-        studentId = entry.first;
-        courseId  = entry.second;
+        double points;
+        studentId = std::get<static_cast<uint8_t>(AttendeeValuePosition::studentId)>(entry);
+        courseId  = std::get<static_cast<uint8_t>(AttendeeValuePosition::courseId)>(entry);
+        points    = std::get<static_cast<uint8_t>(AttendeeValuePosition::points)>(entry);
         std::shared_ptr<Student> targetStudent =
             std::static_pointer_cast<Student>(sesData_->getEntry(studentId, g_tableStudents));
         std::shared_ptr<Course> targetCourse = std::static_pointer_cast<Course>(sesData_->getEntry(courseId, g_tableCourses));
         targetStudent->attendingCourses_.insert(std::make_pair(courseId, targetCourse->name_));
-        targetCourse->attendees_.insert(std::make_pair(studentId, targetStudent));
+        targetCourse->attendees_.insert(std::make_pair(studentId, std::make_pair(targetStudent, points)));
     }
 }
 
@@ -179,7 +183,7 @@ bool Session::handleIndirectAction(const Action& userAction)
     {
         if (sAdapter_->addAttendee(studentId, courseId))
         {
-            targetCourse->attendees_.insert(std::make_pair(studentId, targetStudent));
+            targetCourse->attendees_.insert(std::make_pair(studentId, std::make_pair(targetStudent, 100.00)));
             targetStudent->attendingCourses_.insert(std::make_pair(courseId, targetCourse->name_));
             LOG((*logger_), "Successfully added student ", studentId, " to course ", courseId);
             std::cout << "Successfully added student " << targetStudent->firstName_ << " " << targetStudent->lastName_
@@ -561,12 +565,12 @@ void Session::onDelete(const std::shared_ptr<Entry> targetEntry)
         LOG((*logger_), "Removing attendees from course");
         for (auto& attendee : concreteCourse->attendees_)
         {
-            if (sAdapter_->removeAttendee(attendee.first, id)) { attendee.second->attendingCourses_.erase(id); }
+            if (sAdapter_->removeAttendee(attendee.first, id)) { attendee.second.first->attendingCourses_.erase(id); }
             else
             {
                 LOG((*logger_), "Could not delete attendee. StudentId=", attendee.first, " from CourseId=", id);
-                std::cout << "An error occured while trying to delete attendee " << attendee.second->firstName_ << " "
-                          << attendee.second->lastName_ << " from course " << concreteCourse->name_ << "\n";
+                std::cout << "An error occured while trying to delete attendee " << attendee.second.first->firstName_ << " "
+                          << attendee.second.first->lastName_ << " from course " << concreteCourse->name_ << "\n";
             }
         }
 

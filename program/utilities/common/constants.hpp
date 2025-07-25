@@ -23,4 +23,11 @@ namespace Utilities::Common::Constants
         closed = 2
     };
 
+    enum class AttendeeValuePosition
+    {
+        studentId = 0,
+        courseId  = 1,
+        points    = 2
+    };
+
 }  // namespace Utilities::Common::Constants

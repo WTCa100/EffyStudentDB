@@ -3,6 +3,8 @@
 #include "../../common/constants.hpp"
 #include "../../common/stringManip.hpp"
 
+#include <tuple>
+
 using Utilities::Sql::Types::Table;
 using namespace Utilities::Common::Constants;
 
@@ -348,7 +350,7 @@ namespace Utilities::Sql
             {
                 LOG((*logger_), entryComp.first, " mismatch: ", entryComp.second, " <-> ", newVal);
                 newValPacket.push_back(std::make_pair(
-                    Utilities::Sql::Types::Attribute(entryComp.first, Types::attrFlagToString(Types::AttributeFlag::MISSING), {}),
+                    Utilities::Sql::Types::Attribute(entryComp.first, Types::AttributeType::SQL_NULL, {Types::AttributeFlag::MISSING}, {}),
                     newVal));
             }
         }
@@ -431,11 +433,11 @@ namespace Utilities::Sql
         return filter.str();
     }
 
-    std::vector<std::pair<uint16_t, uint16_t>> SqlAdapter::getAttendees()
+    std::vector<std::tuple<uint16_t, uint16_t, double>> SqlAdapter::getAttendees()
     {
-        std::vector<std::pair<uint16_t, uint16_t>> attendees;
+        std::vector<std::tuple<uint16_t, uint16_t, double>> attendees;
         LOG((*logger_), "Fetching Attendees from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(g_tableCourseAttendees, { "studentId", "courseId" });
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(g_tableCourseAttendees, { "studentId", "courseId",  "points" });
         if (rawEntries.empty())
         {
             LOG((*logger_), "Called CourseAttendees but got no entries!");
@@ -448,7 +450,8 @@ namespace Utilities::Sql
             std::vector<std::string> tokenizedEntries = Utilities::Common::tokenize(entry, '|');
             uint16_t studentId                        = std::stoul(tokenizedEntries.at(0));
             uint16_t courseId                         = std::stoul(tokenizedEntries.at(1));
-            attendees.push_back(std::make_pair(studentId, courseId));
+            double points                             = std::stod(tokenizedEntries.at(2));
+            attendees.push_back(std::make_tuple(studentId, courseId, points));
         }
         LOG((*logger_), "Course attendees tokenized and pushed into the list. Final vector size = ", attendees.size(),
             " Raw entries size = ", rawEntries.size());

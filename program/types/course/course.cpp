@@ -23,11 +23,12 @@ namespace Core::Types
             for (const auto& attendee : attendees_)
             {
                 ++count;
-                std::shared_ptr<Student> currentStudent = attendee.second;
+                double attendeePoints = attendee.second.second;
+                std::shared_ptr<Student> currentStudent = attendee.second.first;
                 ss << count << ". " << currentStudent->firstName_ << " "
                    << (currentStudent->secondName_.has_value() ? currentStudent->secondName_.value() + " " : " ")
-                   << currentStudent->lastName_;
-
+                   << currentStudent->lastName_
+                   << ": " << attendeePoints << " points";
                 if (count != attendees_.size()) ss << "\n";
             }
         }
@@ -77,6 +78,14 @@ namespace Core::Types
         recrutingTurn_ = 1;
         mappedNewAttrs.insert(std::make_pair("isOpen", std::to_string(static_cast<uint8_t>(isOpen_))));
         mappedNewAttrs.insert(std::make_pair("recrutingTurn", std::to_string(recrutingTurn_)));
+        baseMinimalPoints_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Minimal points required")
+                                      : Utilities::InputHandler::getAttrAsNumber("Minimal points required");
+        if (baseMinimalPoints_ != g_inputMissingValue)
+            mappedNewAttrs.insert(std::make_pair("baseMinimalPoints", std::to_string(baseMinimalPoints_)));
+
+        name_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Name")
+                         : Utilities::InputHandler::getAttrAsString("Name");
+        if (!name_.empty()) mappedNewAttrs.insert(std::make_pair("name", name_));
         return mappedNewAttrs;
     }
 

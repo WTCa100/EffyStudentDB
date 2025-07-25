@@ -12,12 +12,10 @@
 using Utilities::Common::Constants::g_inputMissingValue;
 using Utilities::Common::Constants::g_tableCourses;
 using Utilities::Common::Constants::OpenState;
-
 namespace Core::Types
 {
-
     constexpr uint16_t turnNotSet = 0;
-
+    typedef std::pair<std::shared_ptr<Student>, double> attendee;
     struct Course : public Entry
     {
         // SQL attribute members
@@ -27,9 +25,10 @@ namespace Core::Types
         uint16_t maxStudents_;
         uint16_t baseMinimalPoints_;
         uint16_t averageStudentPoints_;
-        std::map<uint16_t, std::shared_ptr<Student>> attendees_;
+        std::map<uint16_t, attendee> attendees_;
         OpenState isOpen_;
         uint16_t recrutingTurn_;
+
         // Formula - on how to calculate points
         // One subject for now, range later (so, more than one subject can be applied to a given course)
         // Formula: [(1st subject grade * weight) + (2nd subject grade * weight) + (N-th subject grade * weight)] / N

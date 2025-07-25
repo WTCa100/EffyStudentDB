@@ -1,4 +1,5 @@
 #include "session.hpp"
+#include <tuple>
 
 #include "../../types/entry.hpp"
 #include "../../utilities/common/constants.hpp"
@@ -85,18 +86,21 @@ void Session::fetchSrequests()
 
 void Session::fetchAttendees()
 {
+    using Utilities::Common::Constants::AttendeeValuePosition;
     LOG((*logger_), "Fetch course attendees");
-    std::vector<std::pair<uint16_t, uint16_t>> dbStudentCoursePair = sAdapter_->getAttendees();
-    for (const auto& entry : dbStudentCoursePair)
+    std::vector<std::tuple<uint16_t, uint16_t, double>> dbAttendees = sAdapter_->getAttendees();
+    for (const auto& entry : dbAttendees)
     {
         uint16_t courseId, studentId;
-        studentId = entry.first;
-        courseId  = entry.second;
+        double points;
+        studentId = std::get<static_cast<uint8_t>(AttendeeValuePosition::studentId)>(entry);
+        courseId  = std::get<static_cast<uint8_t>(AttendeeValuePosition::courseId)>(entry);
+        points    = std::get<static_cast<uint8_t>(AttendeeValuePosition::points)>(entry);
         std::shared_ptr<Student> targetStudent =
             std::static_pointer_cast<Student>(sesData_->getEntry(studentId, g_tableStudents));
         std::shared_ptr<Course> targetCourse = std::static_pointer_cast<Course>(sesData_->getEntry(courseId, g_tableCourses));
         targetStudent->attendingCourses_.insert(std::make_pair(courseId, targetCourse->name_));
-        targetCourse->attendees_.insert(std::make_pair(studentId, targetStudent));
+        targetCourse->attendees_.insert(std::make_pair(studentId, std::make_pair(targetStudent, points)));
     }
 }
 
@@ -142,12 +146,13 @@ bool Session::handleIndirectAction(const Action& userAction)
     }
 
     // For now the only indirect action we have would be assign and drop - they both have the same structure. command table
-    // (always the same here) studentId courseId This will probably never change thus this implementation choise - EDIT: It did change but I am leaving this here a warning for future me
+    // (always the same here) studentId courseId This will probably never change thus this implementation choise
     std::vector<std::string> userAdditionalValues = userAction.getAdditionalValues();
     uint16_t studentId, courseId;
     try
     {
-        courseId  = std::stoul(userAdditionalValues.at(0));
+        studentId = std::stoul(userAdditionalValues.at(0));
+        courseId  = std::stoul(userAdditionalValues.at(1));
     }
     catch (const std::exception& e)
     {
@@ -158,6 +163,13 @@ bool Session::handleIndirectAction(const Action& userAction)
     LOG((*logger_), "Extracted value: courseId=", courseId);
 
 
+    std::shared_ptr<Student> targetStudent = std::static_pointer_cast<Student>(sesData_->getEntry(studentId, g_tableStudents));
+    if (!targetStudent)
+    {
+        LOG((*logger_), "Failed to handle action! No student found in the database. Id=", studentId);
+        std::cout << "Error, no such student with ID " << studentId << "\n";
+        return false;
+    }
 
     std::shared_ptr<Course> targetCourse = std::static_pointer_cast<Course>(sesData_->getEntry(courseId, g_tableCourses));
     if (!targetCourse)
@@ -225,7 +237,7 @@ bool Session::handleIndirectAction(const Action& userAction)
     {
         if (sAdapter_->addAttendee(studentId, courseId))
         {
-            targetCourse->attendees_.insert(std::make_pair(studentId, targetStudent));
+            targetCourse->attendees_.insert(std::make_pair(studentId, std::make_pair(targetStudent, 100.00)));
             targetStudent->attendingCourses_.insert(std::make_pair(courseId, targetCourse->name_));
             LOG((*logger_), "Successfully added student ", studentId, " to course ", courseId);
             std::cout << "Successfully added student " << targetStudent->firstName_ << " " << targetStudent->lastName_

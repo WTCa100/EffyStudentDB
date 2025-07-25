@@ -1,7 +1,8 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <unordered_set>
+#include <optional>
 
 namespace Utilities::Sql::Types
 {
@@ -17,16 +18,28 @@ namespace Utilities::Sql::Types
         MISSING
     };
 
+    enum class AttributeType
+    {
+        SQL_NULL = 0,
+        SQL_INTEGER = 1,
+        SQL_REAL = 2,
+        SQL_TEXT = 3
+        // SQL_BLOB = 4
+    };
+
     struct Attribute
     {
         std::string name_;
-        std::string type_;
-        std::vector<AttributeFlag> flags_;
-
+        AttributeType type_;
+        std::unordered_set<AttributeFlag> flags_; // Todo maybe change it to set?
+        std::optional<std::string> defaultValue_{std::nullopt};
         bool isValid() { return !name_.empty(); }
+        bool isDefaultValid() const;
     };
 
     std::string attrFlagToString(const AttributeFlag& flag);
+    std::string attrTypeToString(const AttributeType& flag);
+    AttributeType stringToAttrType(const std::string& raw);
 
 }  // namespace Utilities::Sql::Types
 

@@ -65,8 +65,10 @@ namespace Utilities::Sql
         bool updateEntryFromTable(std::string tableName, AttrsValues newVals, std::string condition);
         bool removeEntryFromTable(std::string tableName, uint16_t entryId);
         bool removeEntryFromTable(std::string tableName, std::string condition);
-        std::vector<std::string> getEntriesFromTable(
-            std::string tableName, std::vector<std::string> attributes = {}, std::string filter = "");
+        std::vector<std::string> getEntriesFromTable(std::string tableName,
+            std::vector<std::string> attributes = {},
+            std::string filter                  = "",
+            std::optional<std::string> order    = std::nullopt);
 
         bool isTableInDatabase(const Sql::Types::Table& table);
         bool isTableInDatabase(const std::string& tableName);

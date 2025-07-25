@@ -151,8 +151,7 @@ bool Session::handleIndirectAction(const Action& userAction)
     uint16_t studentId, courseId;
     try
     {
-        studentId = std::stoul(userAdditionalValues.at(0));
-        courseId  = std::stoul(userAdditionalValues.at(1));
+        courseId  = std::stoul(userAdditionalValues.at(0));
     }
     catch (const std::exception& e)
     {
@@ -161,15 +160,6 @@ bool Session::handleIndirectAction(const Action& userAction)
         return false;
     }
     LOG((*logger_), "Extracted value: courseId=", courseId);
-
-
-    std::shared_ptr<Student> targetStudent = std::static_pointer_cast<Student>(sesData_->getEntry(studentId, g_tableStudents));
-    if (!targetStudent)
-    {
-        LOG((*logger_), "Failed to handle action! No student found in the database. Id=", studentId);
-        std::cout << "Error, no such student with ID " << studentId << "\n";
-        return false;
-    }
 
     std::shared_ptr<Course> targetCourse = std::static_pointer_cast<Course>(sesData_->getEntry(courseId, g_tableCourses));
     if (!targetCourse)
@@ -619,12 +609,12 @@ void Session::onDelete(const std::shared_ptr<Entry> targetEntry)
         LOG((*logger_), "Removing attendees from course");
         for (auto& attendee : concreteCourse->attendees_)
         {
-            if (sAdapter_->removeAttendee(attendee.first, id)) { attendee.second->attendingCourses_.erase(id); }
+            if (sAdapter_->removeAttendee(attendee.first, id)) { attendee.second.first->attendingCourses_.erase(id); }
             else
             {
                 LOG((*logger_), "Could not delete attendee. StudentId=", attendee.first, " from CourseId=", id);
-                std::cout << "An error occured while trying to delete attendee " << attendee.second->firstName_ << " "
-                          << attendee.second->lastName_ << " from course " << concreteCourse->name_ << "\n";
+                std::cout << "An error occured while trying to delete attendee " << attendee.second.first->firstName_ << " "
+                          << attendee.second.first->lastName_ << " from course " << concreteCourse->name_ << "\n";
             }
         }
 

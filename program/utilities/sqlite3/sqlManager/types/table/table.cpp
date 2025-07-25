@@ -32,7 +32,6 @@ namespace Utilities::Sql::Types
     std::string Table::makeFormula() const
     {
         std::stringstream ss;
-        std::cout << "DBG: Making formula for " << name_ << "\n";
 
         ss << "CREATE TABLE " << name_ << "(\n";
         uint16_t targetAtrCount  = schema_.size() - 1;

@@ -23,12 +23,11 @@ namespace Core::Types
             for (const auto& attendee : attendees_)
             {
                 ++count;
-                double attendeePoints = attendee.second.second;
+                double attendeePoints                   = attendee.second.second;
                 std::shared_ptr<Student> currentStudent = attendee.second.first;
                 ss << count << ". " << currentStudent->firstName_ << " "
                    << (currentStudent->secondName_.has_value() ? currentStudent->secondName_.value() + " " : " ")
-                   << currentStudent->lastName_
-                   << ": " << attendeePoints << " points";
+                   << currentStudent->lastName_ << ": " << attendeePoints << " points";
                 if (count != attendees_.size()) ss << "\n";
             }
         }
@@ -54,7 +53,7 @@ namespace Core::Types
         std::cout << "Creating course from user input\n";
         name_ = makeFull ? Utilities::InputHandler::getAttrAsStringNonEmpty("Name")
                          : Utilities::InputHandler::getAttrAsString("Name");
-        if (!name_.empty()) mappedNewAttrs.insert(std::make_pair("name", name_)); 
+        if (!name_.empty()) mappedNewAttrs.insert(std::make_pair("name", name_));
 
         baseMinimalPoints_ = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Minimal points required")
                                       : Utilities::InputHandler::getAttrAsNumber("Minimal points required");

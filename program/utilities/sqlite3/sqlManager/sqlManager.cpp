@@ -307,7 +307,9 @@ namespace Utilities::Sql
                 switch (static_cast<PragmaTableFormat>(elementId))
                 {
                     case PragmaTableFormat::name : finalAttr.name_ = tokenizedAttr.at(elementId); break;
-                    case PragmaTableFormat::type : finalAttr.type_ = Utilities::Sql::stringToAttrType(tokenizedAttr.at(elementId)); break;
+                    case PragmaTableFormat::type :
+                        finalAttr.type_ = Utilities::Sql::stringToAttrType(tokenizedAttr.at(elementId));
+                        break;
                     case PragmaTableFormat::notnull :
                         if (tokenizedAttr.at(elementId) == "1") { finalAttr.flags_.insert(AttributeFlag::NOT_NULL); }
                         break;

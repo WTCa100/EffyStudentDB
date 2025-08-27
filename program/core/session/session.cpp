@@ -1,9 +1,10 @@
 #include "session.hpp"
-#include <tuple>
 
 #include "../../types/entry.hpp"
 #include "../../utilities/common/constants.hpp"
 #include "../../utilities/common/stringManip.hpp"
+
+#include <tuple>
 
 using namespace Utilities::Common::Constants;
 
@@ -151,7 +152,7 @@ bool Session::handleIndirectAction(const Action& userAction)
     uint16_t studentId, courseId;
     try
     {
-        courseId  = std::stoul(userAdditionalValues.at(0));
+        courseId = std::stoul(userAdditionalValues.at(0));
     }
     catch (const std::exception& e)
     {
@@ -171,7 +172,7 @@ bool Session::handleIndirectAction(const Action& userAction)
 
     if (userCommand == Core::ActionType::Indirect::actionOpen)
     {
-        if(sAdapter_->openCourse(courseId))
+        if (sAdapter_->openCourse(courseId))
         {
             std::cout << "Successfully opened coruse " << targetCourse->name_ << " (" << courseId << ") \n";
             targetCourse->isOpen_ = Utilities::Common::Constants::OpenState::opened;
@@ -187,7 +188,7 @@ bool Session::handleIndirectAction(const Action& userAction)
 
     if (userCommand == Core::ActionType::Indirect::actionClose)
     {
-        if(sAdapter_->closeCourse(courseId))
+        if (sAdapter_->closeCourse(courseId))
         {
             std::cout << "Successfully closed coruse " << targetCourse->name_ << " (" << courseId << ") \n";
             targetCourse->isOpen_ = Utilities::Common::Constants::OpenState::closed;
@@ -203,7 +204,7 @@ bool Session::handleIndirectAction(const Action& userAction)
 
     try
     {
-        studentId  = std::stoul(userAdditionalValues.at(1));
+        studentId = std::stoul(userAdditionalValues.at(1));
     }
     catch (const std::exception& e)
     {
@@ -221,7 +222,6 @@ bool Session::handleIndirectAction(const Action& userAction)
         std::cout << "Error, no such student with ID " << studentId << "\n";
         return false;
     }
-
 
     if (userCommand == Core::ActionType::Indirect::actionAssign)
     {
@@ -309,7 +309,7 @@ bool Session::handleDirectAction(const Action& userAction)
     display_->showSelection(affectedEntries);
     if (userCommand == "FIND") { return true; }
 
-    if (userCommand == "REMOVE" || userCommand == "UPDATE")
+    if (userCommand == "REMOVE" || userCommand == "EDIT")  // TODO: JAN PLEASE TURN THESE MAGIC STRINGS INTO GLOBAL VARIABLES!!!
     {
         if (!display_->promptAlterAll(filter, affectedEntries.size()))
         {
@@ -334,7 +334,7 @@ bool Session::handleDirectAction(const Action& userAction)
     }
 
     // For each affected entry update
-    if (userCommand == "UPDATE")
+    if (userCommand == "EDIT")
     {
         // Get new values 1st
         std::cout << "Modifying existing values.\n";

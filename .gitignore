@@ -31,6 +31,9 @@
 *.out
 *.app
 
-#build & vscode related files
+# Build & vscode related files
 .vscode
 build
+
+# Python cachhe
+*__pycache__*

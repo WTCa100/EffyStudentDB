@@ -12,7 +12,7 @@ namespace Utilities
 
         fileName_ = "EffyStudentDb-" + getFileTimestamp(createCurrentTimestamp());
         if (!touch((std::filesystem::path(logPath)), fileName_)) { std::cout << "Could not create a log file!\n"; }
-    };
+    }
 
     bool Logger::touch(std::filesystem::path path, std::string fileName)
     {

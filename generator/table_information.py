@@ -7,7 +7,7 @@ class Course:
     baseMinimalPoints : int
     maxStudents : int
     minStudents : int
-    courseSubjectWeights : list # ID + Value
+    courseSubjectWeights : dict[int:tuple[str, float]] # ID + Value
 
 @dataclass
 class Subject:

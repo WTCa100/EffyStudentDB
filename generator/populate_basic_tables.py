@@ -1,19 +1,7 @@
-from pathlib import Path
+from common import find_database_location
 import sqlite3
 
 import table_information
-
-def find_database_location():
-    print("Looking for Effy.db...")
-    cwd = Path(".").absolute()
-    db_candidates = list(cwd.parent.rglob("*Effy.db"))
-    if len(db_candidates) == 0:
-        raise RuntimeError("Found no file nammed Effy.db...")
-    elif len(db_candidates) != 1:
-        raise RuntimeError("Found more than one file with Effy.db as a suffix")
-    else:
-        print(f"Found Effy.db at {db_candidates[0]}")
-        return db_candidates[0]
 
 def load_basic_information(table_name : str):
     with open(f"constant_values/{table_name}.txt", "r") as fp:
@@ -54,16 +42,17 @@ def insert_base_information(cursor : sqlite3.Cursor, table : str, values : list)
 def basic_type_list_to_dict(values: list):
     return_iterable : dict = {}
     for value in values:
-        return_iterable[value.id] = value
+        return_iterable[value.name] = value
     return return_iterable
 
 def run():
     db = sqlite3.connect(find_database_location())
     cursor = db.cursor()
     # Constant tables are: Schools, Subjects and Courses along with their scoring policies
-    print('Clear prevoius entries')
+    print('Clear prevoius entries...')
     cursor.execute("DELETE FROM subjects;")
     cursor.execute("DELETE FROM schools;")
+    db.commit()
     
     subjects_info = load_subjects_information()
     print(f'Got {len(subjects_info)} subjects.')

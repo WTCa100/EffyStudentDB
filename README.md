@@ -376,3 +376,6 @@ Every time a user enters an action, it will be turned into an `Action` object an
 - `Indirect` - commands that indirectly operate on the `Core::Types`, such as `ASSIGN` or `CLOSE`.
 No matter if the command is `Direct` or `Indirect`, the `Session` object must always reevaluate and adjust the `SessionData` object to reflect the new state of the database. It is done by logically verifying and adjusting the appropriate `entryList_` index. This is done in post-processing methods such as `onAdd`, `onUpdate`, and `onDelete`.
 ### Request resolver
+Work in progress
+# Generator
+It's a Python module that is primarily used to generate testing entries for the `SQL` server, it is still work in progress.

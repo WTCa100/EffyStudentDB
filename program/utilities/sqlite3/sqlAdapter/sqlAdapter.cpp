@@ -214,8 +214,8 @@ namespace Utilities::Sql
     {
         std::vector<Core::Types::Course> courses;
         LOG((*logger_), "Fetching courses from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(
-            g_tableCourses, { "id", "minStudents", "maxStudents", "baseMinimalPoints", "name", "isOpen", "recrutingTurn"}, filter);
+        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(g_tableCourses,
+            { "id", "minStudents", "maxStudents", "baseMinimalPoints", "name", "isOpen", "recrutingTurn" }, filter);
         if (rawEntries.empty())
         {
             LOG((*logger_), "Called courses, but got no entries!");
@@ -237,8 +237,8 @@ namespace Utilities::Sql
             tmpCourse.averageStudentPoints_ = tmpCourse.baseMinimalPoints_;
             tmpCourse.name_                 = tokenizedCourse.at(4);
             tmpCourse.subjectWithWeight_    = {};
-            tmpCourse.isOpen_ = static_cast<OpenState>(std::stoi(tokenizedCourse.at(5)));
-            tmpCourse.recrutingTurn_ = std::stoi(tokenizedCourse.at(6));
+            tmpCourse.isOpen_               = static_cast<OpenState>(std::stoi(tokenizedCourse.at(5)));
+            tmpCourse.recrutingTurn_        = std::stoi(tokenizedCourse.at(6));
 
             courses.push_back(std::move(tmpCourse));  // It's quite big move makes more sense here
         }
@@ -349,8 +349,8 @@ namespace Utilities::Sql
             if (newVal != entryComp.second)
             {
                 LOG((*logger_), entryComp.first, " mismatch: ", entryComp.second, " <-> ", newVal);
-                newValPacket.push_back(std::make_pair(
-                    Utilities::Sql::Types::Attribute(entryComp.first, Types::AttributeType::SQL_NULL, {Types::AttributeFlag::MISSING}, {}),
+                newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute(entryComp.first,
+                                                          Types::AttributeType::SQL_NULL, { Types::AttributeFlag::MISSING }, {}),
                     newVal));
             }
         }
@@ -437,7 +437,8 @@ namespace Utilities::Sql
     {
         std::vector<std::tuple<uint16_t, uint16_t, double>> attendees;
         LOG((*logger_), "Fetching Attendees from the SQL DB");
-        std::vector<std::string> rawEntries = sManager_->getEntriesFromTable(g_tableCourseAttendees, { "studentId", "courseId",  "points" });
+        std::vector<std::string> rawEntries =
+            sManager_->getEntriesFromTable(g_tableCourseAttendees, { "studentId", "courseId", "points" });
         if (rawEntries.empty())
         {
             LOG((*logger_), "Called CourseAttendees but got no entries!");
@@ -492,12 +493,11 @@ namespace Utilities::Sql
 
     bool SqlAdapter::changeCourseOpenState(const uint16_t& courseId, const std::string& newState)
     {
-        Table targetTable = sManager_->getTableSchema(g_tableCourses);
-        Utilities::Sql::AttrsValues state = {std::make_pair(targetTable.getAttributeByName("isOpen"), newState)};
-        std::string condition = "id = " + std::to_string(courseId);
+        Table targetTable                 = sManager_->getTableSchema(g_tableCourses);
+        Utilities::Sql::AttrsValues state = { std::make_pair(targetTable.getAttributeByName("isOpen"), newState) };
+        std::string condition             = "id = " + std::to_string(courseId);
         return sManager_->updateEntryFromTable(g_tableCourses, state, condition);
     }
-
 
     bool SqlAdapter::openCourse(const uint16_t& courseId)
     {

@@ -12,10 +12,12 @@
 using Utilities::Common::Constants::g_inputMissingValue;
 using Utilities::Common::Constants::g_tableCourses;
 using Utilities::Common::Constants::OpenState;
+
 namespace Core::Types
 {
     constexpr uint16_t turnNotSet = 0;
     typedef std::pair<std::shared_ptr<Student>, double> attendee;
+
     struct Course : public Entry
     {
         // SQL attribute members

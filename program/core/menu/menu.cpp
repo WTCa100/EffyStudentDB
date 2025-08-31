@@ -110,16 +110,13 @@ namespace Core::Display
             return;
         }
         // To properly handle request - table name is required at 2nd position
-        std::string targetTable = ""; 
-        if(commandToken == ActionType::Indirect::actionDrop || commandToken == ActionType::Indirect::actionAssign)
+        std::string targetTable = "";
+        if (commandToken == ActionType::Indirect::actionDrop || commandToken == ActionType::Indirect::actionAssign)
         {
             targetTable = g_tableCourseAttendees;
         }
-        else
-        {
-            targetTable = g_tableCourses;
-        }
-        tokens.insert(tokens.begin() + 1, g_tableCourseAttendees );
+        else { targetTable = g_tableCourses; }
+        tokens.insert(tokens.begin() + 1, g_tableCourseAttendees);
         command = Utilities::Common::assemble(tokens, ' ');
         LOG((*logger_), "Properly handled indirect action. New action =: \"", command, "\"");
     }

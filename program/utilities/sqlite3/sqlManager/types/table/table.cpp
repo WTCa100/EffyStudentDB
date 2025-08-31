@@ -1,8 +1,8 @@
 #include "table.hpp"
-#include <iostream>
 
 #include "../../../../common/constants.hpp"
 
+#include <iostream>
 #include <sstream>
 
 using namespace Utilities::Common::Constants;
@@ -26,7 +26,7 @@ namespace Utilities::Sql::Types
     Attribute Table::getAttributeByName(const std::string attrName)
     {
         if (schema_.contains(attrName)) { return schema_.at(attrName); }
-        return Attribute{ "", Types::AttributeType::SQL_NULL, {Types::AttributeFlag::MISSING}, {} };
+        return Attribute{ "", Types::AttributeType::SQL_NULL, { Types::AttributeFlag::MISSING }, {} };
     }
 
     std::string Table::makeFormula() const
@@ -41,24 +41,24 @@ namespace Utilities::Sql::Types
         for (const auto& attr : schema_)
         {
             // <attr-name> <attr-type> <attr-flags> <attr-default>
-            const Attribute& currentAttr = attr.second;  
+            const Attribute& currentAttr = attr.second;
             ss << currentAttr.name_ << " " << attrTypeToString(currentAttr.type_) << " ";
-            for (const auto& flag : currentAttr.flags_) 
+            for (const auto& flag : currentAttr.flags_)
             {
                 if (flag == AttributeFlag::DEFAULT)
                 {
                     // Default flag must always be the last in this case
                     continue;
-                } 
+                }
                 ss << attrFlagToString(flag) << " ";
             }
 
             // Check Default flag validity
-            if(currentAttr.isDefaultValid())
+            if (currentAttr.isDefaultValid())
             {
-                ss << attrFlagToString(AttributeFlag::DEFAULT)  << " " << currentAttr.defaultValue_.value() << " ";
+                ss << attrFlagToString(AttributeFlag::DEFAULT) << " " << currentAttr.defaultValue_.value() << " ";
             }
-            
+
             if (currentAtrCount < targetAtrCount || !foreignKeys_.empty()) { ss << ","; }
             ++currentAtrCount;
             ss << "\n";
@@ -134,10 +134,10 @@ namespace Utilities::Sql::Types
         });
         courseTbl.addToSchema({ "isOpen", Types::AttributeType::SQL_INTEGER,
             { Types::AttributeFlag::NOT_NULL } });  // 0 - for internal usage only; 1 - Accepting; 2 - not accepting
-            courseTbl.addToSchema({ "minStudents", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::NOT_NULL } });
-            courseTbl.addToSchema({ "maxStudents", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::NOT_NULL } });
-            courseTbl.addToSchema({ "baseMinimalPoints", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::NOT_NULL } });
-            courseTbl.addToSchema({ "recrutingTurn", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::NOT_NULL } });
+        courseTbl.addToSchema({ "minStudents", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::NOT_NULL } });
+        courseTbl.addToSchema({ "maxStudents", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::NOT_NULL } });
+        courseTbl.addToSchema({ "baseMinimalPoints", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::NOT_NULL } });
+        courseTbl.addToSchema({ "recrutingTurn", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::NOT_NULL } });
         return courseTbl;
     }
 
@@ -171,7 +171,10 @@ namespace Utilities::Sql::Types
         attendees.addToSchema({ "id", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::PRIMARY_KEY } });
         attendees.addToSchema({ "studentId", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::NOT_NULL } });
         attendees.addToSchema({ "courseId", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::NOT_NULL } });
-        attendees.addToSchema({ "points", Types::AttributeType::SQL_REAL, {Types::AttributeFlag::NOT_NULL, Types::AttributeFlag::DEFAULT}, "100"});
+        attendees.addToSchema({
+            "points", Types::AttributeType::SQL_REAL, { Types::AttributeFlag::NOT_NULL, Types::AttributeFlag::DEFAULT },
+              "100"
+        });
         return attendees;
     }
 

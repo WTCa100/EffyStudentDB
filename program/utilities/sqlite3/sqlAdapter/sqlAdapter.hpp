@@ -56,7 +56,7 @@ namespace Utilities::Sql
         bool openCourse(const uint16_t& courseId);
         bool closeCourse(const uint16_t& courseId);
         bool changeCourseOpenState(const uint16_t& courseId, const std::string& newState);
-        
+
         std::string makeFilter(std::unordered_map<std::string, std::string> attrs, bool exact = filterExactMatch);
     };
 

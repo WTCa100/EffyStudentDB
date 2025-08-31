@@ -1,0 +1,97 @@
+[
+  {"name": "Computer Science", "min_students": 20, "max_students": 150, "min_points": 60, "subjects_required": [
+    {"subject_name": "Mathematics", "subject_weight": 1.5},
+    {"subject_name": "Physics", "subject_weight": 1.0},
+    {"subject_name": "Computer Science", "subject_weight": 2.0}
+  ]},
+  {"name": "Biotechnology", "min_students": 15, "max_students": 120, "min_points": 65, "subjects_required": [
+    {"subject_name": "Biology", "subject_weight": 2.0},
+    {"subject_name": "Chemistry", "subject_weight": 1.5},
+    {"subject_name": "Mathematics", "subject_weight": 1.0}
+  ]},
+  {"name": "Mechanical Engineering", "min_students": 20, "max_students": 100, "min_points": 55, "subjects_required": [
+    {"subject_name": "Physics", "subject_weight": 2.0},
+    {"subject_name": "Mathematics", "subject_weight": 1.5},
+    {"subject_name": "Technology", "subject_weight": 1.0}
+  ]},
+  {"name": "Electrical Engineering", "min_students": 18, "max_students": 120, "min_points": 58, "subjects_required": [
+    {"subject_name": "Physics", "subject_weight": 1.8},
+    {"subject_name": "Mathematics", "subject_weight": 1.6},
+    {"subject_name": "Technology", "subject_weight": 1.2}
+  ]},
+  {"name": "Civil Engineering", "min_students": 20, "max_students": 110, "min_points": 55, "subjects_required": [
+    {"subject_name": "Mathematics", "subject_weight": 1.5},
+    {"subject_name": "Technology", "subject_weight": 1.0},
+    {"subject_name": "Physics", "subject_weight": 1.2}
+  ]},
+  {"name": "Architecture", "min_students": 15, "max_students": 80, "min_points": 60, "subjects_required": [
+    {"subject_name": "Art", "subject_weight": 1.5},
+    {"subject_name": "Mathematics", "subject_weight": 1.2},
+    {"subject_name": "Technology", "subject_weight": 1.0}
+  ]},
+  {"name": "Medicine", "min_students": 30, "max_students": 100, "min_points": 80, "subjects_required": [
+    {"subject_name": "Biology", "subject_weight": 2.0},
+    {"subject_name": "Chemistry", "subject_weight": 1.8},
+    {"subject_name": "Physics", "subject_weight": 1.0}
+  ]},
+  {"name": "Pharmacy", "min_students": 20, "max_students": 90, "min_points": 75, "subjects_required": [
+    {"subject_name": "Chemistry", "subject_weight": 2.0},
+    {"subject_name": "Biology", "subject_weight": 1.5},
+    {"subject_name": "Mathematics", "subject_weight": 1.0}
+  ]},
+  {"name": "Law", "min_students": 25, "max_students": 120, "min_points": 60, "subjects_required": [
+    {"subject_name": "History", "subject_weight": 1.5},
+    {"subject_name": "Polish", "subject_weight": 1.2},
+    {"subject_name": "Social Studies", "subject_weight": 1.0}
+  ]},
+  {"name": "Economics", "min_students": 20, "max_students": 100, "min_points": 55, "subjects_required": [
+    {"subject_name": "Mathematics", "subject_weight": 1.5},
+    {"subject_name": "Economics", "subject_weight": 2.0},
+    {"subject_name": "Social Studies", "subject_weight": 1.0}
+  ]},
+  {"name": "Psychology", "min_students": 15, "max_students": 80, "min_points": 50, "subjects_required": [
+    {"subject_name": "Biology", "subject_weight": 1.2},
+    {"subject_name": "Social Studies", "subject_weight": 1.5},
+    {"subject_name": "Polish", "subject_weight": 1.0}
+  ]},
+  {"name": "Sociology", "min_students": 15, "max_students": 90, "min_points": 50, "subjects_required": [
+    {"subject_name": "Social Studies", "subject_weight": 2.0},
+    {"subject_name": "History", "subject_weight": 1.5},
+    {"subject_name": "Polish", "subject_weight": 1.0}
+  ]},
+  {"name": "Philosophy", "min_students": 10, "max_students": 70, "min_points": 45, "subjects_required": [
+    {"subject_name": "Polish", "subject_weight": 1.5},
+    {"subject_name": "History", "subject_weight": 1.2},
+    {"subject_name": "Social Studies", "subject_weight": 1.0}
+  ]},
+  {"name": "English Literature", "min_students": 10, "max_students": 80, "min_points": 50, "subjects_required": [
+    {"subject_name": "English", "subject_weight": 2.0},
+    {"subject_name": "Polish", "subject_weight": 1.0},
+    {"subject_name": "History", "subject_weight": 1.0}
+  ]},
+  {"name": "History", "min_students": 15, "max_students": 100, "min_points": 50, "subjects_required": [
+    {"subject_name": "History", "subject_weight": 2.0},
+    {"subject_name": "Polish", "subject_weight": 1.2},
+    {"subject_name": "Social Studies", "subject_weight": 1.0}
+  ]},
+  {"name": "Geography", "min_students": 15, "max_students": 90, "min_points": 45, "subjects_required": [
+    {"subject_name": "Geography", "subject_weight": 2.0},
+    {"subject_name": "Mathematics", "subject_weight": 1.0},
+    {"subject_name": "Social Studies", "subject_weight": 1.0}
+  ]},
+  {"name": "Art", "min_students": 10, "max_students": 50, "min_points": 40, "subjects_required": [
+    {"subject_name": "Art", "subject_weight": 2.0},
+    {"subject_name": "History", "subject_weight": 1.0},
+    {"subject_name": "Polish", "subject_weight": 1.0}
+  ]},
+  {"name": "Music", "min_students": 10, "max_students": 60, "min_points": 40, "subjects_required": [
+    {"subject_name": "Music", "subject_weight": 2.0},
+    {"subject_name": "Art", "subject_weight": 1.0},
+    {"subject_name": "Polish", "subject_weight": 1.0}
+  ]},
+  {"name": "Physical Education", "min_students": 20, "max_students": 100, "min_points": 35, "subjects_required": [
+    {"subject_name": "Physical Education", "subject_weight": 2.0},
+    {"subject_name": "Biology", "subject_weight": 1.0},
+    {"subject_name": "Social Studies", "subject_weight": 0.5}
+  ]}
+]

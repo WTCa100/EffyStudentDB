@@ -100,7 +100,7 @@ namespace Core::Types
         }
         refObj->lastName_ = lastName_.empty() ? concrete->lastName_ : lastName_;
         refObj->email_    = email_.empty() ? concrete->email_ : email_;
-        refObj->schoolId_ = schoolId_ == 0 ? concrete->schoolId_ : schoolId_;
+        refObj->schoolId_ = schoolId_ == g_inputMissingValue ? concrete->schoolId_ : schoolId_;
         return refObj;
     }
 

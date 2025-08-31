@@ -7,12 +7,13 @@ namespace Utilities::Sql::Types
 
     bool Attribute::isDefaultValid() const
     {
-        if(!flags_.contains(AttributeFlag::DEFAULT)) return false;
-        if(!defaultValue_.has_value()) return false;
-        
-        // Now here is the tricky part - if default value is text BUT attribute type is a real number - that is not a valid default
+        if (!flags_.contains(AttributeFlag::DEFAULT)) return false;
+        if (!defaultValue_.has_value()) return false;
+
+        // Now here is the tricky part - if default value is text BUT attribute type is a real number - that is not a valid
+        // default
         std::string defaultHelper = defaultValue_.value();
-        if(type_ != AttributeType::SQL_TEXT || type_ != AttributeType::SQL_NULL) // And blob
+        if (type_ != AttributeType::SQL_TEXT || type_ != AttributeType::SQL_NULL)  // And blob
         {
             try
             {
@@ -21,7 +22,7 @@ namespace Utilities::Sql::Types
             }
             // I know its ugly - I will fix that later
             // TODO - make it pretty :)
-            catch(const std::exception& e)
+            catch (const std::exception& e)
             {
                 return false;
             }
@@ -47,19 +48,19 @@ namespace Utilities::Sql::Types
     {
         switch (flag)
         {
-        case AttributeType::SQL_NULL: return "NULL";
-        case AttributeType::SQL_INTEGER: return "INTEGER";
-        case AttributeType::SQL_REAL: return "REAL";
-        case AttributeType::SQL_TEXT: return "TEXT";
-        default: return "";
+            case AttributeType::SQL_NULL : return "NULL";
+            case AttributeType::SQL_INTEGER : return "INTEGER";
+            case AttributeType::SQL_REAL : return "REAL";
+            case AttributeType::SQL_TEXT : return "TEXT";
+            default : return "";
         }
     }
 
     AttributeType stringToAttrType(const std::string& raw)
     {
-        if(raw == "INTEGER") return AttributeType::SQL_INTEGER;
-        if(raw == "REAL") return AttributeType::SQL_REAL;
-        if(raw == "TEXT") return AttributeType::SQL_TEXT;
+        if (raw == "INTEGER") return AttributeType::SQL_INTEGER;
+        if (raw == "REAL") return AttributeType::SQL_REAL;
+        if (raw == "TEXT") return AttributeType::SQL_TEXT;
         else return AttributeType::SQL_NULL;
     }
 

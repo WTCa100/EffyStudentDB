@@ -2,10 +2,10 @@
 EffyStudentDb is a student management application that allows the user to quickly resolve student requests to join a given course with given grades, based on the calculation formula that every course has specified.
 
 ## Dependencies
-EffyStudentDb uses a non built-in library for C++ that is `SQLite3`, before compiling ensure that `SQLite3` is present in your working environment both as a library **AND** a service.
+EffyStudentDb uses a non-built-in C++ library called `SQLite3`. Before compiling, ensure that `SQLite3` is present in your working environment both as a library and a service.
 
 ## Compiling
-To compile the program, you need to have `CMake`, and to execute by pointing to `CMakeFile.txt` located under `program/` as a project source.
+To compile the program, you need to have `CMake` and execute it by pointing to `CMakeFile.txt` located under `program/` as a project source.
 ```bash
 # Example usage
 cmake -S ./program -B ./build
@@ -32,7 +32,7 @@ This is how a valid binary structure would look:
   }
 }
 ```
-Under the `base.sql` a one-time generated schema file will contain all the information for:
+Under the `base.sql`, a one-time generated schema file will contain all the information for:
 - The application to understand how a given schema should be handled while creating the `Effy.db` file
 - The user to quickly investigate how the server schema is laid out.
 Snippet of that file:
@@ -49,12 +49,12 @@ CREATE TABLE STUDENTS(
 `Effy.db` is created and initialized as a structured empty database.
 ## Funcionalities
 ### Database management
-Currently, the user can only manage what is inside the database by entering into the database management screen. <br>
-There are a few management options present in this screen. Each of them triggers additional functionalities, and most of them prompt the user to provide more information regarding which entries shall be affected by a given command and in what manner. The following list will give an exhaustive overview on how each command is handled in a high-level concept. <br>
+Currently, the user can only manage what is inside the database by entering the database management screen. <br>
+There are a few management options present in this screen. Each of them triggers additional functionalities, and most of them prompt the user to provide more information regarding which entries shall be affected by a given command and in what manner. The following list will give an exhaustive overview of how each command is handled in a high-level concept. <br>
 - **ADD** - allows the user to *add* entry to a given *table* <br>
 The user will be prompted to provide new information to create an entry to the database at *table* name that was provided <br>
 - **REMOVE** - allows the user to *remove* entry from a given *table* <br>
-The user will be prompted to provide filter information, on which entries shall be deleted. Filtered options will be displayed on the screen and a final approval prompt displayed. If the user agrees everything listed will be deleted. <br>
+The user will be prompted to provide filter information, on which entries shall be deleted. Filtered options will be displayed on the screen and a final approval prompt displayed. If the user agrees, everything listed will be deleted. <br>
 - **EDIT** - allows the user to *edit* entry from a given *table* with new values <br>
 The user will be prompted to provide filter information, on which entries shall be modified, then a new prompt will be displayed, allowing the user to provide new information to those entries. <br> **NOTE** If a given column does not need to be modified, it can be left empty, as the program will automatically assign the original values to that column, and change only the ones that have a different value present. <br>
 - **ASSIGN** - allows the user to *assign* a student to a given *course* <br>
@@ -72,13 +72,13 @@ The user will be prompted to enter filter information for that specific *table* 
 - **HELP** - Displays to the user a full list of commands along with their syntax <br>
 
 ### Student request resolver - WIP
-The core functionality of EffyStudentDB is to resolve requests taken from `STUDENTREQUEST` table. That table holds information on which students had the desire to join which course, based on their grades.
-In the first iteration, if a given student have the minimal points requirement met it will be automatically placed inside the `COURSEATTENDEES` table. However in futher iterations, every student with more points will automatically replace students with the smallest amount of points - that way the course will not get overflown if the `maxStudents` are surpassed.
+The core functionality of EffyStudentDB is to resolve requests taken from the `STUDENTREQUEST` table. That table holds information on which students had the desire to join which course, based on their grades.
+In the first iteration, if a given student have the minimal points requirement met, it will be automatically placed inside the `COURSEATTENDEES` table. However, in further iterations, every student with more points will automatically replace students with the smallest amount of points - that way the course will not get overflown if the `maxStudents` are surpassed.
 #### THIS IS STILL IN PROGRESS
 # Code & Framework
 ## Utilities
-This section will primarily focus on how does the application handles sql communication, file and folder creation. The core principle of the utilities section is that it operates on a `Manager`-like structure. There are few managers that have their separate responsibilities, that they delegate further into the `CommandHandler`.
--  `WorkspaceManager` - Handles the creation of the entire workspace structure, it delegates jobs to create folders, files, and fill up the schema and database files. <br>
+This section will primarily focus on how the application handles SQL communication, file and folder creation. The core principle of the utilities section is that it operates on a `Manager`-like structure. There are a few managers who have their separate responsibilities, which they delegate further into the `CommandHandler`.
+-  `WorkspaceManager` - Handles the creation of the entire workspace structure. It delegates jobs to create folders, files, and fill up the schema and database files. <br>
 
 **Workspace file creation**
 ```C++
@@ -156,7 +156,7 @@ This section will primarily focus on how does the application handles sql commun
         return rc;
     }
 ```
-- `FileManager` and `DirectoryManager` - They both behave in a very similar pattern. They consist of main funcionalities, application root directory information and `CommandHandler`. Once a creation, deletion or verification job is required from them, they will replace their current `CommandHandler` with one with different type. Examples: <br>
+- `FileManager` and `DirectoryManager` - They both behave in a very similar pattern. They consist of main functionalities, application root directory information, and `CommandHandler`. Once a creation, deletion, or verification job is required from them, they will replace their current `CommandHandler` with one with a different type. Examples: <br>
 
 **Directory creation**
   ```C++
@@ -223,10 +223,10 @@ This section will primarily focus on how does the application handles sql commun
 ```
 - `SqlManager` - Mainly used for communication between the application and the database. Its functionality will be tackled in the next chapter.
 ### SQL Communication
-EffyStudentDB operates on a local `SQLite3` server file that is created everytime the program cannot find it in the specified paths. The SQL communication is split into 2 sections:
+EffyStudentDB operates on a local `SQLite3` server file that is created every time the program cannot find it in the specified paths. The SQL communication is split into 2 sections:
 #### SQL Adapter
-The `SqlAdapter`'s main purpose is to translate information obtained from the `SqlManager` into a C++ objects, that will be later used in core functionality processing, and it will also translate the C++ objects data into a appropriate SQL queries. <br>
-Database getteres are separated into each concrete type:
+The `SqlAdapter`'s main purpose is to translate information obtained from the `SqlManager` into C++ objects, which will be later used in core functionality processing, and it will also translate the C++ objects data into appropriate SQL queries. <br>
+Database getters are separated into each concrete type:
 ```C++
       std::vector<School> getSchools(std::string filter = "");
       std::vector<Student> getStudents(std::string filter = "");
@@ -312,7 +312,7 @@ Used to monitor what is the multiplication value of each subject for a given cou
 | -------------- | ----------- | ----------- | ------------ |
 | Primary key    | Foreign key | Foreing key | Float / REAL |
 
-Used to monitor which student is currently enroled on which course and how many points does that student have. The `DEFAULT` value for `points values` is 100.
+Used to monitor which student is currently enrolled in which course and how many points does that student have. The `DEFAULT` value for `points values` is 100.
 
 - StudentRequest
 
@@ -320,7 +320,7 @@ Used to monitor which student is currently enroled on which course and how many 
 | -------------  | ----------- | ----------- | ------------ |
 | Primary key    | Foreign key | Foreing key | Integer      |
 
-Used to monitor which student desired to join which course with a status of that request. Statuses are: `Approved` = 0, `Denied` = 1, `Pending` = 2, `Unknown` = 3.
+Used to monitor which student desired to join which course, with a status of that request. Statuses are: `Approved` = 0, `Denied` = 1, `Pending` = 2, `Unknown` = 3.
 
 ## Core functionality
 This section will describe how each of the two core functionalities works. They both operate on `Core::Types` that are the objective representation of the SQL database. Each type is derived from a parent class `Core::Types::Entry` and overrides its common functionalities. If a new table is presented with a clear object structure, it has to be implemented as an additional `Entry` derived. <br>
@@ -362,11 +362,17 @@ namespace Core::Types
 }  // namespace Core::Types
 ```
 - `std::string toString()` - returns a string of all of the objects' values.
-- `std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true)` - Prompts the user to create a copy of given concrete `Entry`, if `makeFull` is set to `false` it will allow the user to leave column values empty.
-- `std::map<std::string, std::string> getAttrs()` - returns a map of all of the attributes with their values as strings. These have to be manually defined. Name of the variable is used as a key where the value of it is used as a value.<br>
+- `std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true)` - Prompts the user to create a copy of the given concrete `Entry`; if `makeFull` is set to `false`, it will allow the user to leave column values empty.
+- `std::map<std::string, std::string> getAttrs()` - returns a map of all of the attributes with their values as strings. These have to be manually defined. The name of the variable is used as a key, where the value of it is used as a value.<br>
 **NOTE**: Key must have the same name as the respective SQL column name.
 - `std::shared_ptr<Entry> mirrorMissing(const std::shared_ptr<Entry> other)` - returns a smart (shared) pointer to a new object that has its missing values filled from the `other` parameter.
 - `Entry& operator= (const Entry& other)` - assign every value from an `other` concrete `Entry` to the current one.
 ### Management
-Every `Entry` is being stored inside the `SessionData` class, that only operates on the abstract interface. While being initialized, it populates its `entryList_` with all of the tables names as keys. The value for each key is another map. `std::map<uint16_t, std::shared_ptr<Entry>>` aliased as `abstractTypeList`. It loads every data from the database once. This means that each modification in the database made during the session, must be reevaluated and repopulated. This is done inside the `Session` class. `Session` class also provides all of the data from the `SqlAdapter` to the `SessionData`, during the `fetchX` methods.
+Every `Entry` is being stored inside the `SessionData` class, which only operates on the abstract interface. While being initialized, it populates its `entryList_` with all of the table names as keys. The value for each key is another map. `std::map<uint16_t, std::shared_ptr<Entry>>` aliased as `abstractTypeList`. It loads all the data from the database once. This means that each modification in the database made during the session must be reevaluated and repopulated. This is done inside the `Session` class. `Session` class also provides all of the data from the `SqlAdapter` to the `SessionData`, during the `fetchX` methods. The `Session` delegates the output stream job to the `menu` class and the input stream to the `InputHandler` functions. Once the user enters the `Manage database` option from the main menu, `session` will also handle every action that the user provides.
+#### Commands
+Every time a user enters an action, it will be turned into an `Action` object and labeled as one of 3 possible: `Short`, `Direct`, `Indirect`. Each of these types has its own operating process, and has to be defined inside the `action.hpp` file.
+- `Short` - commands that require only to display specific information, such as `HELP` or `SHOW`.
+- `Direct` - commands that directly operate on the `Core::Types`, such as `ADD` or `EDIT`.
+- `Indirect` - commands that indirectly operate on the `Core::Types`, such as `ASSIGN` or `CLOSE`.
+No matter if the command is `Direct` or `Indirect`, the `Session` object must always reevaluate and adjust the `SessionData` object to reflect the new state of the database. It is done by logically verifying and adjusting the appropriate `entryList_` index. This is done in post-processing methods such as `onAdd`, `onUpdate`, and `onDelete`.
 ### Request resolver

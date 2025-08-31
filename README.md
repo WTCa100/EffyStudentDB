@@ -82,144 +82,144 @@ This section will primarily focus on how the application handles SQL communicati
 
 **Workspace file creation**
 ```C++
-    bool WsManager::createFile(std::string name, std::optional<std::filesystem::path> subPath)
+bool WsManager::createFile(std::string name, std::optional<std::filesystem::path> subPath)
+{
+    LOG((*logger_), "fileName=", name, " subPath=", subPath.has_value() ? subPath.value() : "nullopt");
+    if (fManager_->exist(name, subPath))
     {
-        LOG((*logger_), "fileName=", name, " subPath=", subPath.has_value() ? subPath.value() : "nullopt");
-        if (fManager_->exist(name, subPath))
-        {
-            std::cout << "File: \"" << name << "\" exists at: " << workingDir_.string();
-            if (subPath.has_value()) { std::cout << "/" << subPath.value().string(); }
-            std::cout << "\n";
-            std::cout << "Skipping...\n";
-            return false;
-        }
-        std::cout << "Creating file: \"" << name << "\" at: " << workingDir_.string();
+        std::cout << "File: \"" << name << "\" exists at: " << workingDir_.string();
         if (subPath.has_value()) { std::cout << "/" << subPath.value().string(); }
         std::cout << "\n";
-
-        bool rc = fManager_->createFile(name, subPath);
-        return rc;
+        std::cout << "Skipping...\n";
+        return false;
     }
+    std::cout << "Creating file: \"" << name << "\" at: " << workingDir_.string();
+    if (subPath.has_value()) { std::cout << "/" << subPath.value().string(); }
+    std::cout << "\n";
+
+    bool rc = fManager_->createFile(name, subPath);
+    return rc;
+}
 ```
  **SQL Schema creation**
 ```C++
-    bool WsManager::createInitialSchema()
+bool WsManager::createInitialSchema()
+{
+    using namespace Types;
+    LOG((*logger_), "Creating the initial schema file with default tables");
+    std::unique_ptr<std::fstream> schemaPtr = fManager_->getFile(fileBase, fileBaseSubdir);
+    if (!schemaPtr->is_open())
     {
-        using namespace Types;
-        LOG((*logger_), "Creating the initial schema file with default tables");
-        std::unique_ptr<std::fstream> schemaPtr = fManager_->getFile(fileBase, fileBaseSubdir);
-        if (!schemaPtr->is_open())
-        {
-            LOG((*logger_), "Could not open file: ", fileDatabase, " with subdir: ", fileDatabaseSubdir);
-            return false;
-        }
-
-        std::vector<Table> tables;
-        tables.reserve(...);
-
-        tables.push_back(defaultTable1());
-        tables.push_back(defaultTable2());
-        // ...
-        tables.push_back(defaultTableN());
-
-        *schemaPtr << "-- Effy.db - this file has been generated automatically\n";
-        *schemaPtr << "-- Do not modify it!\n";
-        for (const auto& tbl : tables)
-        {
-            LOG((*logger_), "Inserting ", tbl.getName(), " into database schema");
-            *schemaPtr << tbl.makeFormula();
-            sManager_->addTable(tbl);
-        }
-
-        LOG((*logger_), "Initial schema was written into ", "base.sql");
-        schemaPtr->close();
-        return true;
+        LOG((*logger_), "Could not open file: ", fileDatabase, " with subdir: ", fileDatabaseSubdir);
+        return false;
     }
+
+    std::vector<Table> tables;
+    tables.reserve(...);
+
+    tables.push_back(defaultTable1());
+    tables.push_back(defaultTable2());
+    // ...
+    tables.push_back(defaultTableN());
+
+    *schemaPtr << "-- Effy.db - this file has been generated automatically\n";
+    *schemaPtr << "-- Do not modify it!\n";
+    for (const auto& tbl : tables)
+    {
+        LOG((*logger_), "Inserting ", tbl.getName(), " into database schema");
+        *schemaPtr << tbl.makeFormula();
+        sManager_->addTable(tbl);
+    }
+
+    LOG((*logger_), "Initial schema was written into ", "base.sql");
+    schemaPtr->close();
+    return true;
+}
 ```
  **Directory verification**
 ```C++
-    bool WsManager::directoryExists(std::string directoryName, std::optional<std::filesystem::path> subPath)
-    {
-        std::cout << "Looking for the directory: " << directoryName << "...\n";
-        bool rc = dManager_->exist(directoryName, subPath);
+bool WsManager::directoryExists(std::string directoryName, std::optional<std::filesystem::path> subPath)
+{
+    std::cout << "Looking for the directory: " << directoryName << "...\n";
+    bool rc = dManager_->exist(directoryName, subPath);
 
-        if (rc)
-        {
-            std::cout << "File: " + directoryName + " was found!\n";
-            LOG((*logger_), "Directory ", directoryName, "exists");
-        }
-        else
-        {
-            std::cout << "Could not find file: " + directoryName + "\n";
-            LOG((*logger_), "Directory ", directoryName, " does not exists");
-        }
-        return rc;
+    if (rc)
+    {
+        std::cout << "File: " + directoryName + " was found!\n";
+        LOG((*logger_), "Directory ", directoryName, "exists");
     }
+    else
+    {
+        std::cout << "Could not find file: " + directoryName + "\n";
+        LOG((*logger_), "Directory ", directoryName, " does not exists");
+    }
+    return rc;
+}
 ```
 - `FileManager` and `DirectoryManager` - They both behave in a very similar pattern. They consist of main functionalities, application root directory information, and `CommandHandler`. Once a creation, deletion, or verification job is required from them, they will replace their current `CommandHandler` with one with a different type. Examples: <br>
 
 **Directory creation**
   ```C++
-      bool DirectoryManager::deleteDirectory(std::string directoryName, std::optional<std::string> subPath)
-    {
-        setCommandHandler(std::make_unique<RemoveCommand>(directoryName, targetType::directory, subPath));
-        if (!comHandler_->execute()) { return false; }
-        return !exist(directoryName, subPath);
-    }
+  bool DirectoryManager::deleteDirectory(std::string directoryName, std::optional<std::string> subPath)
+{
+    setCommandHandler(std::make_unique<RemoveCommand>(directoryName, targetType::directory, subPath));
+    if (!comHandler_->execute()) { return false; }
+    return !exist(directoryName, subPath);
+}
   ```
 **File verification**
 ```C++
-    bool FileManager::exist(std::string fileName, std::optional<std::filesystem::path> subPath)
-    {
-        setCommandHandler(std::make_unique<verifyCommand>(fileName, subPath));
-        return comHandler_->execute();
-    }
+bool FileManager::exist(std::string fileName, std::optional<std::filesystem::path> subPath)
+{
+    setCommandHandler(std::make_unique<verifyCommand>(fileName, subPath));
+    return comHandler_->execute();
+}
 ```
 - `CommandHandler` - An interface used to determine and execute which type of action must be executed based triggered from a specific manager. The actual job implementation is located here for both `DirectoryManager` and `FileManager`. Each command (`createCommand`, `removeCommand` and `verifyCommand`) overrides the `bool execute()` method to their needs.
 
 **CreateCommand**
 ```C++
-    bool CreateCommand::execute()
-    {
-        std::string fullPath = assambleFullPath(target_, subPath_, std::filesystem::current_path().string());
+bool CreateCommand::execute()
+{
+    std::string fullPath = assambleFullPath(target_, subPath_, std::filesystem::current_path().string());
 
-        switch (type_)
-        {
-            case targetType::directory :
-                {
-                    std::filesystem::create_directory(fullPath);
-                    return true;
-                }
-            case targetType::file :
-                {
-                    std::ofstream fileOut(fullPath);
-                    return true;
-                }
-            default : return false;
-        }
+    switch (type_)
+    {
+        case targetType::directory :
+            {
+                std::filesystem::create_directory(fullPath);
+                return true;
+            }
+        case targetType::file :
+            {
+                std::ofstream fileOut(fullPath);
+                return true;
+            }
+        default : return false;
     }
+}
 ```
 **RemoveCommand**
 ```C++
-    bool RemoveCommand::execute()
-    {
-        std::string fullPath = assambleFullPath(target_, subPath_, std::filesystem::current_path().string());
+bool RemoveCommand::execute()
+{
+    std::string fullPath = assambleFullPath(target_, subPath_, std::filesystem::current_path().string());
 
-        switch (type_)
-        {
-            case targetType::directory : std::filesystem::remove_all(fullPath); return !std::filesystem::exists(fullPath);
-            case targetType::file : std::filesystem::remove(fullPath); return !std::filesystem::exists(fullPath);
-            default : return false;
-        }
+    switch (type_)
+    {
+        case targetType::directory : std::filesystem::remove_all(fullPath); return !std::filesystem::exists(fullPath);
+        case targetType::file : std::filesystem::remove(fullPath); return !std::filesystem::exists(fullPath);
+        default : return false;
     }
+}
 ```
 **VerifyCommand**
 ```C++
-    bool verifyCommand::execute()
-    {
-        std::string fullPath = assambleFullPath(target_, subPath_, std::filesystem::current_path().string());
-        return std::filesystem::exists(fullPath);
-    }
+bool verifyCommand::execute()
+{
+    std::string fullPath = assambleFullPath(target_, subPath_, std::filesystem::current_path().string());
+    return std::filesystem::exists(fullPath);
+}
 ```
 - `SqlManager` - Mainly used for communication between the application and the database. Its functionality will be tackled in the next chapter.
 ### SQL Communication
@@ -228,42 +228,42 @@ EffyStudentDB operates on a local `SQLite3` server file that is created every ti
 The `SqlAdapter`'s main purpose is to translate information obtained from the `SqlManager` into C++ objects, which will be later used in core functionality processing, and it will also translate the C++ objects data into appropriate SQL queries. <br>
 Database getters are separated into each concrete type:
 ```C++
-      std::vector<School> getSchools(std::string filter = "");
-      std::vector<Student> getStudents(std::string filter = "");
-      std::vector<Subject> getSubjects(std::string filter = "");
-      std::vector<Grade> getGrades(std::string filter = "");
-      std::vector<CourseSubjectWeight> getCourseSubjectWeight(std::string filter = "");
-      std::vector<Course> getCourses(std::string filter = "");
-      std::vector<Request::Srequest> getSrequests(std::string filter = "");
-      std::vector<std::shared_ptr<Entry>> getEntries(std::string tableName, std::string filter = "");
-      std::vector<std::tuple<uint16_t, uint16_t, double>> getAttendees();
+std::vector<School> getSchools(std::string filter = "");
+std::vector<Student> getStudents(std::string filter = "");
+std::vector<Subject> getSubjects(std::string filter = "");
+std::vector<Grade> getGrades(std::string filter = "");
+std::vector<CourseSubjectWeight> getCourseSubjectWeight(std::string filter = "");
+std::vector<Course> getCourses(std::string filter = "");
+std::vector<Request::Srequest> getSrequests(std::string filter = "");
+std::vector<std::shared_ptr<Entry>> getEntries(std::string tableName, std::string filter = "");
+std::vector<std::tuple<uint16_t, uint16_t, double>> getAttendees();
 ```
 However, setters database management options are mainly used on one abstract class which is `Entry`:
 ```C++
-        bool addEntry(Entry& newEntry);
-        bool updateEntry(const Entry& oldEntry, const Entry& newEntry);
-        bool removeEntry(const Entry& targetEntry, std::optional<std::string> condition = std::nullopt);
-        bool addGrade(Student& targetStudent, Subject& targetSubject, const float& grade);
-        bool removeGrade(const Student& targetStudent, const Subject& targetSubject);
+bool addEntry(Entry& newEntry);
+bool updateEntry(const Entry& oldEntry, const Entry& newEntry);
+bool removeEntry(const Entry& targetEntry, std::optional<std::string> condition = std::nullopt);
+bool addGrade(Student& targetStudent, Subject& targetSubject, const float& grade);
+bool removeGrade(const Student& targetStudent, const Subject& targetSubject);
 ```
 Each of the database modifying options are usually operating on the similar idea: 1) Create filter 2) Execute aproporiate command:
 ```C++
-    bool SqlAdapter::removeAttendee(const uint16_t& studentId, const uint16_t& courseId)
+bool SqlAdapter::removeAttendee(const uint16_t& studentId, const uint16_t& courseId)
+{
+    LOG((*logger_), "Removing attendee ", studentId, " from course ", courseId);
+    Table targetTable = sManager_->getTableSchema(g_tableCourseAttendees);
+    std::unordered_map<std::string, std::string> attrs;
+    attrs.insert(std::make_pair("studentId", std::to_string(studentId)));
+    attrs.insert(std::make_pair("courseId", std::to_string(courseId)));
+    std::string filter = makeFilter(attrs);
+    if (sManager_->removeEntryFromTable(targetTable.getName(), filter))
     {
-        LOG((*logger_), "Removing attendee ", studentId, " from course ", courseId);
-        Table targetTable = sManager_->getTableSchema(g_tableCourseAttendees);
-        std::unordered_map<std::string, std::string> attrs;
-        attrs.insert(std::make_pair("studentId", std::to_string(studentId)));
-        attrs.insert(std::make_pair("courseId", std::to_string(courseId)));
-        std::string filter = makeFilter(attrs);
-        if (sManager_->removeEntryFromTable(targetTable.getName(), filter))
-        {
-            LOG((*logger_), "Successfully deleted attendee");
-            return true;
-        }
-        LOG((*logger_), "Could not delete attendee");
-        return false;
+        LOG((*logger_), "Successfully deleted attendee");
+        return true;
     }
+    LOG((*logger_), "Could not delete attendee");
+    return false;
+}
 ```
 #### SQL Manager
 This is a core framework module that handles not only database connection but also database creation.<br>
@@ -272,20 +272,20 @@ This is a core framework module that handles not only database connection but al
 `Table` class enables the user to flexible modify, add or remove tables from the overall schema. The `makeFormula` will automatically create a `CREATE TABLE` SQL query with all of its attributes properly formatted (reflected in `schema_`). Currently, each working table has its own `default<name>Table()` function that assembles a predefined SQL Table schema. <br>
 Example default definition:
 ```C++
-    Types::Table defaultStudentsTable()
-    {
-        Types::Table studentTbl(g_tableStudents);
-        studentTbl.addToSchema({ "id", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::PRIMARY_KEY } });
-        studentTbl.addToSchema({ "firstName", Types::AttributeType::SQL_TEXT, { Types::AttributeFlag::NOT_NULL } });
-        studentTbl.addToSchema({ "secondName", Types::AttributeType::SQL_TEXT, {} });
-        studentTbl.addToSchema({ "lastName", Types::AttributeType::SQL_TEXT, { Types::AttributeFlag::NOT_NULL } });
-        studentTbl.addToSchema({
-            "email", Types::AttributeType::SQL_TEXT, { Types::AttributeFlag::NOT_NULL, Types::AttributeFlag::UNIQUE }
-        });
-        studentTbl.addToSchema({ "schoolId", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::NOT_NULL } });
-        studentTbl.linkAttributes(studentTbl.getAttributeByName("schoolId"), "Schools", "id");
-        return studentTbl;
-    }
+Types::Table defaultStudentsTable()
+{
+    Types::Table studentTbl(g_tableStudents);
+    studentTbl.addToSchema({ "id", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::PRIMARY_KEY } });
+    studentTbl.addToSchema({ "firstName", Types::AttributeType::SQL_TEXT, { Types::AttributeFlag::NOT_NULL } });
+    studentTbl.addToSchema({ "secondName", Types::AttributeType::SQL_TEXT, {} });
+    studentTbl.addToSchema({ "lastName", Types::AttributeType::SQL_TEXT, { Types::AttributeFlag::NOT_NULL } });
+    studentTbl.addToSchema({
+        "email", Types::AttributeType::SQL_TEXT, { Types::AttributeFlag::NOT_NULL, Types::AttributeFlag::UNIQUE }
+    });
+    studentTbl.addToSchema({ "schoolId", Types::AttributeType::SQL_INTEGER, { Types::AttributeFlag::NOT_NULL } });
+    studentTbl.linkAttributes(studentTbl.getAttributeByName("schoolId"), "Schools", "id");
+    return studentTbl;
+}
 ```
 To add or remove `Table` from the creation list, simply change the `createInitialSchema` function inside the `WorkspaceManager`.
 ## Table overview

@@ -791,7 +791,7 @@ void Session::fetchCourseSubjectWeight()
     for (CourseSubjectWeight weight : weights)
     {
         std::shared_ptr<CourseSubjectWeight> currentWeight = std::make_shared<CourseSubjectWeight>(weight);
-        if (courses->contains(currentWeight->id_))
+        if (courses->contains(currentWeight->courseId_))
         {
             std::shared_ptr<Course> currentCourse = std::dynamic_pointer_cast<Course>(courses->at(currentWeight->courseId_));
             currentWeight->courseName_            = currentCourse->name_;

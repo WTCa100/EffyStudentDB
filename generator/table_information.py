@@ -23,6 +23,8 @@ class School:
 class Student:
     id : int
     firstName : str
-    # secondName : str | None
+    secondName : str
     lastName : str
     email : str
+    school : tuple[School, int]
+    grades : dict[id: int]

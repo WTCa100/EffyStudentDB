@@ -93,5 +93,8 @@
     {"subject_name": "Physical Education", "subject_weight": 2.0},
     {"subject_name": "Biology", "subject_weight": 1.0},
     {"subject_name": "Social Studies", "subject_weight": 0.5}
+  ]},
+  {"name": "Mathematics", "min_students": 10, "max_students": 180, "min_points": 65, "subjects_required": [
+    {"subject_name": "Mathematics", "subject_weight": 2.0}
   ]}
 ]

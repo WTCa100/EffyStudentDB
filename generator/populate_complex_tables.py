@@ -2,6 +2,7 @@ from common import find_database_location
 import sqlite3
 import json
 import random
+import enum
 
 import table_information
 
@@ -60,25 +61,39 @@ def insert_weights(cursor: sqlite3.Cursor, courses: dict[str, table_information.
     cursor.execute(sql_insert_base)
 
 def load_students(schools: dict[str:table_information.School]):
-    first_and_second_name_options = []
+    class gender(enum.IntEnum):
+        female = 0,
+        male   = 1,
+    first_name_options_male = []
+    first_name_option_female = []
     last_name_options = []
     email_domain_options = []
-    with open('constant_values/student_first_names.txt', "r") as fp:
+    with open('constant_values/polish_male_names.txt', "r") as fp:
         raw_names = fp.readline().split(',')
-        first_and_second_name_options = [name.strip() for name in raw_names]
+        first_name_options_male = [name.strip() for name in raw_names]
+    with open('constant_values/polish_female_names.txt', "r") as fp:
+        raw_names = fp.readline().split(',')
+        first_name_option_female = [name.strip() for name in raw_names]
     with open('constant_values/student_middle_names.txt', "r") as fp:
         raw_surnames = fp.readline().split(',')
         last_name_options = [surname.strip() for surname in raw_surnames]
     with open('constant_values/email_domains.txt', "r") as fp:
         raw_emails = fp.readline().split(',')
         email_domain_options = [email.strip() for email in raw_emails]
-    print(f'Got {len(first_and_second_name_options)} names and {len(last_name_options)} surnames!')
+    print(f'Got {len(first_name_options_male)} male names, {(len(first_name_option_female))} female names, and {len(last_name_options)} surnames!')
     print('Generating 1000 students...')
     students : dict[str: table_information.Student] = {}
     for i in range(0, 1000):
-        first_name = first_and_second_name_options[random.randrange(0, len(first_and_second_name_options))]
-        second_name = first_and_second_name_options[random.randrange(0, len(first_and_second_name_options))] if random.randint(0, 1) else None
+        gender_decision = random.randint(0,1)
+        if gender_decision == gender.male:
+            first_name = first_name_options_male[random.randrange(0, len(first_name_options_male))]
+            second_name = first_name_options_male[random.randrange(0, len(first_name_options_male))] if random.randint(0, 1) else None
+        else:
+            first_name = first_name_option_female[random.randrange(0, len(first_name_option_female))]
+            second_name = first_name_option_female[random.randrange(0, len(first_name_option_female))] if random.randint(0, 1) else None
+
         last_name = last_name_options[random.randrange(0, len(last_name_options))]
+
         # Generate email
         email = ""
         email = email + first_name[:3] + "_" + last_name[:3] + "_" + str(random.randint(1995, 2006)) + "@" + email_domain_options[random.randrange(0, len(email_domain_options))]

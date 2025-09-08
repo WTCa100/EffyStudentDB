@@ -143,9 +143,40 @@ def insert_grades(cursor: sqlite3.Cursor, students: dict[str, table_information.
             sql_grade_insert = f"INSERT INTO grades (subjectId, studentId, grade) VALUES ({subject.id}, {student.id}, {generated_grade});"
             print(f'Executing {sql_grade_insert}')
             cursor.execute(sql_grade_insert)
-        
-    pass
-    
+            # TODO: Insert only canonical grades and then randomly choose:
+            # 1. Foreign language
+            # 2. Non language related fields
+            # 3. Skip the rest
+
+def select_unique_courses(courses: dict[str, table_information.Course], count = 3) -> set[table_information.Course]:
+    print(f'Catching {count} courses')
+    # Verify lenght 
+    if(len(courses) < count):
+        raise RuntimeError(f"Count {count} cannot be greater than courses count {len(courses)}!")
+    selected_courses : set = set()
+    while len(selected_courses) != count:
+        selected_courses.add(courses[random.randrange(1, len(courses) - 1)])
+    return selected_courses
+
+# This will be random so don't be surprised seeing someone doing poorly on any STEM subjects and applying for STEM field
+def send_requests(cursor: sqlite3.Cursor, students: dict[str, table_information.Student], courses: dict[int, table_information.Course]):
+    print('Sending requests for students.')
+    # Each student will send 3 requests for courses
+    for student_email, student_obj in students.items():
+        target_courses = select_unique_courses(courses)
+        sql_insert = f'INSERT INTO studentrequest (studentId, courseId, requestStatus) VALUES '
+        for course in target_courses:
+            sql_insert += f'({student_obj.id}, {course.id}, "Pending"),'
+        sql_insert = sql_insert[:-1] + ';'
+        print(f'Handling: {student_email}: courses {[c.name for c in target_courses]}')
+        print(f'Executing: {sql_insert}')
+        cursor.execute(sql_insert)
+
+def complex_type_key_swap_to_id(values: dict):
+    return_iterable : dict = {}
+    for value_key, value_obj in values.items():
+        return_iterable[value_obj.id] = value_obj
+    return return_iterable
 
 def run(subjects: dict[str:table_information.Subject], schools: dict[str:table_information.School]):
     db = sqlite3.connect(find_database_location())
@@ -174,6 +205,12 @@ def run(subjects: dict[str:table_information.Subject], schools: dict[str:table_i
     assign_id_to_students(cursor, students_info)
     insert_grades(cursor, students_info, subjects)
     db.commit()
+    
+    courses = complex_type_key_swap_to_id(courses_info)
+    send_requests(cursor, students_info, courses)
+    db.commit()
+    
+    return courses_info, students_info
     
 if __name__ == "__main__":
     run({},{})

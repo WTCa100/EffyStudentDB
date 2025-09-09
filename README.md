@@ -363,7 +363,7 @@ namespace Core::Types
 ```
 - `std::string toString()` - returns a string of all of the objects' values.
 - `std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true)` - Prompts the user to create a copy of the given concrete `Entry`; if `makeFull` is set to `false`, it will allow the user to leave column values empty.
-- `std::map<std::string, std::string> getAttrs()` - returns a map of all of the attributes with their values as strings. These have to be manually defined. The name of the variable is used as a key, where the value of it is used as a value.<br>
+- `std::map<std::string, std::string> getAttrs()` - returns a map of all of the attributes with their values as strings. These have to be manually defined. The name of the variable is used as a key, where its value is used as a value.<br>
 **NOTE**: Key must have the same name as the respective SQL column name.
 - `std::shared_ptr<Entry> mirrorMissing(const std::shared_ptr<Entry> other)` - returns a smart (shared) pointer to a new object that has its missing values filled from the `other` parameter.
 - `Entry& operator= (const Entry& other)` - assign every value from an `other` concrete `Entry` to the current one.
@@ -378,4 +378,8 @@ No matter if the command is `Direct` or `Indirect`, the `Session` object must al
 ### Request resolver
 Work in progress
 # Generator
-It's a Python module that is primarily used to generate testing entries for the `SQL` server, it is still work in progress.
+It's a Python module that is primarily used to generate testing entries for the `SQL` server. <br>
+The generator will handle every table, creating a predefined number of entries for each. The flow of the generator is simple, it will first handle simple table types, such as subjects or schools. It will load names from the constant list of names, insert them and finally assign them ID, returning to the main flow. Next the complex types are handled which require a little bit more work. First courses are handled, added, and an ID assigned, then the subject mapping is inserted into the database. Lastly, students are added. Names, emails, grades, and student requests are randomly generated, as well as which school a student attended. Each generation run will produce a set of entries and delete existing ones so that the database stays healthy with its data integrity. <br>
+There are 2 ways of triggering a generation.
+1. Usage of the `run_generator.sh` while being inside the `generator/` folder. This script will trigger the `generate.py` and insert the output to a file `generator_output.txt`.
+2. Manually run the `generate.py`. This program does not require any argument and will immidietly start working. Just as the first method it is required to run this script inside the `generator/` path.

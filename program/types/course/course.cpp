@@ -13,7 +13,7 @@ namespace Core::Types
         ss << "id: " << id_ << " name: " << name_ << " minimal student count: " << minStudents_
            << " maximal student count: " << maxStudents_ << "\n"
            << "minimal points required: " << baseMinimalPoints_ << " average student points: " << averageStudentPoints_
-           << "\n"  // Todo check if the dispaly is ok with the newline
+           << "\n"
            << "Is open for assignment: " << (isOpen_ == OpenState::opened ? "Yes" : "No")
            << " - current recuritment turn: " << recrutingTurn_ << "\n";
         if (!attendees_.empty())

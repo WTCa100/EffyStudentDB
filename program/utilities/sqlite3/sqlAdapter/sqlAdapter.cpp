@@ -270,13 +270,34 @@ namespace Utilities::Sql
             // @TODO - tokenizedEntry.at(3) needs to be translated from str:status into int/Enum
             Request::Srequest newEntry(static_cast<uint32_t>(std::stoul(tokenizedEntry.at(0))),
                 static_cast<uint16_t>(std::stoul(tokenizedEntry.at(1))), static_cast<uint16_t>(std::stoul(tokenizedEntry.at(2))),
-                static_cast<Request::requestStatus>(std::stoul(tokenizedEntry.at(3))));
+                static_cast<Request::requestStatus>(translate_to_status(tokenizedEntry.at(3))));
             sRequests.push_back(newEntry);
         }
 
         LOG((*logger_), "Courses tokenized and pushed into the list. Final vector size = ", sRequests.size(),
             " Raw entries size = ", rawEntries.size());
         return sRequests;
+    }
+
+    Request::requestStatus SqlAdapter::translate_to_status(const std::string& columnValue)
+    {
+        if (columnValue == "Approved")
+        {
+            return Request::requestStatus::Approved;
+        }
+        else if (columnValue == "Denied")
+        {
+            return Request::requestStatus::Denied;
+        }
+        else if (columnValue == "Pending")
+        {
+            return Request::requestStatus::Pending;
+        }
+        else
+        {
+            LOG((*logger_), "Detected unknown request status of: ", columnValue);
+            return Request::requestStatus::Unknown;
+        }
     }
 
     uint16_t SqlAdapter::getLatestIdFromTable(std::string tblName)

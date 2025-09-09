@@ -58,6 +58,7 @@ namespace Utilities::Sql
         bool changeCourseOpenState(const uint16_t& courseId, const std::string& newState);
 
         std::string makeFilter(std::unordered_map<std::string, std::string> attrs, bool exact = filterExactMatch);
+        Request::requestStatus translate_to_status(const std::string& columnValue);
     };
 
 }  // namespace Utilities::Sql

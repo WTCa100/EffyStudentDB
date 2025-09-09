@@ -495,7 +495,7 @@ void Session::onDelete(const std::shared_ptr<Entry> targetEntry)
             studentSchool->students_.erase(id);
         }
 
-        // Remove students' requests
+        // Remove students' requests - turn it into a copy to avoid invalid block size reads
         std::shared_ptr<abstractTypeList> requestLists = sesData_->getEntries(g_tableStudentRequest);
         if (!requestLists)
         {
@@ -503,15 +503,28 @@ void Session::onDelete(const std::shared_ptr<Entry> targetEntry)
             return;
         }
 
-        for (auto& request : *requestLists)
+        abstractTypeList requestsCopy = *requestLists;
+        LOG((*logger_), "Deleting linked student requests - count = ", requestLists->size());
+        for (auto& request : requestsCopy)
         {
-            std::shared_ptr<Srequest> req = std::dynamic_pointer_cast<Srequest>(request.second);
-            if (req->studentId_ == id) { requestLists->erase(req->id_); }
+            std::shared_ptr<Srequest> req = std::static_pointer_cast<Srequest>(request.second);
+            if (req->studentId_ == id) 
+            { 
+                if (sAdapter_->removeEntry(*req))
+                {
+                    // requestLists->erase(req->id_);
+                    sesData_->removeEntry(req->id_, g_tableStudentRequest);
+                }
+            }
         }
 
-        // @TODO - for some reason when deleting student - grades are not automatically deleted
         LOG((*logger_), "Deleting linked grades - count = ", concreteStudent->grades_.size());
-        for (auto& g : concreteStudent->grades_) { sesData_->removeEntry(g.first, g_tableGrades); }
+        for (auto& g : concreteStudent->grades_) 
+        {
+            std::shared_ptr<Subject> currentGradeSubject = std::static_pointer_cast<Subject>(sesData_->getEntry(g.second->subjectId_, g_tableSubjects));
+            sAdapter_->removeGrade(*concreteStudent, *currentGradeSubject);
+            sesData_->removeEntry(g.first, g_tableGrades);
+        }
         concreteStudent->grades_.clear();
 
         std::map<uint16_t, std::string> courseAttendance = concreteStudent->attendingCourses_;
@@ -623,7 +636,11 @@ void Session::onDelete(const std::shared_ptr<Entry> targetEntry)
         {
             std::shared_ptr<Srequest> concreteRequest =
                 std::static_pointer_cast<Srequest>(sesData_->getEntry(request.first, g_tableStudentRequest));
-            if (concreteRequest->courseId_ == id) { sesData_->removeEntry(request.first, g_tableStudentRequest); }
+            if (concreteRequest->courseId_ == id) 
+            { 
+                sAdapter_->removeEntry(*request.second, g_tableStudentRequest);
+                sesData_->removeEntry(request.first, g_tableStudentRequest);
+            }
         }
     }
 }

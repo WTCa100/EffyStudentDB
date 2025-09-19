@@ -281,18 +281,9 @@ namespace Utilities::Sql
 
     Request::requestStatus SqlAdapter::translate_to_status(const std::string& columnValue)
     {
-        if (columnValue == "Approved")
-        {
-            return Request::requestStatus::Approved;
-        }
-        else if (columnValue == "Denied")
-        {
-            return Request::requestStatus::Denied;
-        }
-        else if (columnValue == "Pending")
-        {
-            return Request::requestStatus::Pending;
-        }
+        if (columnValue == "Approved") { return Request::requestStatus::Approved; }
+        else if (columnValue == "Denied") { return Request::requestStatus::Denied; }
+        else if (columnValue == "Pending") { return Request::requestStatus::Pending; }
         else
         {
             LOG((*logger_), "Detected unknown request status of: ", columnValue);

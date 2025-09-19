@@ -296,7 +296,7 @@ bool Session::handleDirectAction(const Action& userAction)
     std::vector<std::shared_ptr<Entry>> affectedEntries = sAdapter_->getEntries(userTarget, filter);
 
     LOG((*logger_), "Link affected entries with data sessions")
-    for (auto e : affectedEntries) { *e = *e->mirrorMissing(sesData_->getEntry(e->id_, e->associatedTable_)); }
+    for (auto& e : affectedEntries) { *e = *e->mirrorMissing(sesData_->getEntry(e->id_, e->associatedTable_)); }
 
     if (affectedEntries.empty())
     {
@@ -508,8 +508,8 @@ void Session::onDelete(const std::shared_ptr<Entry> targetEntry)
         for (auto& request : requestsCopy)
         {
             std::shared_ptr<Srequest> req = std::static_pointer_cast<Srequest>(request.second);
-            if (req->studentId_ == id) 
-            { 
+            if (req->studentId_ == id)
+            {
                 if (sAdapter_->removeEntry(*req))
                 {
                     // requestLists->erase(req->id_);
@@ -519,9 +519,10 @@ void Session::onDelete(const std::shared_ptr<Entry> targetEntry)
         }
 
         LOG((*logger_), "Deleting linked grades - count = ", concreteStudent->grades_.size());
-        for (auto& g : concreteStudent->grades_) 
+        for (auto& g : concreteStudent->grades_)
         {
-            std::shared_ptr<Subject> currentGradeSubject = std::static_pointer_cast<Subject>(sesData_->getEntry(g.second->subjectId_, g_tableSubjects));
+            std::shared_ptr<Subject> currentGradeSubject =
+                std::static_pointer_cast<Subject>(sesData_->getEntry(g.second->subjectId_, g_tableSubjects));
             sAdapter_->removeGrade(*concreteStudent, *currentGradeSubject);
             sesData_->removeEntry(g.first, g_tableGrades);
         }
@@ -636,8 +637,8 @@ void Session::onDelete(const std::shared_ptr<Entry> targetEntry)
         {
             std::shared_ptr<Srequest> concreteRequest =
                 std::static_pointer_cast<Srequest>(sesData_->getEntry(request.first, g_tableStudentRequest));
-            if (concreteRequest->courseId_ == id) 
-            { 
+            if (concreteRequest->courseId_ == id)
+            {
                 sAdapter_->removeEntry(*request.second, g_tableStudentRequest);
                 sesData_->removeEntry(request.first, g_tableStudentRequest);
             }

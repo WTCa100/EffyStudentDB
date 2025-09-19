@@ -12,8 +12,7 @@ namespace Core::Types
         std::stringstream ss("");
         ss << "id: " << id_ << " name: " << name_ << " minimal student count: " << minStudents_
            << " maximal student count: " << maxStudents_ << "\n"
-           << "minimal points required: " << baseMinimalPoints_ << " average student points: " << averageStudentPoints_
-           << "\n"
+           << "minimal points required: " << baseMinimalPoints_ << " average student points: " << averageStudentPoints_ << "\n"
            << "Is open for assignment: " << (isOpen_ == OpenState::opened ? "Yes" : "No")
            << " - current recuritment turn: " << recrutingTurn_ << "\n";
         if (!attendees_.empty())
@@ -157,6 +156,7 @@ namespace Core::Types
         averageStudentPoints_ = otherCourse.averageStudentPoints_;
         isOpen_               = otherCourse.isOpen_;
         recrutingTurn_        = otherCourse.recrutingTurn_;
+        attendees_            = otherCourse.attendees_;
         return *this;
     }
 

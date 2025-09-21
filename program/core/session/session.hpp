@@ -6,6 +6,7 @@
 #include "../menu/menu.hpp"
 #include "action/action.hpp"
 #include "data/data.hpp"
+#include "requestResolver/requestResolver.hpp"
 
 #include <memory>
 #include <type_traits>
@@ -16,6 +17,8 @@ using Utilities::Logger;
 using Utilities::Sql::SqlAdapter;
 using Utilities::WsManager;
 
+using Core::RequestResolver;
+
 class Session
 {
   private:
@@ -23,8 +26,9 @@ class Session
        - Formular creator (either a class or just a function that handles a formula to a given targeted major)*/
     std::shared_ptr<WsManager> wsMgr_;
     std::shared_ptr<Logger> logger_;
-    std::unique_ptr<SqlAdapter> sAdapter_;
+    std::shared_ptr<SqlAdapter> sAdapter_;
     std::shared_ptr<SessionData> sesData_;
+    RequestResolver requestCalculator_;
 
     // Consider removing this since we're (for now) only using it in one class
     std::unique_ptr<Menu> display_;

@@ -21,7 +21,6 @@ namespace Utilities
         logger_   = std::make_shared<Logger>(directoryLogs);
         sManager_ = std::make_unique<Utilities::Sql::SqlManager>(logger_, fileDatabaseSubdir + "/" + fileDatabase);
 
-        logger_->log(__FILE__, __LINE__, "TEST LOG");
         // logger_->log("valid log");
 
         if (isInitializationNeeded())

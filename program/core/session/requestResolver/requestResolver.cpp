@@ -16,6 +16,28 @@ namespace Core
         LOG((*logger_), "Initialized request resolver with ", pendingRequests_.size(), " student's requests");
     }
 
+    void RequestResolver::assignAttendees(std::map<uint16_t, Course>& courses, const std::map<uint16_t, Student>& students)
+    {
+        using Utilities::Sql::rawAttendee;
+        using Utilities::Common::Constants::AttendeeValuePosition;
+        LOG((*logger_), "Assigning attendees to courses.");
+        for(auto& [courseId, courseInfo] : courses)
+        {
+            std::stringstream filter;
+            filter << "CourseId = " << courseId; 
+            std::vector<rawAttendee> attendees = sqlAdapter_->getAttendees(filter.str());
+            // StudentID | CourseID | Grade/Score
+            std::for_each(attendees.begin(), attendees.end(), [&](const rawAttendee& entry)
+            { 
+                uint16_t studentId = std::get<static_cast<uint8_t>(AttendeeValuePosition::studentId)>(entry);
+                double studentScore = std::get<static_cast<uint8_t>(AttendeeValuePosition::points)>(entry);
+                std::shared_ptr<Student> targetStudent = std::make_shared<Student>(students.at(studentId));
+                courseInfo.attendees_.insert(std::make_pair(studentId, std::make_pair(targetStudent, studentScore)));
+            });
+            LOG((*logger_), "Finished handling course: ", courseId, " and got n-", courseInfo.attendees_.size(), " attendees");
+        }
+    }
+
     float RequestResolver::calculatePoints(const Student& invoker, Course& target)
     {
         float pointVerdict = 0;

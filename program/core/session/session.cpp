@@ -89,8 +89,9 @@ void Session::fetchSrequests()
 void Session::fetchAttendees()
 {
     using Utilities::Common::Constants::AttendeeValuePosition;
+    using Utilities::Sql::rawAttendee;
     LOG((*logger_), "Fetch course attendees");
-    std::vector<std::tuple<uint16_t, uint16_t, double>> dbAttendees = sAdapter_->getAttendees();
+    std::vector<rawAttendee> dbAttendees = sAdapter_->getAttendees();
     for (const auto& entry : dbAttendees)
     {
         uint16_t courseId, studentId;

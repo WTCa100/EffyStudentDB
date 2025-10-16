@@ -236,7 +236,7 @@ std::vector<CourseSubjectWeight> getCourseSubjectWeight(std::string filter = "")
 std::vector<Course> getCourses(std::string filter = "");
 std::vector<Request::Srequest> getSrequests(std::string filter = "");
 std::vector<std::shared_ptr<Entry>> getEntries(std::string tableName, std::string filter = "");
-std::vector<std::tuple<uint16_t, uint16_t, double>> getAttendees();
+std::vector<rawAttendee> getAttendees();
 ```
 However, setters database management options are mainly used on one abstract class which is `Entry`:
 ```C++

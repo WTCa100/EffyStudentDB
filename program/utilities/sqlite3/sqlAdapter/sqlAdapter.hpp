@@ -20,6 +20,7 @@
 namespace Utilities::Sql
 {
     using namespace Core::Types;
+    typedef std::tuple<uint16_t, uint16_t, double> rawAttendee;
     constexpr bool filterExactMatch = 1;
     constexpr bool filterAnyMatch   = 0;
 
@@ -41,7 +42,7 @@ namespace Utilities::Sql
         std::vector<Course> getCourses(std::string filter = "");
         std::vector<Request::Srequest> getSrequests(std::string filter = "");
         std::vector<std::shared_ptr<Entry>> getEntries(std::string tableName, std::string filter = "");
-        std::vector<std::tuple<uint16_t, uint16_t, double>> getAttendees();
+        std::vector<rawAttendee> getAttendees(std::string filter = "");
 
         uint16_t getLatestIdFromTable(std::string tblName);
 

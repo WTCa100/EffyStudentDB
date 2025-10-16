@@ -447,12 +447,12 @@ namespace Utilities::Sql
         return filter.str();
     }
 
-    std::vector<std::tuple<uint16_t, uint16_t, double>> SqlAdapter::getAttendees()
+    std::vector<rawAttendee> SqlAdapter::getAttendees(std::string filter)
     {
-        std::vector<std::tuple<uint16_t, uint16_t, double>> attendees;
+        std::vector<rawAttendee> attendees;
         LOG((*logger_), "Fetching Attendees from the SQL DB");
         std::vector<std::string> rawEntries =
-            sManager_->getEntriesFromTable(g_tableCourseAttendees, { "studentId", "courseId", "points" });
+            sManager_->getEntriesFromTable(g_tableCourseAttendees, { "studentId", "courseId", "points" }, filter);
         if (rawEntries.empty())
         {
             LOG((*logger_), "Called CourseAttendees but got no entries!");

@@ -38,6 +38,7 @@ namespace Core
         void loadAdditionalInfo(std::map<uint16_t, Origin>& orderedEntries,
             std::function<std::vector<Info>(std::string)> sqlGetter,
             std::map<uint16_t, std::shared_ptr<Info>> Origin::* infoHolder) const;
+        void assignAttendees(std::map<uint16_t, Course>& courses, const std::map<uint16_t, Student>& students);
         float calculatePoints(const Student& invoker, Course& target);
 
       public:

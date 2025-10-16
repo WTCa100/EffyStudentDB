@@ -1,4 +1,5 @@
 #include "requestResolver.hpp"
+#include "../../../utilities/common/constants.hpp"
 
 #include <sstream>
 
@@ -38,6 +39,54 @@ namespace Core
         }
     }
 
+    void RequestResolver::loadPresentAttendees(std::map<uint16_t, Course>& courses, const std::map<uint16_t, Student>& students)
+    {
+        LOG((*logger_), "Loading present course attendees.");
+        using Utilities::Common::Constants::AttendeeValuePosition;
+        using Utilities::Sql::rawAttendee;
+
+        std::vector<rawAttendee> presentAttendees = sqlAdapter_->getAttendees();
+        std::for_each(presentAttendees.begin(), presentAttendees.end(), [&](rawAttendee entry)
+        {
+            uint16_t courseId, studentId;
+            double points;
+            studentId = std::get<static_cast<uint8_t>(AttendeeValuePosition::studentId)>(entry);
+            courseId  = std::get<static_cast<uint8_t>(AttendeeValuePosition::courseId)>(entry);
+            points    = std::get<static_cast<uint8_t>(AttendeeValuePosition::points)>(entry);
+
+            if(!courses.contains(courseId))
+            {
+                LOG((*logger_), "Skipped course with ID ", courseId, " due to not having any requests.");
+                return;
+            }
+
+            std::shared_ptr<Student> targetStudent;
+            if(students.contains(studentId))
+            {
+                targetStudent = std::make_shared<Student>(students.at(studentId));
+            }
+            else
+            {
+                std::stringstream ss;
+                ss << "ID = " << studentId;
+                std::vector<Student> nonRequestingStudent = sqlAdapter_->getStudents(ss.str());
+                // If this returns value other than 1 we throw an error
+                if (nonRequestingStudent.size() != 1)
+                {
+                    std::stringstream errorMsg;
+                    errorMsg << "Failed while handling student with ID " << studentId << (nonRequestingStudent.size() > 1 ? " more than 1 student have the same ID " : " no student found with given ID.");
+                    throw std::runtime_error(errorMsg.str());
+                }
+                targetStudent = std::make_shared<Student>(nonRequestingStudent.at(0));
+            }
+            attendee studentWithPoints = std::make_pair(targetStudent, points);
+            courses.at(courseId).attendees_.insert(std::make_pair(studentId, studentWithPoints));
+            // No need on assigning to student as we only need to know that information from one obj
+
+        });
+        LOG((*logger_), "Finished loading attendees.");
+    }
+
     float RequestResolver::calculatePoints(const Student& invoker, Course& target)
     {
         float pointVerdict = 0;
@@ -75,6 +124,7 @@ namespace Core
     void RequestResolver::run()
     {
         LOG((*logger_), "Running request resolver.");
+        std::cout << "Running request resolver.";
         if (pendingRequests_.empty())
         {
             LOG((*logger_), "No pending requests in DB");
@@ -83,18 +133,24 @@ namespace Core
         }
         std::unordered_set<uint16_t> courseIds  = extractIds([](Request::Srequest req) { return req.courseId_; });
         std::unordered_set<uint16_t> studentIds = extractIds([](Request::Srequest req) { return req.studentId_; });
+        std::cout << "Loading courses entries...\n";
         std::map<uint16_t, Course> mappedCourses =
             loadEntriesFromIds<Course>(courseIds, [this](std::string filter) { return sqlAdapter_->getCourses(filter); });
-        std::map<uint16_t, Student> mappedStudents =
+        std::cout << "Loading student entries...\n";
+            std::map<uint16_t, Student> mappedStudents =
             loadEntriesFromIds<Student>(studentIds, [this](std::string filter) { return sqlAdapter_->getStudents(filter); });
 
+        std::cout << "Loading additional information - course subject weight mapping...\n";
         loadAdditionalInfo<Course, CourseSubjectWeight>(
             mappedCourses, [this](std::string filter) { return sqlAdapter_->getCourseSubjectWeight(filter); },
             &Course::subjectWithWeight_);
-        // TODO: Add assigniees.
+        std::cout << "Loading additional information - attendees mapping...\n";
+        loadPresentAttendees(mappedCourses, mappedStudents);
+        std::cout << "Loading additional information - student grades...\n";
         loadAdditionalInfo<Student, Grade>(
             mappedStudents, [this](std::string filter) { return sqlAdapter_->getGrades(filter); }, &Student::grades_);
 
+        std::cout << "Calculating requests...\n";
         for (auto& request : pendingRequests_)
         {
             Course& target   = mappedCourses.at(request.courseId_);
@@ -106,7 +162,7 @@ namespace Core
             {
                 LOG((*logger_), "StudentID=", invoker.id_, " passed threshold for CourseID=", target.id_);
                 std::cout << "Student " << invoker.firstName_ << " " << invoker.lastName_ << " (" << invoker.email_ << ") "
-                          << "passed the thershold to join " << target.name_ << " (" << target.id_ << ")\b";
+                          << "passed the thershold to join " << target.name_ << " (" << target.id_ << ")\n";
             }
             else
             {
@@ -115,7 +171,7 @@ namespace Core
                           << "did not passed the thershold to join " << target.name_ << " (" << target.id_ << ")\n";
             }
         }
-
+        std::cout << "Calculating done!\n";
         LOG((*logger_), "RequestResolver finished its work.");
     }
 }  // namespace Core

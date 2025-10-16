@@ -40,6 +40,7 @@ namespace Core
             std::map<uint16_t, std::shared_ptr<Info>> Origin::* infoHolder) const;
         void assignAttendees(std::map<uint16_t, Course>& courses, const std::map<uint16_t, Student>& students);
         float calculatePoints(const Student& invoker, Course& target);
+        void loadPresentAttendees(std::map<uint16_t, Course>& courses, const std::map<uint16_t, Student>& students);
 
       public:
         RequestResolver(

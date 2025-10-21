@@ -211,6 +211,3 @@ def run(subjects: dict[str:table_information.Subject], schools: dict[str:table_i
     db.commit()
     
     return courses_info, students_info
-    
-if __name__ == "__main__":
-    run({},{})

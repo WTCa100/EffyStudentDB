@@ -21,13 +21,13 @@ namespace Core::Types
     struct Course : public Entry
     {
         // SQL attribute members
+        std::map<uint16_t, attendee> attendees_;
         std::map<uint16_t, std::shared_ptr<CourseSubjectWeight>> subjectWithWeight_;
         std::string name_;
         uint16_t minStudents_;
         uint16_t maxStudents_;
         uint16_t baseMinimalPoints_;
         uint16_t averageStudentPoints_;
-        std::map<uint16_t, attendee> attendees_;
         OpenState isOpen_;
         uint16_t recrutingTurn_;
 

@@ -87,9 +87,9 @@ namespace Core
         LOG((*logger_), "Finished loading attendees.");
     }
 
-    float RequestResolver::calculatePoints(const Student& invoker, Course& target)
+    double RequestResolver::calculatePoints(const Student& invoker, Course& target)
     {
-        float pointVerdict = 0;
+        double pointVerdict = 0;
         // Map student grades by its subjectId for later ease of access
         std::map<uint16_t, const std::shared_ptr<Grade>> remappedGrades;
         for (auto& grade : invoker.grades_) { remappedGrades.insert(std::make_pair(grade.second->subjectId_, grade.second)); }
@@ -98,18 +98,18 @@ namespace Core
         {
             // Calculate
             uint16_t& subjectId = weight->subjectId_;
-            float gradeValue    = 0.0f;
+            double gradeValue    = 0.0f;
             if (remappedGrades.contains(subjectId))
             {
                 std::shared_ptr<Grade> grade = remappedGrades.at(subjectId);
                 gradeValue                   = grade->value_;
             }
-            float weightVerdict = gradeValue * weight->weight_;
+            double weightVerdict = gradeValue * weight->weight_;
             pointVerdict += weightVerdict;
             LOG((*logger_), "Calculated points: subjectId=", subjectId, " weight=", weight->weight_, " value=", gradeValue);
         }
         LOG((*logger_), "Final verdict pointVerdict <=> acceptanceThershold: ", pointVerdict, " <=> ", target.baseMinimalPoints_);
-        return pointVerdict >= target.baseMinimalPoints_;
+        return pointVerdict;
     }
 
     std::unordered_set<uint16_t> RequestResolver::extractIds(std::function<uint16_t(Request::Srequest)> extractConcrete) const
@@ -119,6 +119,18 @@ namespace Core
         for (const auto& request : pendingRequests_) { extractedIds.insert(extractConcrete(request)); }
         LOG((*logger_), "Got n=", extractedIds.size(), " ids.");
         return extractedIds;
+    }
+
+    void RequestResolver::addToCourse(Course& course, Student& student, double points)
+    {
+        LOG((*logger_), "Adding student ", student.email_, " to ", course.name_);
+        if(course.attendees_.size() < course.maxStudents_)
+        {
+            std::pair<std::shared_ptr<Student>, double> attendee = std::make_pair(std::make_shared<Student>(student), points);
+            course.attendees_.insert(std::make_pair(student.id_, attendee));
+            return;
+        }
+        LOG((*logger_), "Course capacity reached its peak of ", course.maxStudents_);
     }
 
     void RequestResolver::run()
@@ -157,12 +169,13 @@ namespace Core
             Student& invoker = mappedStudents.at(request.studentId_);
             // TODO Handle full course checking/handling + closing - for now just stick to adding
             std::cout << "Handling request " << request.id_ << "\n";
-            LOG((*logger_), "Handling request ", request.id_, " studenId=", invoker.id_, " courseId=", target.id_);
-            if (calculatePoints(invoker, target))
+            LOG((*logger_), "Handling request ", request.id_, " studentId=", invoker.id_, " courseId=", target.id_);
+            if (double points = calculatePoints(invoker, target) <= target.baseMinimalPoints_)
             {
                 LOG((*logger_), "StudentID=", invoker.id_, " passed threshold for CourseID=", target.id_);
                 std::cout << "Student " << invoker.firstName_ << " " << invoker.lastName_ << " (" << invoker.email_ << ") "
                           << "passed the thershold to join " << target.name_ << " (" << target.id_ << ")\n";
+                addToCourse(target, invoker, points);
             }
             else
             {

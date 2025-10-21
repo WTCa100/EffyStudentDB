@@ -33,7 +33,7 @@ namespace Core
                 uint16_t studentId = std::get<static_cast<uint8_t>(AttendeeValuePosition::studentId)>(entry);
                 double studentScore = std::get<static_cast<uint8_t>(AttendeeValuePosition::points)>(entry);
                 std::shared_ptr<Student> targetStudent = std::make_shared<Student>(students.at(studentId));
-                courseInfo.attendees_.insert(std::make_pair(studentId, std::make_pair(targetStudent, studentScore)));
+                courseInfo.attendees_.insertAttendee(targetStudent, studentScore);
             });
             LOG((*logger_), "Finished handling course: ", courseId, " and got n-", courseInfo.attendees_.size(), " attendees");
         }
@@ -79,8 +79,7 @@ namespace Core
                 }
                 targetStudent = std::make_shared<Student>(nonRequestingStudent.at(0));
             }
-            attendee studentWithPoints = std::make_pair(targetStudent, points);
-            courses.at(courseId).attendees_.insert(std::make_pair(studentId, studentWithPoints));
+            courses.at(courseId).attendees_.insertAttendee(targetStudent, points);
             // No need on assigning to student as we only need to know that information from one obj
 
         });
@@ -126,8 +125,7 @@ namespace Core
         LOG((*logger_), "Adding student ", student.email_, " to ", course.name_);
         if(course.attendees_.size() < course.maxStudents_)
         {
-            std::pair<std::shared_ptr<Student>, double> attendee = std::make_pair(std::make_shared<Student>(student), points);
-            course.attendees_.insert(std::make_pair(student.id_, attendee));
+            course.attendees_.insertAttendee(std::make_shared<Student>(student), points);
             return;
         }
         LOG((*logger_), "Course capacity reached its peak of ", course.maxStudents_);

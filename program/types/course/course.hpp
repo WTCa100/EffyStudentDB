@@ -4,6 +4,7 @@
 #include "../courseSubjectWeight/courseSubjectWeight.hpp"
 #include "../entry.hpp"
 #include "../student/student.hpp"
+#include "attendees/attendees.hpp"
 
 #include <inttypes.h>
 #include <memory>
@@ -16,12 +17,11 @@ using Utilities::Common::Constants::OpenState;
 namespace Core::Types
 {
     constexpr uint16_t turnNotSet = 0;
-    typedef std::pair<std::shared_ptr<Student>, double> attendee;
 
     struct Course : public Entry
     {
         // SQL attribute members
-        std::map<uint16_t, attendee> attendees_;
+        Attendees attendees_;
         std::map<uint16_t, std::shared_ptr<CourseSubjectWeight>> subjectWithWeight_;
         std::string name_;
         uint16_t minStudents_;

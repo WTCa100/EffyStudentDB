@@ -103,7 +103,7 @@ void Session::fetchAttendees()
             std::static_pointer_cast<Student>(sesData_->getEntry(studentId, g_tableStudents));
         std::shared_ptr<Course> targetCourse = std::static_pointer_cast<Course>(sesData_->getEntry(courseId, g_tableCourses));
         targetStudent->attendingCourses_.insert(std::make_pair(courseId, targetCourse->name_));
-        targetCourse->attendees_.insert(std::make_pair(studentId, std::make_pair(targetStudent, points)));
+        targetCourse->attendees_.insertAttendee(targetStudent, points);
     }
 }
 
@@ -229,7 +229,7 @@ bool Session::handleIndirectAction(const Action& userAction)
     {
         if (sAdapter_->addAttendee(studentId, courseId))
         {
-            targetCourse->attendees_.insert(std::make_pair(studentId, std::make_pair(targetStudent, 100.00)));
+            targetCourse->attendees_.insertAttendee(targetStudent, 100.00);
             targetStudent->attendingCourses_.insert(std::make_pair(courseId, targetCourse->name_));
             LOG((*logger_), "Successfully added student ", studentId, " to course ", courseId);
             std::cout << "Successfully added student " << targetStudent->firstName_ << " " << targetStudent->lastName_
@@ -241,7 +241,7 @@ bool Session::handleIndirectAction(const Action& userAction)
     {
         if (sAdapter_->removeAttendee(studentId, courseId))
         {
-            targetCourse->attendees_.erase(studentId);
+            targetCourse->attendees_.deleteAttendee(studentId);
             targetStudent->attendingCourses_.erase(courseId);
             LOG((*logger_), "Successfully dropped student ", studentId, " from course ", courseId);
             std::cout << "Successfully dropped student " << targetStudent->firstName_ << " " << targetStudent->lastName_
@@ -543,7 +543,7 @@ void Session::onDelete(const std::shared_ptr<Entry> targetEntry)
                     LOG((*logger_), "WARN: Course with ID=", course.first, " does not exists.");
                     continue;
                 }
-                if (sAdapter_->addAttendee(id, course.first)) { concreteCourse->attendees_.erase(id); }
+                if (sAdapter_->addAttendee(id, course.first)) { concreteCourse->attendees_.deleteAttendee(id); }
                 else
                 {
                     LOG((*logger_), "Could not delete attendee. StudentId=", id, " from CourseId=", course.first);
@@ -623,7 +623,8 @@ void Session::onDelete(const std::shared_ptr<Entry> targetEntry)
         }
 
         LOG((*logger_), "Removing attendees from course");
-        for (auto& attendee : concreteCourse->attendees_)
+        std::map<uint16_t, attendee> attendeesMapped = concreteCourse->attendees_.getMappedStudentsCopy();
+        for (auto& attendee : attendeesMapped)
         {
             if (sAdapter_->removeAttendee(attendee.first, id)) { attendee.second.first->attendingCourses_.erase(id); }
             else

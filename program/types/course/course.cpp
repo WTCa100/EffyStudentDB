@@ -15,22 +15,7 @@ namespace Core::Types
            << "minimal points required: " << baseMinimalPoints_ << " average student points: " << averageStudentPoints_ << "\n"
            << "Is open for assignment: " << (isOpen_ == OpenState::opened ? "Yes" : "No")
            << " - current recuritment turn: " << recrutingTurn_ << "\n";
-        if (!attendees_.empty())
-        {
-            ss << "Has " << attendees_.size() << " attendees: \n";
-            uint16_t count = 0;
-            for (const auto& attendee : attendees_)
-            {
-                ++count;
-                double attendeePoints                   = attendee.second.second;
-                std::shared_ptr<Student> currentStudent = attendee.second.first;
-                ss << count << ". " << currentStudent->firstName_ << " "
-                   << (currentStudent->secondName_.has_value() ? currentStudent->secondName_.value() + " " : " ")
-                   << currentStudent->lastName_ << ": " << attendeePoints << " points";
-                if (count != attendees_.size()) ss << "\n";
-            }
-        }
-        else { ss << "Has no attendees"; }
+        ss << attendees_.toString() << "\n";
         return ss.str();
     }
 
@@ -98,13 +83,13 @@ namespace Core::Types
 
     Course::Course():
         Entry(0, g_tableCourses),
+        attendees_({}),
         subjectWithWeight_({}),
         name_(""),
         minStudents_(0),
         maxStudents_(0),
         baseMinimalPoints_(0),
         averageStudentPoints_(0),
-        attendees_({}),
         isOpen_(OpenState::notSet),
         recrutingTurn_(turnNotSet)
     {}
@@ -117,26 +102,26 @@ namespace Core::Types
         uint8_t isOpen,
         uint16_t recrutingTurn):
         Entry(id, g_tableCourses),
+        attendees_({}),
         subjectWithWeight_({}),
         name_(name),
         minStudents_(minStudents),
         maxStudents_(maxStudents),
         baseMinimalPoints_(baseMinimalPoints),
         averageStudentPoints_(baseMinimalPoints),
-        attendees_({}),
         isOpen_(static_cast<OpenState>(isOpen)),
         recrutingTurn_(recrutingTurn)
     {}
 
     Course::Course(uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name):
         Entry(0, g_tableCourses),
+        attendees_({}),
         subjectWithWeight_({}),
         name_(name),
         minStudents_(minStudents),
         maxStudents_(maxStudents),
         baseMinimalPoints_(baseMinimalPoints),
         averageStudentPoints_(baseMinimalPoints),
-        attendees_({}),
         isOpen_(OpenState::notSet),
         recrutingTurn_(turnNotSet)
     {}

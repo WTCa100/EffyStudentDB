@@ -123,11 +123,26 @@ namespace Core
     void RequestResolver::addToCourse(Course& course, Student& student, double points)
     {
         LOG((*logger_), "Adding student ", student.email_, " to ", course.name_);
-        if(course.attendees_.size() < course.maxStudents_)
+        Attendees& attendeesList = course.attendees_;
+        if(attendeesList.size() == course.maxStudents_)
         {
-            course.attendees_.insertAttendee(std::make_shared<Student>(student), points);
+            uint16_t currentMinId = attendeesList.getMinId();
+            double currentMinPoints = attendeesList.getAttendeePoints(currentMinId);
+            if(attendeesList.insertAttendee(std::make_shared<Student>(student), points) == Attendees::InsertionStatus::addedMinimumChangedWithMaxCapacity)
+            {
+                // Current minimal Id has changed, need to modify the request status for previous ID.
+                LOG((*logger_), "Previous minimal ID: ", currentMinId, " - ", currentMinPoints, " pts, changed to ", student.id_, " - ", points, " points.");
+                return;
+            }
+            // Casual addition - no need to post-process
             return;
         }
+        else if (attendeesList.size() < course.maxStudents_)
+        {
+            attendeesList.insertAttendee(std::make_shared<Student>(student), points);
+            return;
+        }
+        // There will never be a situation where size() > course.maxStudents_
         LOG((*logger_), "Course capacity reached its peak of ", course.maxStudents_);
     }
 
@@ -168,18 +183,18 @@ namespace Core
             // TODO Handle full course checking/handling + closing - for now just stick to adding
             std::cout << "Handling request " << request.id_ << "\n";
             LOG((*logger_), "Handling request ", request.id_, " studentId=", invoker.id_, " courseId=", target.id_);
-            if (double points = calculatePoints(invoker, target) <= target.baseMinimalPoints_)
+            if (double points = calculatePoints(invoker, target); points >= target.baseMinimalPoints_)
             {
                 LOG((*logger_), "StudentID=", invoker.id_, " passed threshold for CourseID=", target.id_);
                 std::cout << "Student " << invoker.firstName_ << " " << invoker.lastName_ << " (" << invoker.email_ << ") "
-                          << "passed the thershold to join " << target.name_ << " (" << target.id_ << ")\n";
+                          << "passed the threshold to join " << target.name_ << " (" << target.id_ << ")\n";
                 addToCourse(target, invoker, points);
             }
             else
             {
                 LOG((*logger_), "StudentID=", invoker.id_, " did not passed threshold for CourseID=", target.id_);
                 std::cout << "Student " << invoker.firstName_ << " " << invoker.lastName_ << " (" << invoker.email_ << ") "
-                          << "did not passed the thershold to join " << target.name_ << " (" << target.id_ << ")\n";
+                          << "did not passed the threshold to join " << target.name_ << " (" << target.id_ << ")\n";
             }
         }
         std::cout << "Calculating done!\n";

@@ -30,4 +30,8 @@ namespace Utilities::Common::Constants
         points    = 2
     };
 
+    // Min must become the greatest number here - given that the maximum weight can be 2.0 and at most 3 subjects can be present.
+    // The maximum possible score would be: 2.0 * 10 * 3 = 60.0
+    const double maxPossibleScore = 60.0f;
+
 }  // namespace Utilities::Common::Constants

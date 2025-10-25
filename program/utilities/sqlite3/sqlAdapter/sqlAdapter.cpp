@@ -239,6 +239,7 @@ namespace Utilities::Sql
             tmpCourse.subjectWithWeight_    = {};
             tmpCourse.isOpen_               = static_cast<OpenState>(std::stoi(tokenizedCourse.at(5)));
             tmpCourse.recrutingTurn_        = std::stoi(tokenizedCourse.at(6));
+            tmpCourse.attendees_            = Attendees(tmpCourse.maxStudents_);
 
             courses.push_back(std::move(tmpCourse));  // It's quite big move makes more sense here
         }

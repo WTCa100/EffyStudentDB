@@ -1,7 +1,8 @@
 #include "./attendees.hpp"
+#include "../../../utilities/common/constants.hpp"
 
 #include <sstream>
-
+#include <iostream>
 namespace Core::Types
 {
     /// @brief This function appoints the minimal student & points pair.
@@ -10,21 +11,51 @@ namespace Core::Types
     {
         for(const auto& [studentId, pair] : mappedStudents_)
         {
-            if (pair.second < min_.second)
+            if (pair.second < min_.second || min_.first == nullptr)
             {
                 min_ = pair;
             }
         }
     }
 
-    void Attendees::insertAttendee(std::shared_ptr<Student> newAttendee, const double& points)
-    {
+    /// @brief This function create and insert new pair into the mappedStudents_ ordered map.
+    /// If new attendee has less points than the min_, then it will be come min_ only if the capacity is not reached.
+    /// @param newAttendee shared pointer to a student object
+    /// @param points points that given student got
+    /// @return Information wether the capacity is full and previous min_ had to be dropped.
+    Attendees::InsertionStatus Attendees::insertAttendee(std::shared_ptr<Student> newAttendee, const double& points)
+    {        
         std::pair<std::shared_ptr<Student>, double> studentPair = std::make_pair(newAttendee, points);
-        mappedStudents_.insert(std::make_pair(newAttendee->id_, studentPair));
+        
+        // Capacity reached and we need to drop the lowest rating student.
+        if (min_.second < points && mappedStudents_.size() == capacity_)
+        {
+            mappedStudents_.insert(std::make_pair(newAttendee->id_, studentPair));
+            mappedStudents_.erase(min_.first->id_);
+            min_.first = nullptr;
+            min_.second = Utilities::Common::Constants::maxPossibleScore;
+            appointEdge();
+            return InsertionStatus::addedMinimumChangedWithMaxCapacity;
+        }
+
+        // Capacity not reached, but this entry has less points than current min.
         if (min_.second > points || mappedStudents_.size() == 1)
         {
+            mappedStudents_.insert(std::make_pair(newAttendee->id_, studentPair));
             min_ = studentPair;
+            return InsertionStatus::addedMinimumChanged;
         }
+
+        // Capacity not reached, and entry has more points than current min.
+        if (mappedStudents_.size() < capacity_)
+        {
+            mappedStudents_.insert(std::make_pair(newAttendee->id_, studentPair));
+            return InsertionStatus::added;
+        }
+
+        // Capacity is full, and student has less points then current minimal points ammount.
+        // This is straight up means that this student is not eligable to join course.
+        return InsertionStatus::notAddedPointsBelowMinValue;
     }
 
     std::string Attendees::toString() const

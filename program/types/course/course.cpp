@@ -102,7 +102,7 @@ namespace Core::Types
         uint8_t isOpen,
         uint16_t recrutingTurn):
         Entry(id, g_tableCourses),
-        attendees_({}),
+        attendees_(maxStudents),
         subjectWithWeight_({}),
         name_(name),
         minStudents_(minStudents),
@@ -115,7 +115,7 @@ namespace Core::Types
 
     Course::Course(uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name):
         Entry(0, g_tableCourses),
-        attendees_({}),
+        attendees_(maxStudents),
         subjectWithWeight_({}),
         name_(name),
         minStudents_(minStudents),

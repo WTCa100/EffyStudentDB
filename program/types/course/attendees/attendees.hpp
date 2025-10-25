@@ -16,13 +16,22 @@ namespace Core::Types
 
     class Attendees
     {
+    public:
+    enum class InsertionStatus
+    {
+        added = 0,
+        addedMinimumChanged = 1,
+        addedMinimumChangedWithMaxCapacity = 2,
+        notAddedPointsBelowMinValue = 3
+    };
     private:
         size_t capacity_;    
         std::pair<std::shared_ptr<Student>, double> min_;
         std::map<uint16_t, attendee> mappedStudents_; 
         void appointEdge();
     public:
-        void insertAttendee(std::shared_ptr<Student> newAttendee, const double& points);
+        uint16_t getMinId() const { return min_.first->id_; }
+        InsertionStatus insertAttendee(std::shared_ptr<Student> newAttendee, const double& points);
         void deleteAttendee(const uint16_t& id);
         std::string toString() const;
         inline std::map<uint16_t, attendee> getMappedStudentsCopy() { return mappedStudents_; }

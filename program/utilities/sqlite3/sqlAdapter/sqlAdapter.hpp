@@ -52,11 +52,12 @@ namespace Utilities::Sql
         bool addGrade(Student& targetStudent, Subject& targetSubject, const float& grade);
         bool removeGrade(const Student& targetStudent, const Subject& targetSubject);
 
-        bool addAttendee(const uint16_t& studentId, const uint16_t& courseId);
+        bool addAttendee(const uint16_t& studentId, const uint16_t& courseId, const double& poitns = 100.0);
         bool removeAttendee(const uint16_t& studentId, const uint16_t& courseId);
         bool openCourse(const uint16_t& courseId);
         bool closeCourse(const uint16_t& courseId);
         bool changeCourseOpenState(const uint16_t& courseId, const std::string& newState);
+        bool updateRequestStatus(const uint16_t& requestId, const Request::requestStatus& newStatus);
 
         std::string makeFilter(std::unordered_map<std::string, std::string> attrs, bool exact = filterExactMatch);
         Request::requestStatus translate_to_status(const std::string& columnValue);

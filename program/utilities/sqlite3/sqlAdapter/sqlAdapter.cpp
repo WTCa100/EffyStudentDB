@@ -474,13 +474,15 @@ namespace Utilities::Sql
         return attendees;
     }
 
-    bool SqlAdapter::addAttendee(const uint16_t& studentId, const uint16_t& courseId)
+    bool SqlAdapter::addAttendee(const uint16_t& studentId, const uint16_t& courseId, const double& points)
     {
         LOG((*logger_), "Adding attendee ", studentId, " to course ", courseId);
         Table targetTable = sManager_->getTableSchema(g_tableCourseAttendees);
         if (sManager_->addEntryToTable(targetTable.getName(),
-                { std::make_pair(targetTable.getAttributeByName("studentId"), std::to_string(studentId)),
-                    std::make_pair(targetTable.getAttributeByName("courseId"), std::to_string(courseId)) }))
+                {   std::make_pair(targetTable.getAttributeByName("studentId"), std::to_string(studentId)),
+                    std::make_pair(targetTable.getAttributeByName("courseId"), std::to_string(courseId)),
+                    std::make_pair(targetTable.getAttributeByName("points"), std::to_string(points))
+                }))
         {
             LOG((*logger_), "Attendee added successfully");
             return true;
@@ -512,6 +514,14 @@ namespace Utilities::Sql
         Utilities::Sql::AttrsValues state = { std::make_pair(targetTable.getAttributeByName("isOpen"), newState) };
         std::string condition             = "id = " + std::to_string(courseId);
         return sManager_->updateEntryFromTable(g_tableCourses, state, condition);
+    }
+
+    bool SqlAdapter::updateRequestStatus(const uint16_t& requestId, const Request::requestStatus& newStatus)
+    {
+        Table targetTable = sManager_->getTableSchema(g_tableStudentRequest);
+        Utilities::Sql::AttrsValues status = { std::make_pair(targetTable.getAttributeByName("requestStatus"), Request::statusToString(newStatus))};
+        std::string condition = "id = " + std::to_string(requestId);
+        return sManager_->updateEntryFromTable(g_tableStudentRequest, status, condition);
     }
 
     bool SqlAdapter::openCourse(const uint16_t& courseId)

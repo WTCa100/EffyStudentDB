@@ -120,7 +120,7 @@ namespace Core
         return extractedIds;
     }
 
-    void RequestResolver::addToCourse(Course& course, Student& student, double points)
+    void RequestResolver::addToCourse(Course& course, Student& student, double points, const uint16_t requestId)
     {
         LOG((*logger_), "Adding student ", student.email_, " to ", course.name_);
         Attendees& attendeesList = course.attendees_;
@@ -130,16 +130,21 @@ namespace Core
             double currentMinPoints = attendeesList.getAttendeePoints(currentMinId);
             if(attendeesList.insertAttendee(std::make_shared<Student>(student), points) == Attendees::InsertionStatus::addedMinimumChangedWithMaxCapacity)
             {
-                // Current minimal Id has changed, need to modify the request status for previous ID.
+                // Current minimal Id has changed, need to modify the request status for previous student ID.
                 LOG((*logger_), "Previous minimal ID: ", currentMinId, " - ", currentMinPoints, " pts, changed to ", student.id_, " - ", points, " points.");
+                std::pair<uint16_t, uint16_t> studentCourseIdPair = std::make_pair(student.id_, course.id_);
+                acceptedStudents_.insert(std::make_pair(studentCourseIdPair, requestId));
+                acceptedStudents_.erase(std::make_pair(currentMinId, course.id_));
                 return;
             }
-            // Casual addition - no need to post-process
+            // Could not add - less than current minimal student.
             return;
         }
         else if (attendeesList.size() < course.maxStudents_)
         {
             attendeesList.insertAttendee(std::make_shared<Student>(student), points);
+            std::pair<uint16_t, uint16_t> studentCourseIdPair = std::make_pair(student.id_, course.id_);
+            acceptedStudents_.insert(std::make_pair(studentCourseIdPair, requestId));
             return;
         }
         // There will never be a situation where size() > course.maxStudents_
@@ -180,7 +185,6 @@ namespace Core
         {
             Course& target   = mappedCourses.at(request.courseId_);
             Student& invoker = mappedStudents.at(request.studentId_);
-            // TODO Handle full course checking/handling + closing - for now just stick to adding
             std::cout << "Handling request " << request.id_ << "\n";
             LOG((*logger_), "Handling request ", request.id_, " studentId=", invoker.id_, " courseId=", target.id_);
             if (double points = calculatePoints(invoker, target); points >= target.baseMinimalPoints_)
@@ -188,7 +192,7 @@ namespace Core
                 LOG((*logger_), "StudentID=", invoker.id_, " passed threshold for CourseID=", target.id_);
                 std::cout << "Student " << invoker.firstName_ << " " << invoker.lastName_ << " (" << invoker.email_ << ") "
                           << "passed the threshold to join " << target.name_ << " (" << target.id_ << ")\n";
-                addToCourse(target, invoker, points);
+                addToCourse(target, invoker, points, request.id_);
             }
             else
             {
@@ -198,6 +202,39 @@ namespace Core
             }
         }
         std::cout << "Calculating done!\n";
+        handleAccepted(mappedCourses);
+        handleDenied();
         LOG((*logger_), "RequestResolver finished its work.");
+    }
+
+    void RequestResolver::handleAccepted(std::map<uint16_t, Course>& courses)
+    {
+        std::cout << "Handling accepted students.\n";
+        LOG((*logger_), "Handling accepted students.");
+        for(const auto& pair: acceptedStudents_)
+        {
+            const uint16_t& studentId = pair.first.first;
+            const uint16_t& courseId = pair.first.second;
+            const uint16_t& requestId = pair.second;
+            LOG((*logger_), "Setting request: ", requestId, " as 'passed' (studentId: ", studentId, " courseId: ", courseId, ")");
+            pendingRequests_.at(requestId).status_ = Request::requestStatus::Approved;
+            sqlAdapter_->updateRequestStatus(requestId, Request::requestStatus::Approved);
+            sqlAdapter_->addAttendee(studentId, courseId, courses.at(courseId).attendees_.getAttendeePoints(studentId));
+        }
+    }
+
+    void RequestResolver::handleDenied()
+    {
+        std::cout << "Handling denied students.\n";
+        LOG((*logger_), "Handling denied students.");
+        for(auto& req: pendingRequests_)
+        {
+            if (req.status_ == Request::requestStatus::Pending)
+            {
+                LOG((*logger_), "Setting request: ", req.id_, " as 'denied' (studentId: ", req.studentId_, " courseId: ", req.courseId_, ")");
+                req.status_ = Request::requestStatus::Denied;
+                sqlAdapter_->updateRequestStatus(req.id_, req.status_);
+            }
+        }
     }
 }  // namespace Core

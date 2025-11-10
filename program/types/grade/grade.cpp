@@ -48,7 +48,6 @@ namespace Core::Types
         subjectId_ = tmpHolder != g_inputMissingValue ? tmpHolder : 0;
         if (subjectId_) mappedNewAttrs.insert(std::make_pair("subjectId", std::to_string(subjectId_)));
 
-        // @TODO add float handling. So far that is just a placeholder
         double tmpGrade = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Grade value")
                                    : Utilities::InputHandler::getAttrAsNumber("Grade value");
         value_          = tmpGrade != g_inputMissingValue ? tmpGrade : 0.0f;

@@ -29,13 +29,11 @@ namespace Core::Types
         virtual ~Entry() {};
         virtual std::string toString() const = 0;
 
-        /// @todo Consider changing this map to std::map<std::string, std::any>
         virtual std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) = 0;
 
         /// @brief This function shall return all of the SQL related attributes such as
         /// @brief name, related IDs, float values etc. In most cases it will not include "id"
         /// @return Attributes mapped "name" -> "value"
-        /// @todo Consider changing this map to std::map<std::string, std::any>
         inline virtual std::map<std::string, std::string> getAttrs() const
         {
             return {

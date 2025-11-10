@@ -20,8 +20,6 @@ namespace Utilities::Sql::Types
                 [[maybe_unused]] int tmp = std::stoull(defaultHelper);
                 return true;
             }
-            // I know its ugly - I will fix that later
-            // TODO - make it pretty :)
             catch (const std::exception& e)
             {
                 return false;

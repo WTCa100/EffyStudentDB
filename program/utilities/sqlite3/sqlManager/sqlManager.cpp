@@ -112,9 +112,6 @@ namespace Utilities::Sql
         std::cout << "Adding table: " << table.getName() << "\n";
         // Check if a given table exist in the tables map
         if (!tables_.contains(table.getName())) { addTable(table); }
-
-        // @todo check if a given table is already inside .db file
-
         if (!insertTable(table))
         {
             LOG((*logger_), "Error: Could not insert table!");

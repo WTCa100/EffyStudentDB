@@ -13,7 +13,7 @@ Session::Session(std::shared_ptr<WsManager> wsMgr):
     logger_(wsMgr_->getLogger()),
     sAdapter_(std::make_shared<SqlAdapter>(logger_, wsMgr_->getSqlManager())),
     sesData_(std::make_shared<SessionData>()),
-    display_(std::make_unique<Menu>(logger_, sesData_))
+    display_(Menu(logger_, sesData_))
 {
     LOG((*logger_), "Session established");
 }
@@ -111,7 +111,7 @@ void Session::run()
     LOG((*logger_), "Main run function called");
     bool exit = false;
     do {
-        Core::Display::MainMenuOption op = display_->showMainMenu();
+        Core::Display::MainMenuOption op = display_.showMainMenu();
         switch (op)
         {
             case Core::Display::MainMenuOption::manageDb :
@@ -119,9 +119,9 @@ void Session::run()
                     fetchAll();
                     Action command;
                     do {
-                        command = display_->manageDatabase();
+                        command = display_.manageDatabase();
                         handleAction(command);
-                    } while (command.getCommand() != "EXIT");
+                    } while (command.getCommand() != Core::ActionType::Short::actionExit);
                     dropAll();
                     break;
                 }
@@ -263,7 +263,7 @@ bool Session::handleDirectAction(const Action& userAction)
     std::string userCommand = userAction.getCommand();
 
     LOG((*logger_), "Action got command: ", userCommand);
-    if (userCommand == "EXIT")
+    if (userCommand == Core::ActionType::Short::actionExit)
     {
         LOG((*logger_), "Normal exit");
         std::cout << "Exiting management mode.\n";
@@ -276,12 +276,11 @@ bool Session::handleDirectAction(const Action& userAction)
     std::shared_ptr<Entry> concreteEntry = makeConcreteType(userTarget);
 
     // Select correct function
-    if (userCommand == "ADD")
+    if (userCommand == Core::ActionType::Direct::actionAdd)
     {
         LOG((*logger_), "Abstract add: ", userAction.getTarget());
         std::cout << "New entry:\n";
         concreteEntry.get()->userConstruct();
-        // @TODO check if entry is valid
         if (sAdapter_->addEntry(*concreteEntry))
         {
             sesData_->addEntry(concreteEntry);
@@ -312,12 +311,13 @@ bool Session::handleDirectAction(const Action& userAction)
 
     // Nothing much has to be done while finding
     std::cout << "Selected entries:\n";
-    display_->showSelection(affectedEntries);
-    if (userCommand == "FIND") { return true; }
+    display_.showSelection(affectedEntries);
+    if (userCommand == Core::ActionType::Direct::actionFind) { return true; }
 
-    if (userCommand == "REMOVE" || userCommand == "EDIT")  // TODO: JAN PLEASE TURN THESE MAGIC STRINGS INTO GLOBAL VARIABLES!!!
+    if (userCommand == Core::ActionType::Direct::actionEdit ||
+        userCommand == Core::ActionType::Direct::actionRemove)
     {
-        if (!display_->promptAlterAll(filter, affectedEntries.size()))
+        if (!display_.promptAlterAll(filter, affectedEntries.size()))
         {
             LOG((*logger_), "Aborting procedure");
             return true;
@@ -325,7 +325,7 @@ bool Session::handleDirectAction(const Action& userAction)
     }
 
     // For each affected entry delete
-    if (userCommand == "REMOVE")
+    if (userCommand == Core::ActionType::Direct::actionRemove)
     {
         for (const auto& val : affectedEntries)
         {
@@ -340,7 +340,7 @@ bool Session::handleDirectAction(const Action& userAction)
     }
 
     // For each affected entry update
-    if (userCommand == "EDIT")
+    if (userCommand == Core::ActionType::Direct::actionEdit)
     {
         // Get new values 1st
         std::cout << "Modifying existing values.\n";

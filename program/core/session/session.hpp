@@ -29,8 +29,7 @@ class Session
     std::shared_ptr<SqlAdapter> sAdapter_;
     std::shared_ptr<SessionData> sesData_;
 
-    // Consider removing this since we're (for now) only using it in one class
-    std::unique_ptr<Menu> display_;
+    Menu display_;
 
     // Get values from the Database and assign it to the Session Data
     void fetchAll();

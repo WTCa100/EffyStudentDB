@@ -62,7 +62,6 @@ namespace Core::Types
                              : Utilities::InputHandler::getAttrAsNumber("Course Id");
         courseId_ = tmpHolder != g_inputMissingValue ? tmpHolder : 0;
         if (courseId_) mappedNewAttrs.insert(std::make_pair("courseId", std::to_string(courseId_)));
-        // @TODO add float handling. So far that is just a placeholder
         double tmpGrade = makeFull ? Utilities::InputHandler::getAttrAsNumberNonEmpty("Weight")
                                    : Utilities::InputHandler::getAttrAsNumber("Weight");
         weight_         = tmpGrade != g_inputMissingValue ? tmpGrade : 0.0f;

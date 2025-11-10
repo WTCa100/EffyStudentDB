@@ -31,7 +31,7 @@ namespace Utilities::Sql::Types
     {
         std::string name_;
         AttributeType type_;
-        std::unordered_set<AttributeFlag> flags_;  // Todo maybe change it to set?
+        std::unordered_set<AttributeFlag> flags_;
         std::optional<std::string> defaultValue_{ std::nullopt };
 
         bool isValid() { return !name_.empty(); }

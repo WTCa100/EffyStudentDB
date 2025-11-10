@@ -50,7 +50,6 @@ namespace Core::Types
             uint8_t isOpen,
             uint16_t recrutingTurn);
         Course(uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name);
-        // TODO: Define move ctor
         Entry& operator= (const Entry& other) override;
     };
 }  // namespace Core::Types

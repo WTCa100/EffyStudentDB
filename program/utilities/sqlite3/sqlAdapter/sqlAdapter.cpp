@@ -267,8 +267,6 @@ namespace Utilities::Sql
             std::vector<std::string> tokenizedEntry = Utilities::Common::tokenize(e, '|');
             // Tokens are
             // (0) RequestId | (1) studentId | (2) studentId | (3) requestStatus
-
-            // @TODO - tokenizedEntry.at(3) needs to be translated from str:status into int/Enum
             Request::Srequest newEntry(static_cast<uint32_t>(std::stoul(tokenizedEntry.at(0))),
                 static_cast<uint16_t>(std::stoul(tokenizedEntry.at(1))), static_cast<uint16_t>(std::stoul(tokenizedEntry.at(2))),
                 static_cast<Request::requestStatus>(translate_to_status(tokenizedEntry.at(3))));

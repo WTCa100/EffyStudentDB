@@ -59,16 +59,6 @@ class Session
 
     std::shared_ptr<Entry> makeConcreteType(const std::string& tableName) const;
 
-    template<typename T, typename U = Entry>
-    void updateSingleEntry(std::shared_ptr<U> entryOld, const std::shared_ptr<U> entryNew)
-    {
-        std::shared_ptr<T> concreteOld = std::dynamic_pointer_cast<T>(entryOld);
-        std::shared_ptr<T> concreteNew = std::dynamic_pointer_cast<T>(entryNew);
-        LOG((*logger_), "Entry update trigger. Id= ", entryOld->id_);
-        *concreteOld = *concreteNew->mirrorMissing(concreteOld);
-        LOG((*logger_), "Entry update completed.")
-    }
-
     Session(std::shared_ptr<WsManager> wsMgr);
     ~Session();
 };

@@ -333,50 +333,30 @@ namespace Utilities::Sql
         return false;
     }
 
-    bool SqlAdapter::updateEntry(const Entry& oldEntry, const Entry& newEntry)
+    bool SqlAdapter::updateEntry(const uint16_t& targetId, const std::unordered_map<std::string, std::string> newValues, const std::string tableName)
     {
-        std::string targetTableName = oldEntry.associatedTable_;
-        LOG((*logger_), "Updating target entry: ", oldEntry.toString(), " Compare has started.");
-
-        if (targetTableName != newEntry.associatedTable_)
-        {
-            LOG((*logger_), "Associated table is different in both entires. Cannot edit.");
-            return false;
-        }
-
-        Table targetTable = sManager_->getTableSchema(targetTableName);
+        LOG((*logger_), "Updating target entry: ", targetId, " in table: ", tableName);
+        Table targetTable = sManager_->getTableSchema(tableName);
         if (!targetTable.isValid())
         {
-            LOG((*logger_), "Table ", targetTableName, " does not exist. Aborting procedure.");
+            LOG((*logger_), "Table ", tableName, " does not exist. Aborting procedure.");
             return false;
         }
 
-        std::map<std::string, std::string> entryAttrsOld, entryAttrsNew;
-        AttrsValues newValPacket{};
-        entryAttrsOld = oldEntry.getAttrs();
-        entryAttrsNew = newEntry.getAttrs();
-
-        for (const auto& entryComp : entryAttrsOld)
+        if(newValues.empty())
         {
-            std::string newVal = entryAttrsNew.at(entryComp.first);
-            if (newVal != entryComp.second)
-            {
-                LOG((*logger_), entryComp.first, " mismatch: ", entryComp.second, " <-> ", newVal);
-                newValPacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute(entryComp.first,
-                                                          Types::AttributeType::SQL_NULL, { Types::AttributeFlag::MISSING }, {}),
-                    newVal));
-            }
+            LOG((*logger_), "NewValues size = 0");
+            return false;
         }
 
-        if (newValPacket.empty())
+        AttrsValues updatePacket{};
+        for(const auto& [attrName, attrVal] : newValues)
         {
-            LOG((*logger_), "Old Entry = New Entry nothing needs to be altered");
-            return true;
+            LOG((*logger_), "Attr name: ", attrName, " attr val: ", attrVal);
+            updatePacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute(attrName, Types::AttributeType::SQL_NULL, { Types::AttributeFlag::MISSING }, {}), attrVal));
         }
-
-        LOG((*logger_), "Changes were found, DB will be contacted");
-        std::string condition = "id = " + std::to_string(oldEntry.id_);
-        return sManager_->updateEntryFromTable(targetTableName, newValPacket, condition);
+        std::string filter = "id = " + std::to_string(targetId);
+        return sManager_->updateEntryFromTable(tableName, updatePacket, filter);
     }
 
     bool SqlAdapter::removeEntry(const Entry& targetEntry, std::optional<std::string> condition)

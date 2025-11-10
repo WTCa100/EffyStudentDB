@@ -2,9 +2,8 @@
 
 #include "../../utilities/common/constants.hpp"
 #include "../entry.hpp"
-#include "../student/student.hpp"
 
-#include <map>
+#include <set>
 #include <string>
 
 using Utilities::Common::Constants::g_tableSchools;
@@ -17,7 +16,7 @@ namespace Core::Types
         std::string name_;
 
         // Non-SQL attribute members
-        std::map<uint16_t, std::shared_ptr<Student>> students_;
+        std::set<uint16_t> students_;
 
         School():
             Entry(g_tableSchools),
@@ -37,7 +36,7 @@ namespace Core::Types
             students_()
         {}
 
-        School(uint16_t id, std::string name, std::map<uint16_t, std::shared_ptr<Student>> studentList):
+        School(uint16_t id, std::string name, std::set<uint16_t> studentList):
             Entry(id, g_tableSchools),
             name_(name),
             students_(studentList)

@@ -58,7 +58,7 @@ void Session::fetchStudents()
 
         const uint16_t schoolId              = entry.schoolId_;
         std::shared_ptr<School> targetSchool = std::dynamic_pointer_cast<School>(sesData_->getEntry(schoolId, g_tableSchools));
-        if (targetSchool) { (*targetSchool).students_.insert(std::make_pair(entry.id_, concreteStudent)); }
+        if (targetSchool) { (*targetSchool).students_.insert(entry.id_); }
         else { std::runtime_error("Could not fetch school data with the following data: ID=" + std::to_string(schoolId)); }
     }
 }
@@ -345,13 +345,13 @@ bool Session::handleDirectAction(const Action& userAction)
         // Get new values 1st
         std::cout << "Modifying existing values.\n";
         std::shared_ptr<Entry> entriesNew = makeConcreteType(userTarget);
-        entriesNew->userConstruct(false);
+        std::unordered_map<std::string, std::string> changesToCommit = entriesNew->userConstruct(false);
         for (auto& val : affectedEntries)
         {
             std::shared_ptr<Entry> changedEntries = makeConcreteType(userTarget);
             *changedEntries                       = *entriesNew->mirrorMissing(val);
             // Make a copy of a given filter entry
-            if (sAdapter_->updateEntry(*val, *changedEntries))
+            if (sAdapter_->updateEntry(val->id_, changesToCommit, val->associatedTable_))
             {
                 onUpdate(val, changedEntries);
                 sesData_->updateEntry(val->id_, changedEntries);
@@ -398,9 +398,7 @@ void Session::onAdd(const std::shared_ptr<Entry> newEntry)
                 concreteStudent, " id: ", concreteStudent->id_);
             return;
         }
-        studentSchool->students_.insert(std::make_pair(newEntry->id_, concreteStudent));
-        // std::dynamic_pointer_cast<School>(sesData_->getEntry(concreteStudent->schoolId_, g_tableSchools))
-        // 	->students_.insert(std::make_pair(newEntry->id_, concreteStudent));
+        studentSchool->students_.insert(newEntry->id_);
     }
 
     if (targetTable == g_tableGrades)
@@ -518,7 +516,6 @@ void Session::onDelete(const std::shared_ptr<Entry> targetEntry)
             {
                 if (sAdapter_->removeEntry(*req))
                 {
-                    // requestLists->erase(req->id_);
                     sesData_->removeEntry(req->id_, g_tableStudentRequest);
                 }
             }
@@ -556,8 +553,6 @@ void Session::onDelete(const std::shared_ptr<Entry> targetEntry)
                 }
             }
         }
-
-        // LOG((*logger_), "Linking cleaned with deleted student\n");
         return;
     }
 
@@ -675,7 +670,7 @@ void Session::onUpdate(std::shared_ptr<Entry> oldEntry, const std::shared_ptr<En
             std::shared_ptr<School> schoolNew =
                 std::dynamic_pointer_cast<School>(sesData_->getEntry(schoolIdNew, g_tableSchools));
             schoolOld->students_.erase(id);
-            schoolNew->students_.insert(std::make_pair(id, concreteStudentOld));
+            schoolNew->students_.insert(id);
         }
     }
 
@@ -738,7 +733,6 @@ void Session::onUpdate(std::shared_ptr<Entry> oldEntry, const std::shared_ptr<En
     }
 }
 
-// Todo turn deletes into lambdas inside func where there are used
 void Session::deleteCourseSubjectWeight(const std::shared_ptr<CourseSubjectWeight> targetWeight)
 {
     LOG((*logger_), "Common CourseSubjectWeight deletion");

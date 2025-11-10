@@ -28,7 +28,6 @@ namespace Core::Types::Request
 
     std::map<std::string, std::string> Srequest::getAttrs() const
     {
-        // @TODO - Change all the magic numbers into global variables
         return {
             { "studentId",     std::to_string(studentId_) },
             { "courseId",      std::to_string(courseId_)  },

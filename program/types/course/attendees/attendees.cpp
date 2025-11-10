@@ -1,20 +1,19 @@
 #include "./attendees.hpp"
+
 #include "../../../utilities/common/constants.hpp"
 
-#include <sstream>
 #include <iostream>
+#include <sstream>
+
 namespace Core::Types
 {
     /// @brief This function appoints the minimal student & points pair.
     /// @note This idea was provided by Jakub Golab
     void Attendees::appointEdge()
     {
-        for(const auto& [studentId, pair] : mappedStudents_)
+        for (const auto& [studentId, pair] : mappedStudents_)
         {
-            if (pair.second < min_.second || min_.first == nullptr)
-            {
-                min_ = pair;
-            }
+            if (pair.second < min_.second || min_.first == nullptr) { min_ = pair; }
         }
     }
 
@@ -24,15 +23,15 @@ namespace Core::Types
     /// @param points points that given student got
     /// @return Information wether the capacity is full and previous min_ had to be dropped.
     Attendees::InsertionStatus Attendees::insertAttendee(std::shared_ptr<Student> newAttendee, const double& points)
-    {        
+    {
         std::pair<std::shared_ptr<Student>, double> studentPair = std::make_pair(newAttendee, points);
-        
+
         // Capacity reached and we need to drop the lowest rating student.
         if (min_.second < points && mappedStudents_.size() == capacity_)
         {
             mappedStudents_.insert(std::make_pair(newAttendee->id_, studentPair));
             mappedStudents_.erase(min_.first->id_);
-            min_.first = nullptr;
+            min_.first  = nullptr;
             min_.second = Utilities::Common::Constants::maxPossibleScore;
             appointEdge();
             return InsertionStatus::addedMinimumChangedWithMaxCapacity;
@@ -84,14 +83,13 @@ namespace Core::Types
     {
         uint16_t currentMinId = min_.first->id_;
         mappedStudents_.erase(id);
-        if (id == currentMinId)
-        {
-            appointEdge();
-        }
+        if (id == currentMinId) { appointEdge(); }
     }
 
-    Attendees::Attendees(size_t capacity) : capacity_(capacity), min_({nullptr, 0.0f}), mappedStudents_({})
-    {
-    }
+    Attendees::Attendees(size_t capacity):
+        capacity_(capacity),
+        min_({ nullptr, 0.0f }),
+        mappedStudents_({})
+    {}
 
-} // namespace Core::Types
+}  // namespace Core::Types

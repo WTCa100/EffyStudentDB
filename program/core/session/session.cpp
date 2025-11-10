@@ -13,7 +13,6 @@ Session::Session(std::shared_ptr<WsManager> wsMgr):
     logger_(wsMgr_->getLogger()),
     sAdapter_(std::make_shared<SqlAdapter>(logger_, wsMgr_->getSqlManager())),
     sesData_(std::make_shared<SessionData>()),
-    requestCalculator_(RequestResolver(logger_, sAdapter_, sesData_)),
     display_(std::make_unique<Menu>(logger_, sesData_))
 {
     LOG((*logger_), "Session established");
@@ -126,7 +125,12 @@ void Session::run()
                     dropAll();
                     break;
                 }
-            case Core::Display::MainMenuOption::handleRqs : requestCalculator_.run(); break;
+            case Core::Display::MainMenuOption::handleRqs :
+                {
+                    RequestResolver requestCalculator = RequestResolver(logger_, sAdapter_, sesData_);
+                    requestCalculator.run();
+                    break;
+                }
             case Core::Display::MainMenuOption::exit : exit = true; LOG((*logger_), "Exiting application");
             default : break;
         }

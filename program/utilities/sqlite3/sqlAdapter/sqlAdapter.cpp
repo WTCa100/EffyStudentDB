@@ -478,11 +478,10 @@ namespace Utilities::Sql
     {
         LOG((*logger_), "Adding attendee ", studentId, " to course ", courseId);
         Table targetTable = sManager_->getTableSchema(g_tableCourseAttendees);
-        if (sManager_->addEntryToTable(targetTable.getName(),
-                {   std::make_pair(targetTable.getAttributeByName("studentId"), std::to_string(studentId)),
-                    std::make_pair(targetTable.getAttributeByName("courseId"), std::to_string(courseId)),
-                    std::make_pair(targetTable.getAttributeByName("points"), std::to_string(points))
-                }))
+        if (sManager_->addEntryToTable(
+                targetTable.getName(), { std::make_pair(targetTable.getAttributeByName("studentId"), std::to_string(studentId)),
+                                           std::make_pair(targetTable.getAttributeByName("courseId"), std::to_string(courseId)),
+                                           std::make_pair(targetTable.getAttributeByName("points"), std::to_string(points)) }))
         {
             LOG((*logger_), "Attendee added successfully");
             return true;
@@ -516,12 +515,18 @@ namespace Utilities::Sql
         return sManager_->updateEntryFromTable(g_tableCourses, state, condition);
     }
 
-    bool SqlAdapter::updateRequestStatus(const uint16_t& requestId, const Request::requestStatus& newStatus)
+    bool SqlAdapter::updateRequestStatus(const std::vector<uint16_t>& requestIds, const Request::requestStatus& newStatus)
     {
-        Table targetTable = sManager_->getTableSchema(g_tableStudentRequest);
-        Utilities::Sql::AttrsValues status = { std::make_pair(targetTable.getAttributeByName("requestStatus"), Request::statusToString(newStatus))};
-        std::string condition = "id = " + std::to_string(requestId);
-        return sManager_->updateEntryFromTable(g_tableStudentRequest, status, condition);
+        if (requestIds.empty()) { return true; }
+        Table targetTable                  = sManager_->getTableSchema(g_tableStudentRequest);
+        Utilities::Sql::AttrsValues status = { std::make_pair(
+            targetTable.getAttributeByName("requestStatus"), Request::statusToString(newStatus)) };
+        std::stringstream filter;
+        filter << "id IN (";
+        for (const uint16_t& id : requestIds) { filter << id << ", "; }
+        filter.seekp(-2, filter.cur);
+        filter << ")";
+        return sManager_->updateEntryFromTable(g_tableStudentRequest, status, filter.str());
     }
 
     bool SqlAdapter::openCourse(const uint16_t& courseId)

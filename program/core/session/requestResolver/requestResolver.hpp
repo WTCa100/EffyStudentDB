@@ -28,7 +28,7 @@ namespace Core
         std::shared_ptr<SessionData> sesData_;
         std::shared_ptr<Logger> logger_;
         std::shared_ptr<SqlAdapter> sqlAdapter_;
-        std::vector<Types::Request::Srequest> pendingRequests_;
+        std::map<uint16_t, Types::Request::Srequest> pendingRequests_;
         std::map<std::pair<uint16_t, uint16_t>, uint16_t> acceptedStudents_;
 
         std::unordered_set<uint16_t> extractIds(std::function<uint16_t(Request::Srequest)> extractConcrete) const;

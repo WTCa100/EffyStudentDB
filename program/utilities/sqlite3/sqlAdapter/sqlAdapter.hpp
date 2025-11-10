@@ -57,7 +57,7 @@ namespace Utilities::Sql
         bool openCourse(const uint16_t& courseId);
         bool closeCourse(const uint16_t& courseId);
         bool changeCourseOpenState(const uint16_t& courseId, const std::string& newState);
-        bool updateRequestStatus(const uint16_t& requestId, const Request::requestStatus& newStatus);
+        bool updateRequestStatus(const std::vector<uint16_t>& requestIds, const Request::requestStatus& newStatus);
 
         std::string makeFilter(std::unordered_map<std::string, std::string> attrs, bool exact = filterExactMatch);
         Request::requestStatus translate_to_status(const std::string& columnValue);

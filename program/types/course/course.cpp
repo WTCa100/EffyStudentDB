@@ -14,8 +14,7 @@ namespace Core::Types
            << " maximal student count: " << maxStudents_ << "\n"
            << "minimal points required: " << baseMinimalPoints_ << " average student points: " << averageStudentPoints_ << "\n"
            << "Is open for assignment: " << (isOpen_ == OpenState::opened ? "Yes" : "No")
-           << " - current recuritment turn: " << recrutingTurn_ << "\n";
-        ss << attendees_.toString() << "\n";
+           << " - current recuritment turn: " << recrutingTurn_;
         return ss.str();
     }
 

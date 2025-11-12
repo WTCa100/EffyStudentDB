@@ -7,22 +7,6 @@
 
 namespace Core::Types
 {
-    std::string Student::toString(bool showGrades) const
-    {
-        std::stringstream ss("");
-        ss << toString() << "\n";
-        if (showGrades)
-        {
-            if (!grades_.empty())
-            {
-                ss << ", Grades: \n";
-                for (const auto& grade : grades_) { ss << grade.second->studentName_ << ":" << grade.second->value_ << "\n"; }
-            }
-            else { ss << "No grades.\n"; }
-        }
-        return ss.str();
-    }
-
     std::string Student::toString() const
     {
         std::stringstream ss("");
@@ -31,12 +15,6 @@ namespace Core::Types
         ss << "Last name: " << lastName_ << ", ";
         ss << "Email: " << email_ << ", ";
         ss << "Associated School: " << schoolId_ << " ";
-        if (!attendingCourses_.empty())
-        {
-            ss << "Attends " << attendingCourses_.size() << " courses: \n";
-            for (const auto& course : attendingCourses_) { ss << course.second << " "; }
-        }
-        else { ss << "Not attending any courses."; }
         return ss.str();
     }
 

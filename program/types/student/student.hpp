@@ -27,7 +27,6 @@ namespace Core::Types
         std::map<uint16_t, std::string> attendingCourses_;
         uint16_t schoolId_;
 
-        std::string toString(bool showGrades) const;
         std::string toString() const override;
         std::map<std::string, std::string> getAttrs() const override;
         std::unordered_map<std::string, std::string> userConstruct(bool makeFull = true) override;

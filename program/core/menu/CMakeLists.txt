@@ -4,4 +4,6 @@ target_link_libraries(Menu PUBLIC
     Data
     InputHandler
     Action
+    SqlAdapter
+    DisplayHelper
 )

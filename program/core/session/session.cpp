@@ -13,7 +13,7 @@ Session::Session(std::shared_ptr<WsManager> wsMgr):
     logger_(wsMgr_->getLogger()),
     sAdapter_(std::make_shared<SqlAdapter>(logger_, wsMgr_->getSqlManager())),
     sesData_(std::make_shared<SessionData>()),
-    display_(Menu(logger_, sesData_))
+    display_(Menu(logger_, sesData_, sAdapter_))
 {
     LOG((*logger_), "Session established");
 }

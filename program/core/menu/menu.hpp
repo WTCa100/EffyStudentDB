@@ -2,8 +2,10 @@
 
 #include "../../utilities/inputHandler/inputHandler.hpp"
 #include "../../utilities/logger/logger.hpp"
+#include "../../utilities/sqlite3/sqlAdapter/sqlAdapter.hpp"
 #include "../session/action/action.hpp"
 #include "../session/data/data.hpp"
+#include "../displayHelper/displayHelper.hpp"
 
 #include <memory>
 #include <set>
@@ -25,13 +27,14 @@ namespace Core::Display
       private:
         std::shared_ptr<Utilities::Logger> logger_;
         std::shared_ptr<SessionData> sesData_;
-        std::unique_ptr<Utilities::InputHandler> inHandler_;
+        Utilities::InputHandler inHandler_;
+        const Core::Display::Helper dsplHelper_;
 
         bool validateAction(const Action& act);
         // Consider adding session data shared ptr here to easily handler
         // content display
       public:
-        Menu(std::shared_ptr<Utilities::Logger> logger, std::shared_ptr<SessionData> sesData);
+        Menu(std::shared_ptr<Utilities::Logger> logger, std::shared_ptr<SessionData> sesData, std::shared_ptr<SqlAdapter> sqlAdapter);
         MainMenuOption showMainMenu();
         // Manage each table separately
 

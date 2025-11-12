@@ -6,12 +6,12 @@
 
 namespace Core::Display
 {
-    Menu::Menu(std::shared_ptr<Utilities::Logger> logger, std::shared_ptr<SessionData> sesData)
+    Menu::Menu(std::shared_ptr<Utilities::Logger> logger, std::shared_ptr<SessionData> sesData, std::shared_ptr<SqlAdapter> sqlAdapter) : logger_(logger),
+                                                                                                                                          sesData_(sesData),
+                                                                                                                                          inHandler_(Utilities::InputHandler()),
+                                                                                                                                          dsplHelper_(Core::Display::Helper(logger, sqlAdapter, sesData))
     {
-        logger_  = logger;
-        sesData_ = sesData;
         LOG((*logger_), "Menu object created");
-        inHandler_ = std::make_unique<Utilities::InputHandler>();
     }
 
     Action Menu::manageDatabase()
@@ -85,10 +85,10 @@ namespace Core::Display
     Action Menu::createAction()
     {
         LOG((*logger_), "Creating action");
-        std::string rawInput = inHandler_->getStringBeauty("Instruction");
+        std::string rawInput = inHandler_.getStringBeauty("Instruction");
         LOG((*logger_), "Received input to assemble action: \"", rawInput, "\"");
         handleIndirectAction(rawInput);
-        Action userAction = Action(inHandler_->toUpper(rawInput));
+        Action userAction = Action(inHandler_.toUpper(rawInput));
         return userAction;
     }
 
@@ -103,7 +103,7 @@ namespace Core::Display
             LOG((*logger_), "Command empty, skipping for validation check...");
             return;
         }
-        std::string commandToken = inHandler_->toUpper(tokens.at(0));
+        std::string commandToken = inHandler_.toUpper(tokens.at(0));
         if (!Action::isCommandIndirect(commandToken))
         {
             LOG((*logger_), "Command is not indirect action skipping...");
@@ -121,20 +121,33 @@ namespace Core::Display
         LOG((*logger_), "Properly handled indirect action. New action =: \"", command, "\"");
     }
 
-    void Menu::showEntries(const std::string& target) const
+    void Menu::showEntries(const std::string& targetTable) const
     {
-        LOG((*logger_), "Showing entries from table: ", target);
-        const std::shared_ptr<abstractTypeList> concreteList = sesData_->getEntries(target);
+        LOG((*logger_), "Showing entries from table: ", targetTable);
+        const std::shared_ptr<abstractTypeList> concreteList = sesData_->getEntries(targetTable);
 
         if (!concreteList)
         {
-            LOG((*logger_), "Could not find table: ", target);
+            LOG((*logger_), "Could not find table: ", targetTable);
             return;
         }
 
-        std::cout << "Displaying " << target << ": \n";
+        std::cout << "Displaying " << targetTable << ": \n";
         std::cout << concreteList->size() << " entries\n";
-        for (const auto& entry : *concreteList) { std::cout << entry.second.get()->toString() << "\n"; }
+        for (const auto& [entryId, entryObj] : *concreteList)
+        {
+            std::cout << entryObj->toString() << "\n";
+            if(targetTable == g_tableCourses)
+            {
+                dsplHelper_.displayAttendees(entryId);
+            }
+            else if(targetTable == g_tableStudents)
+            {
+                dsplHelper_.displayAttendedCourses(entryId);
+                dsplHelper_.displayGrades(entryId);
+            }
+            std::cout << std::endl;
+        }
     }
 
     bool Menu::validateAction(const Action& act)
@@ -187,7 +200,7 @@ namespace Core::Display
         LOG((*logger_), "Delete all detected - double check prompt");
         std::cout << "You are about to delete every entry (" << count << ") matching filter: \"" << filter << "\".\n";
         std::cout << "Are you sure? - this cannot be undone.\n";
-        if (inHandler_->getYesOrNo() == 'Y')
+        if (inHandler_.getYesOrNo() == 'Y')
         {
             LOG((*logger_), "User agreed");
             std::cout << "Agreed\n";
@@ -206,7 +219,7 @@ namespace Core::Display
         std::cout << "1. Manage Database\n";
         std::cout << "2. Handle student requests\n";
         std::cout << "3. Exit.\n";
-        op = static_cast<MainMenuOption>(inHandler_->getOption(1, 3));
+        op = static_cast<MainMenuOption>(inHandler_.getOption(1, 3));
         LOG((*logger_), "Got option ", op);
         return op;
     }

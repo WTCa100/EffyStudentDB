@@ -40,7 +40,6 @@ class Session
     void fetchCourseSubjectWeight();
     void fetchCourses();
     void fetchSrequests();
-    void fetchAttendees();
 
     void dropAll();
 
@@ -53,10 +52,6 @@ class Session
     bool handleAction(const Action& userAction);
     bool handleIndirectAction(const Action& userAction);
     bool handleDirectAction(const Action& userAction);
-    void onAdd(const std::shared_ptr<Entry> newEntry);
-    void onDelete(const std::shared_ptr<Entry> targetEntry);
-    void onUpdate(std::shared_ptr<Entry> oldEntry, const std::shared_ptr<Entry> newEntry);
-
     std::shared_ptr<Entry> makeConcreteType(const std::string& tableName) const;
 
     Session(std::shared_ptr<WsManager> wsMgr);

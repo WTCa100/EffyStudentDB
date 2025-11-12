@@ -72,7 +72,29 @@ namespace Core::Display
 
     void Menu::showSelection(const std::vector<std::shared_ptr<Entry>>& selection) const
     {
-        for (const auto& e : selection) { std::cout << e->toString() << "\n"; }
+        for (const auto& e : selection) 
+        {
+            showEntry(e);
+        }
+    }
+
+    void Menu::showEntry(const std::shared_ptr<Entry> entry) const
+    {
+        const std::string& associatedTable = entry->associatedTable_;
+        const uint16_t& entryId = entry->id_;
+        std::cout << entry->toString() << "\n";
+        if(associatedTable == g_tableCourses)
+        {
+            dsplHelper_.displayAttendees(entryId);
+        }
+        else if(associatedTable == g_tableStudents)
+        {
+            std::cout << "Attended courses:\n";
+            dsplHelper_.displayAttendedCourses(entryId);
+            std::cout << "Grades:\n";
+            dsplHelper_.displayGrades(entryId);
+        }
+        std::cout << std::endl;
     }
 
     void Menu::listTables() const
@@ -134,19 +156,9 @@ namespace Core::Display
 
         std::cout << "Displaying " << targetTable << ": \n";
         std::cout << concreteList->size() << " entries\n";
-        for (const auto& [entryId, entryObj] : *concreteList)
+        for (const auto& entry : *concreteList)
         {
-            std::cout << entryObj->toString() << "\n";
-            if(targetTable == g_tableCourses)
-            {
-                dsplHelper_.displayAttendees(entryId);
-            }
-            else if(targetTable == g_tableStudents)
-            {
-                dsplHelper_.displayAttendedCourses(entryId);
-                dsplHelper_.displayGrades(entryId);
-            }
-            std::cout << std::endl;
+            showEntry(entry.second);
         }
     }
 

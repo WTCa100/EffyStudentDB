@@ -24,7 +24,6 @@ namespace Core::Types
         std::string lastName_;
         std::string email_;
         std::map<uint16_t, std::shared_ptr<Grade>> grades_;
-        std::map<uint16_t, std::string> attendingCourses_;
         uint16_t schoolId_;
 
         std::string toString() const override;

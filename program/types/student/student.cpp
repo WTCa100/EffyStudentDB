@@ -79,7 +79,6 @@ namespace Core::Types
         refObj->lastName_         = lastName_.empty() ? concrete->lastName_ : lastName_;
         refObj->email_            = email_.empty() ? concrete->email_ : email_;
         refObj->schoolId_         = schoolId_ == g_inputMissingValue ? concrete->schoolId_ : schoolId_;
-        refObj->attendingCourses_ = attendingCourses_.empty() ? concrete->attendingCourses_ : attendingCourses_;
         return refObj;
     }
 
@@ -95,7 +94,6 @@ namespace Core::Types
         lastName_(lastName),
         email_(email),
         grades_({}),
-        attendingCourses_({}),
         schoolId_(schoolId)
     {}
 
@@ -107,7 +105,6 @@ namespace Core::Types
         lastName_(lastName),
         email_(email),
         grades_({}),
-        attendingCourses_({}),
         schoolId_(schoolId)
     {}
 
@@ -123,7 +120,6 @@ namespace Core::Types
         email_                   = otherStudent.email_;
         grades_                  = otherStudent.grades_;
         schoolId_                = otherStudent.schoolId_;
-        attendingCourses_        = otherStudent.attendingCourses_;
 
         return *this;
     }

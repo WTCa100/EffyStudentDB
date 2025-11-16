@@ -47,7 +47,8 @@ namespace Utilities::Sql
         uint16_t getLatestIdFromTable(std::string tblName);
 
         bool addEntry(Entry& newEntry);
-        bool updateEntry(const uint16_t& targetId, const std::unordered_map<std::string, std::string> newValues, const std::string tableName);
+        bool updateEntry(
+            const uint16_t& targetId, const std::unordered_map<std::string, std::string> newValues, const std::string tableName);
         bool removeEntry(const Entry& targetEntry, std::optional<std::string> condition = std::nullopt);
         bool addGrade(Student& targetStudent, Subject& targetSubject, const float& grade);
         bool removeGrade(const Student& targetStudent, const Subject& targetSubject);

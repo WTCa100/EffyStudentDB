@@ -332,7 +332,8 @@ namespace Utilities::Sql
         return false;
     }
 
-    bool SqlAdapter::updateEntry(const uint16_t& targetId, const std::unordered_map<std::string, std::string> newValues, const std::string tableName)
+    bool SqlAdapter::updateEntry(
+        const uint16_t& targetId, const std::unordered_map<std::string, std::string> newValues, const std::string tableName)
     {
         LOG((*logger_), "Updating target entry: ", targetId, " in table: ", tableName);
         Table targetTable = sManager_->getTableSchema(tableName);
@@ -342,17 +343,19 @@ namespace Utilities::Sql
             return false;
         }
 
-        if(newValues.empty())
+        if (newValues.empty())
         {
             LOG((*logger_), "NewValues size = 0");
             return false;
         }
 
         AttrsValues updatePacket{};
-        for(const auto& [attrName, attrVal] : newValues)
+        for (const auto& [attrName, attrVal] : newValues)
         {
             LOG((*logger_), "Attr name: ", attrName, " attr val: ", attrVal);
-            updatePacket.push_back(std::make_pair(Utilities::Sql::Types::Attribute(attrName, Types::AttributeType::SQL_NULL, { Types::AttributeFlag::MISSING }, {}), attrVal));
+            updatePacket.push_back(std::make_pair(
+                Utilities::Sql::Types::Attribute(attrName, Types::AttributeType::SQL_NULL, { Types::AttributeFlag::MISSING }, {}),
+                attrVal));
         }
         std::string filter = "id = " + std::to_string(targetId);
         return sManager_->updateEntryFromTable(tableName, updatePacket, filter);
@@ -470,22 +473,22 @@ namespace Utilities::Sql
     bool SqlAdapter::addAttendees(std::vector<std::tuple<const uint16_t&, const uint16_t&, const double>> attendeesBatch)
     {
         const std::string attrStudentId = "studentId";
-        const std::string attrCourseId = "courseId";
-        const std::string points = "points";
+        const std::string attrCourseId  = "courseId";
+        const std::string points        = "points";
         LOG((*logger_), "Adding attendees with size=", attendeesBatch.size());
         Table targetTable = sManager_->getTableSchema(g_tableCourseAttendees);
         std::vector<AttrsValues> batchAttrsValues;
         batchAttrsValues.reserve(attendeesBatch.size());
-        for(const auto& rowInfo : attendeesBatch)
+        for (const auto& rowInfo : attendeesBatch)
         {
             uint16_t courseId, studentId;
             double points;
             studentId = std::get<static_cast<uint8_t>(AttendeeValuePosition::studentId)>(rowInfo);
             courseId  = std::get<static_cast<uint8_t>(AttendeeValuePosition::courseId)>(rowInfo);
             points    = std::get<static_cast<uint8_t>(AttendeeValuePosition::points)>(rowInfo);
-            batchAttrsValues.push_back({   std::make_pair(targetTable.getAttributeByName("studentId"), std::to_string(studentId)),
-                                           std::make_pair(targetTable.getAttributeByName("courseId"), std::to_string(courseId)),
-                                           std::make_pair(targetTable.getAttributeByName("points"), std::to_string(points)) });
+            batchAttrsValues.push_back({ std::make_pair(targetTable.getAttributeByName("studentId"), std::to_string(studentId)),
+                std::make_pair(targetTable.getAttributeByName("courseId"), std::to_string(courseId)),
+                std::make_pair(targetTable.getAttributeByName("points"), std::to_string(points)) });
         }
         return sManager_->addEntriesToTable(targetTable.getName(), batchAttrsValues);
     }

@@ -27,7 +27,7 @@ namespace Core
         LOG((*logger_), "Assigning attendees to courses.");
         for (auto& course : courses)
         {
-            const uint16_t& courseId = course.first;
+            const uint16_t& courseId  = course.first;
             Attendees& attendanceList = attendees_.at(courseId);
             std::stringstream filter;
             filter << "CourseId = " << courseId;
@@ -47,17 +47,11 @@ namespace Core
     {
         LOG((*logger_), "Extracting grades information.");
         std::vector<Grade> gradesRaw = sqlAdapter_->getGrades();
-        for(auto& grade: gradesRaw)
+        for (auto& grade : gradesRaw)
         {
             std::pair<uint16_t, Grade> entry = std::make_pair(grade.subjectId_, grade);
-            if(grades_.contains(grade.studentId_))
-            {
-                grades_.at(grade.studentId_).insert(entry);
-            }
-            else
-            {
-                grades_.insert(std::make_pair(grade.studentId_, std::map<uint16_t, Grade>{entry}));
-            }
+            if (grades_.contains(grade.studentId_)) { grades_.at(grade.studentId_).insert(entry); }
+            else { grades_.insert(std::make_pair(grade.studentId_, std::map<uint16_t, Grade>{ entry })); }
         }
     }
 
@@ -116,8 +110,8 @@ namespace Core
             uint16_t& subjectId = weight->subjectId_;
             double gradeValue   = 0.0f;
 
-            Grade& grade = remappedGrades.at(subjectId);
-            gradeValue                   = grade.value_;
+            Grade& grade         = remappedGrades.at(subjectId);
+            gradeValue           = grade.value_;
             double weightVerdict = gradeValue * weight->weight_;
             pointVerdict += weightVerdict;
             LOG((*logger_), "Calculated points: subjectId=", subjectId, " weight=", weight->weight_, " value=", gradeValue);
@@ -183,12 +177,12 @@ namespace Core
         std::cout << "Loading courses entries...\n";
         std::map<uint16_t, Course> mappedCourses =
             loadEntriesFromIds<Course>(courseIds, [this](std::string filter) { return sqlAdapter_->getCourses(filter); });
-        for(const auto& [courseId, courseObj] : mappedCourses)
+        for (const auto& [courseId, courseObj] : mappedCourses)
         {
             attendees_.insert(std::make_pair(courseId, Attendees(courseObj.maxStudents_)));
         }
-        
-            std::cout << "Loading student entries...\n";
+
+        std::cout << "Loading student entries...\n";
         std::map<uint16_t, Student> mappedStudents =
             loadEntriesFromIds<Student>(studentIds, [this](std::string filter) { return sqlAdapter_->getStudents(filter); });
 
@@ -238,8 +232,9 @@ namespace Core
         {
             const uint16_t& studentId = studentWithCourse.first;
             const uint16_t& courseId  = studentWithCourse.second;
-            const double& points = attendees_.at(courseId).getAttendeePoints(studentId);
-            LOG((*logger_), "Setting request: ", requestId, " as 'passed' (studentId: ", studentId, " courseId: ", courseId, "), points = ", points);
+            const double& points      = attendees_.at(courseId).getAttendeePoints(studentId);
+            LOG((*logger_), "Setting request: ", requestId, " as 'passed' (studentId: ", studentId, " courseId: ", courseId,
+                "), points = ", points);
             Request::Srequest& tmp = pendingRequests_.at(requestId);
             tmp.status_            = Request::requestStatus::Approved;
             acceptedIds.push_back(requestId);

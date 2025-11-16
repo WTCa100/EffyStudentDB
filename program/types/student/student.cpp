@@ -76,9 +76,9 @@ namespace Core::Types
             if (secondName_.has_value()) { refObj->secondName_ = concrete->secondName_; }
             // No else as by default secondName_ is set to nullopt
         }
-        refObj->lastName_         = lastName_.empty() ? concrete->lastName_ : lastName_;
-        refObj->email_            = email_.empty() ? concrete->email_ : email_;
-        refObj->schoolId_         = schoolId_ == g_inputMissingValue ? concrete->schoolId_ : schoolId_;
+        refObj->lastName_ = lastName_.empty() ? concrete->lastName_ : lastName_;
+        refObj->email_    = email_.empty() ? concrete->email_ : email_;
+        refObj->schoolId_ = schoolId_ == g_inputMissingValue ? concrete->schoolId_ : schoolId_;
         return refObj;
     }
 

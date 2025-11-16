@@ -6,10 +6,12 @@
 
 namespace Core::Display
 {
-    Menu::Menu(std::shared_ptr<Utilities::Logger> logger, std::shared_ptr<SessionData> sesData, std::shared_ptr<SqlAdapter> sqlAdapter) : logger_(logger),
-                                                                                                                                          sesData_(sesData),
-                                                                                                                                          inHandler_(Utilities::InputHandler()),
-                                                                                                                                          dsplHelper_(Core::Display::Helper(logger, sqlAdapter, sesData))
+    Menu::Menu(
+        std::shared_ptr<Utilities::Logger> logger, std::shared_ptr<SessionData> sesData, std::shared_ptr<SqlAdapter> sqlAdapter):
+        logger_(logger),
+        sesData_(sesData),
+        inHandler_(Utilities::InputHandler()),
+        dsplHelper_(Core::Display::Helper(logger, sqlAdapter, sesData))
     {
         LOG((*logger_), "Menu object created");
     }
@@ -72,22 +74,16 @@ namespace Core::Display
 
     void Menu::showSelection(const std::vector<std::shared_ptr<Entry>>& selection) const
     {
-        for (const auto& e : selection) 
-        {
-            showEntry(e);
-        }
+        for (const auto& e : selection) { showEntry(e); }
     }
 
     void Menu::showEntry(const std::shared_ptr<Entry> entry) const
     {
         const std::string& associatedTable = entry->associatedTable_;
-        const uint16_t& entryId = entry->id_;
+        const uint16_t& entryId            = entry->id_;
         std::cout << entry->toString() << "\n";
-        if(associatedTable == g_tableCourses)
-        {
-            dsplHelper_.displayAttendees(entryId);
-        }
-        else if(associatedTable == g_tableStudents)
+        if (associatedTable == g_tableCourses) { dsplHelper_.displayAttendees(entryId); }
+        else if (associatedTable == g_tableStudents)
         {
             std::cout << "Attended courses:\n";
             dsplHelper_.displayAttendedCourses(entryId);
@@ -156,10 +152,7 @@ namespace Core::Display
 
         std::cout << "Displaying " << targetTable << ": \n";
         std::cout << concreteList->size() << " entries\n";
-        for (const auto& entry : *concreteList)
-        {
-            showEntry(entry.second);
-        }
+        for (const auto& entry : *concreteList) { showEntry(entry.second); }
     }
 
     bool Menu::validateAction(const Action& act)

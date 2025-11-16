@@ -287,8 +287,7 @@ bool Session::handleDirectAction(const Action& userAction)
     display_.showSelection(affectedEntries);
     if (userCommand == Core::ActionType::Direct::actionFind) { return true; }
 
-    if (userCommand == Core::ActionType::Direct::actionEdit ||
-        userCommand == Core::ActionType::Direct::actionRemove)
+    if (userCommand == Core::ActionType::Direct::actionEdit || userCommand == Core::ActionType::Direct::actionRemove)
     {
         if (!display_.promptAlterAll(filter, affectedEntries.size()))
         {
@@ -302,10 +301,7 @@ bool Session::handleDirectAction(const Action& userAction)
     {
         for (const auto& val : affectedEntries)
         {
-            if (sAdapter_->removeEntry(*val))
-            {
-                sesData_->removeEntry(val->id_, userTarget);
-            }
+            if (sAdapter_->removeEntry(*val)) { sesData_->removeEntry(val->id_, userTarget); }
         }
         std::cout << "Removed entry from table " << userTarget << "\n";
         return true;
@@ -316,7 +312,7 @@ bool Session::handleDirectAction(const Action& userAction)
     {
         // Get new values 1st
         std::cout << "Modifying existing values.\n";
-        std::shared_ptr<Entry> entriesNew = makeConcreteType(userTarget);
+        std::shared_ptr<Entry> entriesNew                            = makeConcreteType(userTarget);
         std::unordered_map<std::string, std::string> changesToCommit = entriesNew->userConstruct(false);
         for (auto& val : affectedEntries)
         {

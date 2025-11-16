@@ -3,9 +3,9 @@
 #include "../../utilities/inputHandler/inputHandler.hpp"
 #include "../../utilities/logger/logger.hpp"
 #include "../../utilities/sqlite3/sqlAdapter/sqlAdapter.hpp"
+#include "../displayHelper/displayHelper.hpp"
 #include "../session/action/action.hpp"
 #include "../session/data/data.hpp"
-#include "../displayHelper/displayHelper.hpp"
 
 #include <memory>
 #include <set>
@@ -31,8 +31,11 @@ namespace Core::Display
         const Core::Display::Helper dsplHelper_;
 
         bool validateAction(const Action& act);
+
       public:
-        Menu(std::shared_ptr<Utilities::Logger> logger, std::shared_ptr<SessionData> sesData, std::shared_ptr<SqlAdapter> sqlAdapter);
+        Menu(std::shared_ptr<Utilities::Logger> logger,
+            std::shared_ptr<SessionData> sesData,
+            std::shared_ptr<SqlAdapter> sqlAdapter);
         MainMenuOption showMainMenu();
         Action manageDatabase();
         Action createAction();

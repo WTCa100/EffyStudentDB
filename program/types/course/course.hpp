@@ -21,7 +21,6 @@ namespace Core::Types
     struct Course : public Entry
     {
         // SQL attribute members
-        Attendees attendees_;
         std::map<uint16_t, std::shared_ptr<CourseSubjectWeight>> subjectWithWeight_;
         std::string name_;
         uint16_t minStudents_;

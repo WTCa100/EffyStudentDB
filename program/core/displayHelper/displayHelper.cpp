@@ -48,6 +48,7 @@ namespace Core::Display
         }
 
         const std::shared_ptr<abstractTypeList>  dataStudents = data_->getEntries(g_tableStudents);
+        std::cout << "Attendee count: " << courseAttendees.size() << " students." << std::endl; 
         for(const auto& attendee : courseAttendees)
         {
             const uint16_t studentId  = std::get<static_cast<uint16_t>(AttendeeValuePosition::studentId)>(attendee);

@@ -202,6 +202,46 @@ namespace Utilities::Sql
         return executeOut(ss.str());
     }
 
+    bool SqlManager::addEntriesToTable(std::string tableName, std::vector<AttrsValues> newBatchVals)
+    {
+        LOG((*logger_), "Adding n = ", newBatchVals.size(), " entries to table = ", tableName);
+        if(newBatchVals.empty())
+        {
+            LOG((*logger_), "No entries inside newBatchVals - aborting...");
+            return false;
+        }
+        
+        std::stringstream command;
+        command << "INSERT INTO " << tableName << " (";
+        const AttrsValues& referenceAttrs = newBatchVals.at(0);
+        for (size_t pos = 0; pos < referenceAttrs.size(); ++pos)
+        {
+            const Attribute& attr = referenceAttrs.at(pos).first;
+            command << attr.name_;
+            if (pos < referenceAttrs.size() - 1) { command << ", "; }
+        }
+        command << ") VALUES ";
+        for (size_t batchPos = 0; batchPos < newBatchVals.size(); batchPos++)
+        {
+            AttrsValues& newVals = newBatchVals.at(batchPos);
+            command << " ( ";
+            for (size_t pos = 0; pos < newVals.size(); ++pos)
+            {
+                const Attribute& attr = newVals.at(pos).first;
+                std::string val       = newVals.at(pos).second;
+                if (attr.type_ == AttributeType::SQL_TEXT) { command << "'" << val << "'"; }
+                else { command << val; }
+    
+                if (pos < newVals.size() - 1) { command << ", "; }
+            }
+            command << "), ";
+        }
+        command.seekp(-2, command.cur);
+        command << ";";
+        return executeOut(command.str());
+    }
+
+
     bool SqlManager::updateEntryFromTable(std::string tableName, AttrsValues newVals, std::string condition)
     {
         LOG((*logger_), "Executing update. Target table: ", tableName, " condition:", condition)

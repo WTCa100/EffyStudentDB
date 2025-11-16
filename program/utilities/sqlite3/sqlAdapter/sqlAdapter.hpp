@@ -53,6 +53,7 @@ namespace Utilities::Sql
         bool removeGrade(const Student& targetStudent, const Subject& targetSubject);
 
         bool addAttendee(const uint16_t& studentId, const uint16_t& courseId, const double& poitns = 100.0);
+        bool addAttendees(std::vector<std::tuple<const uint16_t&, const uint16_t&, const double>> attendeesBatch);
         bool removeAttendee(const uint16_t& studentId, const uint16_t& courseId);
         bool openCourse(const uint16_t& courseId);
         bool closeCourse(const uint16_t& courseId);

@@ -30,6 +30,8 @@ namespace Core
         std::shared_ptr<SqlAdapter> sqlAdapter_;
         std::map<uint16_t, Types::Request::Srequest> pendingRequests_;
         std::map<std::pair<uint16_t, uint16_t>, uint16_t> acceptedStudents_;
+        std::map<uint16_t, std::map<uint16_t, Grade>> grades_;
+        std::map<uint16_t, Attendees> attendees_;
 
         std::unordered_set<uint16_t> extractIds(std::function<uint16_t(Request::Srequest)> extractConcrete) const;
         template<typename T>
@@ -41,9 +43,10 @@ namespace Core
             std::map<uint16_t, std::shared_ptr<Info>> Origin::* infoHolder) const;
         void assignAttendees(std::map<uint16_t, Course>& courses, const std::map<uint16_t, Student>& students);
         double calculatePoints(const Student& invoker, Course& target);
+        void loadGrades();
         void loadPresentAttendees(std::map<uint16_t, Course>& courses, const std::map<uint16_t, Student>& students);
         void addToCourse(Course& course, Student& student, double points, const uint16_t requestId);
-        void handleAccepted(std::map<uint16_t, Course>& courses);
+        void handleAccepted();
         void handleDenied();
 
       public:

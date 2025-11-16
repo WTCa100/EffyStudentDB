@@ -1,1 +1,3 @@
 add_library(RequestResolver STATIC requestResolver.cpp requestResolver.hpp)
+
+target_link_libraries(RequestResolver PUBLIC CourseAttendees)

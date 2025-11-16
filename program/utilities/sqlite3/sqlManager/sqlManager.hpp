@@ -62,6 +62,7 @@ namespace Utilities::Sql
 
         // Move it to adapter
         bool addEntryToTable(std::string tableName, AttrsValues newVals);
+        bool addEntriesToTable(std::string tableName, std::vector<AttrsValues> newBatchVals);
         bool updateEntryFromTable(std::string tableName, AttrsValues newVals, std::string condition);
         bool removeEntryFromTable(std::string tableName, uint16_t entryId);
         bool removeEntryFromTable(std::string tableName, std::string condition);

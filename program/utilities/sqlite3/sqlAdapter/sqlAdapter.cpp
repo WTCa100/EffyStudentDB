@@ -239,7 +239,6 @@ namespace Utilities::Sql
             tmpCourse.subjectWithWeight_    = {};
             tmpCourse.isOpen_               = static_cast<OpenState>(std::stoi(tokenizedCourse.at(5)));
             tmpCourse.recrutingTurn_        = std::stoi(tokenizedCourse.at(6));
-            tmpCourse.attendees_            = Attendees(tmpCourse.maxStudents_);
 
             courses.push_back(std::move(tmpCourse));  // It's quite big move makes more sense here
         }
@@ -466,6 +465,29 @@ namespace Utilities::Sql
         }
         LOG((*logger_), "Could not add attendee");
         return false;
+    }
+
+    bool SqlAdapter::addAttendees(std::vector<std::tuple<const uint16_t&, const uint16_t&, const double>> attendeesBatch)
+    {
+        const std::string attrStudentId = "studentId";
+        const std::string attrCourseId = "courseId";
+        const std::string points = "points";
+        LOG((*logger_), "Adding attendees with size=", attendeesBatch.size());
+        Table targetTable = sManager_->getTableSchema(g_tableCourseAttendees);
+        std::vector<AttrsValues> batchAttrsValues;
+        batchAttrsValues.reserve(attendeesBatch.size());
+        for(const auto& rowInfo : attendeesBatch)
+        {
+            uint16_t courseId, studentId;
+            double points;
+            studentId = std::get<static_cast<uint8_t>(AttendeeValuePosition::studentId)>(rowInfo);
+            courseId  = std::get<static_cast<uint8_t>(AttendeeValuePosition::courseId)>(rowInfo);
+            points    = std::get<static_cast<uint8_t>(AttendeeValuePosition::points)>(rowInfo);
+            batchAttrsValues.push_back({   std::make_pair(targetTable.getAttributeByName("studentId"), std::to_string(studentId)),
+                                           std::make_pair(targetTable.getAttributeByName("courseId"), std::to_string(courseId)),
+                                           std::make_pair(targetTable.getAttributeByName("points"), std::to_string(points)) });
+        }
+        return sManager_->addEntriesToTable(targetTable.getName(), batchAttrsValues);
     }
 
     bool SqlAdapter::removeAttendee(const uint16_t& studentId, const uint16_t& courseId)

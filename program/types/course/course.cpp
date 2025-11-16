@@ -74,7 +74,6 @@ namespace Core::Types
         retObj->maxStudents_             = maxStudents_ == 0 ? concrete->maxStudents_ : maxStudents_;
         retObj->baseMinimalPoints_       = baseMinimalPoints_ == 0 ? concrete->baseMinimalPoints_ : baseMinimalPoints_;
         retObj->averageStudentPoints_    = averageStudentPoints_ == 0 ? concrete->averageStudentPoints_ : averageStudentPoints_;
-        retObj->attendees_               = attendees_.empty() ? concrete->attendees_ : attendees_;
         retObj->isOpen_                  = isOpen_ == OpenState::notSet ? concrete->isOpen_ : isOpen_;
         retObj->recrutingTurn_           = recrutingTurn_ == turnNotSet ? concrete->recrutingTurn_ : recrutingTurn_;
         return retObj;
@@ -82,7 +81,6 @@ namespace Core::Types
 
     Course::Course():
         Entry(0, g_tableCourses),
-        attendees_({}),
         subjectWithWeight_({}),
         name_(""),
         minStudents_(0),
@@ -101,7 +99,6 @@ namespace Core::Types
         uint8_t isOpen,
         uint16_t recrutingTurn):
         Entry(id, g_tableCourses),
-        attendees_(maxStudents),
         subjectWithWeight_({}),
         name_(name),
         minStudents_(minStudents),
@@ -114,7 +111,6 @@ namespace Core::Types
 
     Course::Course(uint16_t minStudents, uint16_t maxStudents, uint16_t baseMinimalPoints, std::string name):
         Entry(0, g_tableCourses),
-        attendees_(maxStudents),
         subjectWithWeight_({}),
         name_(name),
         minStudents_(minStudents),
@@ -140,7 +136,6 @@ namespace Core::Types
         averageStudentPoints_ = otherCourse.averageStudentPoints_;
         isOpen_               = otherCourse.isOpen_;
         recrutingTurn_        = otherCourse.recrutingTurn_;
-        attendees_            = otherCourse.attendees_;
         return *this;
     }
 

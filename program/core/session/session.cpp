@@ -4,6 +4,8 @@
 #include "../../utilities/common/constants.hpp"
 #include "../../utilities/common/stringManip.hpp"
 
+#include "./commands/CommandFactory.hpp"
+
 #include <tuple>
 
 using namespace Utilities::Common::Constants;
@@ -84,6 +86,50 @@ void Session::fetchSrequests()
     for (const auto& entry : dbSrequests) { sesData_->addEntry(std::make_shared<Srequest>(entry)); }
 }
 
+void Session::manageDatabase()
+{
+    using Core::Commands::CommandFactory;
+    using Core::Commands::ICommand;
+    fetchAll();
+    CommandFactory commandFactory = CommandFactory(logger_, sAdapter_, sesData_);
+    do
+    {
+        LOG((*logger_), "Entered, database management");
+        std::string rawCommand = Utilities::InputHandler::toUpper(Utilities::InputHandler::getStringBeauty("Command"));
+        std::unique_ptr<ICommand> command = commandFactory.makeCommand(rawCommand);
+
+        if (!command)
+        {
+            LOG((*logger_), "Got invalid command: \"", rawCommand, "\"");
+            std::cout << "Invalid command!\n";
+            continue;
+        }
+
+        if (command->name() == "exit")
+        {
+            break;
+        }
+
+        if (command->exec())
+        {
+            LOG((*logger_), "Command: ", command->name(), " executed succesfully");
+            std::cout << "Command executed successfully!\n";
+        }
+        handleCommand(command);
+    } while (true);
+    dropAll();    
+}
+
+bool Session::handleCommand([[maybe_unused]] const std::unique_ptr<Core::Commands::ICommand>& command)
+{
+    // if (Action::isCommandIndirect(userAction.getCommand())) { return handleIndirectAction(userAction); }
+    // else { return handleDirectAction(userAction); }
+    LOG((*logger_), "Handling abstract command.");
+    
+    return true;
+}
+
+
 void Session::run()
 {
     LOG((*logger_), "Main run function called");
@@ -93,16 +139,9 @@ void Session::run()
         switch (op)
         {
             case Core::Display::MainMenuOption::manageDb :
-                {
-                    fetchAll();
-                    Action command;
-                    do {
-                        command = display_.manageDatabase();
-                        handleAction(command);
-                    } while (command.getCommand() != Core::ActionType::Short::actionExit);
-                    dropAll();
+                    manageDatabase();
                     break;
-                }
+
             case Core::Display::MainMenuOption::handleRqs :
                 {
                     RequestResolver requestCalculator = RequestResolver(logger_, sAdapter_, sesData_);
@@ -329,13 +368,6 @@ bool Session::handleDirectAction(const Action& userAction)
     }
 
     return false;
-}
-
-bool Session::handleAction(const Action& userAction)
-{
-    LOG((*logger_), "Handling action");
-    if (Action::isCommandIndirect(userAction.getCommand())) { return handleIndirectAction(userAction); }
-    else { return handleDirectAction(userAction); }
 }
 
 void Session::deleteCourseSubjectWeight(const std::shared_ptr<CourseSubjectWeight> targetWeight)

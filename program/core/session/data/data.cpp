@@ -25,7 +25,7 @@ std::set<std::string> SessionData::getTableNames() const
     return names;
 }
 
-bool SessionData::verifyTable(std::string tableName) const
+bool SessionData::tableExists(std::string tableName) const
 {
     if (!entryList_.contains(tableName))
     {
@@ -37,7 +37,7 @@ bool SessionData::verifyTable(std::string tableName) const
 
 void SessionData::addEntry(const std::shared_ptr<Entry> newEntry)
 {
-    if (!verifyTable(newEntry->associatedTable_)) { return; }
+    if (!tableExists(newEntry->associatedTable_)) { return; }
 
     std::map<uint16_t, std::shared_ptr<Entry>>& concreteMap = entryList_.at(newEntry->associatedTable_);
     if (!concreteMap.contains(newEntry->id_)) { concreteMap.insert(std::make_pair(newEntry->id_, newEntry)); }
@@ -45,14 +45,14 @@ void SessionData::addEntry(const std::shared_ptr<Entry> newEntry)
 
 void SessionData::removeEntry(const uint16_t targetId, const std::string& associatedTable)
 {
-    if (!verifyTable(associatedTable)) { return; }
+    if (!tableExists(associatedTable)) { return; }
     std::map<uint16_t, std::shared_ptr<Entry>>& concreteMap = entryList_.at(associatedTable);
     if (concreteMap.contains(targetId)) { concreteMap.erase(targetId); }
 }
 
 void SessionData::updateEntry(const uint16_t targetId, const std::shared_ptr<Entry> alteredEntry)
 {
-    if (!verifyTable(alteredEntry->associatedTable_)) { return; }
+    if (!tableExists(alteredEntry->associatedTable_)) { return; }
 
     abstractTypeList& concreteMap = entryList_.at(alteredEntry->associatedTable_);
     if (concreteMap.contains(targetId)) { *concreteMap.at(targetId) = *alteredEntry->mirrorMissing(concreteMap.at(targetId)); }
@@ -61,13 +61,13 @@ void SessionData::updateEntry(const uint16_t targetId, const std::shared_ptr<Ent
 
 bool SessionData::isPresent(const uint16_t targetId, const std::string& associatedTable) const
 {
-    if (!verifyTable(associatedTable)) { return false; }
+    if (!tableExists(associatedTable)) { return false; }
     return entryList_.at(associatedTable).contains(targetId);
 }
 
 std::shared_ptr<Entry> SessionData::getEntry(const uint16_t targetId, const std::string& associatedTable)
 {
-    if (!verifyTable(associatedTable)) { return nullptr; }
+    if (!tableExists(associatedTable)) { return nullptr; }
 
     if (entryList_.at(associatedTable).contains(targetId)) { return entryList_.at(associatedTable).at(targetId); }
 
@@ -76,7 +76,7 @@ std::shared_ptr<Entry> SessionData::getEntry(const uint16_t targetId, const std:
 
 std::shared_ptr<abstractTypeList> SessionData::getEntries(const std::string& table)
 {
-    if (!verifyTable(table))
+    if (!tableExists(table))
     {
         std::cout << "No such table: " << table << "\n";
         return nullptr;

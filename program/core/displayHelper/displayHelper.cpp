@@ -19,6 +19,7 @@ namespace Core::Display
             return;
         }
 
+        std::cout << "Attended courses:\n";
         std::shared_ptr<abstractTypeList> dataCourses = data_->getEntries(g_tableCourses);
         for (const auto& attendee : courseAttendees)
         {
@@ -73,6 +74,14 @@ namespace Core::Display
         const std::string filter                             = "studentId = " + std::to_string(studentId);
         const std::vector<Grade> grades                      = sAdapter_->getGrades(filter);
         const std::shared_ptr<abstractTypeList> dataSubjects = data_->getEntries(g_tableSubjects);
+
+        if(grades.empty())
+        {
+            std::cout << "Student has no grades!\n";
+            return;
+        }
+
+        std::cout << "Grades:\n";
         for (const auto& grade : grades)
         {
             std::cout << grade.id_ << ". ";

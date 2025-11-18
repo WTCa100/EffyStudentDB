@@ -4,6 +4,7 @@
 #include "../../utilities/sqlite3/sqlAdapter/sqlAdapter.hpp"
 #include "../../utilities/workspaceManager/wsManager.hpp"
 #include "../menu/menu.hpp"
+#include "commands/ICommand.hpp"
 #include "action/action.hpp"
 #include "data/data.hpp"
 #include "requestResolver/requestResolver.hpp"
@@ -49,9 +50,10 @@ class Session
 
   public:
     void run();
-    bool handleAction(const Action& userAction);
+    bool handleCommand(const std::unique_ptr<Core::Commands::ICommand>& command);
     bool handleIndirectAction(const Action& userAction);
     bool handleDirectAction(const Action& userAction);
+    void manageDatabase();
     std::shared_ptr<Entry> makeConcreteType(const std::string& tableName) const;
 
     Session(std::shared_ptr<WsManager> wsMgr);

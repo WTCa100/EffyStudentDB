@@ -3,7 +3,6 @@
 #include "../../types/entry.hpp"
 #include "../../utilities/common/constants.hpp"
 #include "../../utilities/common/stringManip.hpp"
-
 #include "./commands/CommandFactory.hpp"
 
 #include <tuple>
@@ -92,10 +91,9 @@ void Session::manageDatabase()
     using Core::Commands::ICommand;
     fetchAll();
     CommandFactory commandFactory = CommandFactory(logger_, sAdapter_, sesData_);
-    do
-    {
+    do {
         LOG((*logger_), "Entered, database management");
-        std::string rawCommand = Utilities::InputHandler::toUpper(Utilities::InputHandler::getStringBeauty("Command"));
+        std::string rawCommand            = Utilities::InputHandler::toUpper(Utilities::InputHandler::getStringBeauty("Command"));
         std::unique_ptr<ICommand> command = commandFactory.makeCommand(rawCommand);
 
         if (!command)
@@ -105,10 +103,7 @@ void Session::manageDatabase()
             continue;
         }
 
-        if (command->name() == "exit")
-        {
-            break;
-        }
+        if (command->name() == "exit") { break; }
 
         if (command->exec())
         {
@@ -117,7 +112,7 @@ void Session::manageDatabase()
         }
         handleCommand(command);
     } while (true);
-    dropAll();    
+    dropAll();
 }
 
 bool Session::handleCommand([[maybe_unused]] const std::unique_ptr<Core::Commands::ICommand>& command)
@@ -125,10 +120,9 @@ bool Session::handleCommand([[maybe_unused]] const std::unique_ptr<Core::Command
     // if (Action::isCommandIndirect(userAction.getCommand())) { return handleIndirectAction(userAction); }
     // else { return handleDirectAction(userAction); }
     LOG((*logger_), "Handling abstract command.");
-    
+
     return true;
 }
-
 
 void Session::run()
 {
@@ -138,9 +132,7 @@ void Session::run()
         Core::Display::MainMenuOption op = display_.showMainMenu();
         switch (op)
         {
-            case Core::Display::MainMenuOption::manageDb :
-                    manageDatabase();
-                    break;
+            case Core::Display::MainMenuOption::manageDb : manageDatabase(); break;
 
             case Core::Display::MainMenuOption::handleRqs :
                 {

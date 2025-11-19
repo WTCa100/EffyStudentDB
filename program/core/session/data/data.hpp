@@ -18,11 +18,11 @@ class SessionData
 {
   private:
     std::map<std::string, abstractTypeList> entryList_;
-    
-    public:
+
+  public:
     SessionData();
     ~SessionData() = default;
-    
+
     std::set<std::string> getTableNames() const;
     bool tableExists(std::string tableName) const;
     void addEntry(const std::shared_ptr<Entry> newEntry);

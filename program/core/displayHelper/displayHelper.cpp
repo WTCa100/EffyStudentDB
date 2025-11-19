@@ -75,7 +75,7 @@ namespace Core::Display
         const std::vector<Grade> grades                      = sAdapter_->getGrades(filter);
         const std::shared_ptr<abstractTypeList> dataSubjects = data_->getEntries(g_tableSubjects);
 
-        if(grades.empty())
+        if (grades.empty())
         {
             std::cout << "Student has no grades!\n";
             return;

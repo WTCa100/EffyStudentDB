@@ -4,8 +4,8 @@
 #include "../../utilities/sqlite3/sqlAdapter/sqlAdapter.hpp"
 #include "../../utilities/workspaceManager/wsManager.hpp"
 #include "../menu/menu.hpp"
-#include "commands/ICommand.hpp"
 #include "action/action.hpp"
+#include "commands/ICommand.hpp"
 #include "data/data.hpp"
 #include "requestResolver/requestResolver.hpp"
 

@@ -28,5 +28,5 @@ namespace Core::Commands
         std::cout << helpMsg.str();
         return true;
     }
-} // namespace Core::Commands
+}  // namespace Core::Commands
 

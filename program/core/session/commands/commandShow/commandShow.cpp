@@ -13,7 +13,7 @@ namespace Core::Commands
             errorMsg << "Entry with id " << id << " does not exists but was provided by sessionData!"; 
             throw std::runtime_error(errorMsg.str());
         }
-        std::cout << entry->toString();
+        std::cout << entry->toString() << std::endl;
 
         if(target_ == g_tableCourses) { displayHelper_->displayAttendees(entry->id_); }
         else if(target_ == g_tableStudents)

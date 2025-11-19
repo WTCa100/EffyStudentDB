@@ -15,7 +15,10 @@ namespace Core::Commands
     {
         type = 0,
         target = 1,
-        optionalTag = 2
+        optionalTag = 2,
+
+        linkTarget = 1,
+        linkInvoker = 2,
     };
 
     class CommandFactory

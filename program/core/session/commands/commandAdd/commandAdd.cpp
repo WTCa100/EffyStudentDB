@@ -4,7 +4,7 @@ namespace Core::Commands
 {
     bool CommandAdd::exec()
     {
-        LOG((*logger_), "Executing AddCommand");
+        LOG((*logger_), "Executing CommandAdd");
         if(!newEntry_)
         {
             LOG((*logger_), "Provided entry is null!");

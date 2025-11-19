@@ -4,6 +4,8 @@
 #include "commandHelp/commandHelp.hpp"
 #include "commandAdd/commandAdd.hpp"
 #include "commandShow/commandShow.hpp"
+#include "commandAssign/commandAssign.hpp"
+#include "../../../utilities/inputHandler/inputHandler.hpp"
 #include "../../../utilities/common/stringManip.hpp"
 
 
@@ -19,6 +21,7 @@ namespace Core::Commands
             return false;
         }
 
+        const size_t commandSize = tokenizedCommand.size();
         const std::string commandType = tokenizedCommand.at(uint8_t(CommandTokensPosition::type));
         // First check if its a simple command and if its valid.
         if(commandType == "HELP" ||
@@ -28,17 +31,16 @@ namespace Core::Commands
             return true;
         }
 
+        if(commandSize < 2)
+        {
+            LOG((*logger_), "Non-simple command of invalid size of 1");
+            return false;
+        }
         // Second check if its a normal command and if its valid.
         if(commandType == "ADD" ||
            commandType == "SHOW")
         {
             LOG((*logger_), "Command is a normal command.");
-            if(tokenizedCommand.size() < 2)
-            {
-                LOG((*logger_), "Normal command of invalid size of 1");
-                return false;
-            }
-
             const std::string commandTarget = tokenizedCommand.at(uint8_t(CommandTokensPosition::target));
             if(!sessionData_->tableExists(commandTarget))
             {
@@ -50,6 +52,24 @@ namespace Core::Commands
         }
 
         // Thrice check if its a link command and if its valid.
+        if(commandSize < 3)
+        {
+            LOG((*logger_), "Link command of invalid size. (Expected 3 got ", commandSize, ")");
+            return false;
+        }
+
+        if(commandType == "ASSIGN")
+        {
+            LOG((*logger_), "Command is linking command.");
+            const std::string linkTarget = tokenizedCommand.at(uint8_t(CommandTokensPosition::linkTarget));
+            const std::string linkInvoker = tokenizedCommand.at(uint8_t(CommandTokensPosition::linkInvoker));
+            if(!Utilities::InputHandler::isNumber(linkTarget) || !Utilities::InputHandler::isNumber(linkInvoker))
+            {
+                LOG((*logger_), "Values are not integers! linkTarget=", linkTarget, " linkInvoker=", linkInvoker);
+                return false;
+            }
+            return true;
+        }
         return false;
     }
 
@@ -94,6 +114,28 @@ namespace Core::Commands
             std::shared_ptr<Entry> newEntry = makeConcreteType(commandTarget);
             newEntry->userConstruct();
             return std::make_unique<CommandAdd>(logger_, sAdapter_, sessionData_, newEntry);
+        }
+
+        if(commandType == "ASSIGN")
+        {
+            // No exception ensured by previous validation.
+            const uint16_t targetCourseId = uint16_t(std::stoul(tokens.at(uint8_t(CommandTokensPosition::linkTarget))));
+            const uint16_t targetStudentId = uint16_t(std::stoul(tokens.at(uint8_t(CommandTokensPosition::linkInvoker))));
+            
+            if(!sessionData_->isPresent(targetCourseId, g_tableCourses))
+            {
+                LOG((*logger_), "No such course with id: ", targetCourseId);
+                std::cout << "Could not assign student to course. " << targetCourseId << " is not a valid course ID!\n";
+                return nullptr;
+            }
+
+            if(!sessionData_->isPresent(targetStudentId, g_tableStudents))
+            {
+                LOG((*logger_), "No such student with id: ", targetStudentId);
+                std::cout << "Could not assign student to course. " << targetStudentId << " is not a valid student ID!\n";
+                return nullptr;
+            }
+            return std::make_unique<CommandAssign>(logger_, sAdapter_, targetCourseId, targetStudentId);
         }
 
         if(commandType == "SHOW")

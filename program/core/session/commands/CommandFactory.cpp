@@ -21,31 +21,26 @@ namespace Core::Commands
     namespace
     {
         // Command type constants
-        constexpr std::string_view CMD_EXIT = "EXIT";
-        constexpr std::string_view CMD_HELP = "HELP";
-        constexpr std::string_view CMD_LIST = "LIST";
-        constexpr std::string_view CMD_ADD = "ADD";
-        constexpr std::string_view CMD_SHOW = "SHOW";
-        constexpr std::string_view CMD_FIND = "FIND";
+        constexpr std::string_view CMD_EXIT   = "EXIT";
+        constexpr std::string_view CMD_HELP   = "HELP";
+        constexpr std::string_view CMD_LIST   = "LIST";
+        constexpr std::string_view CMD_ADD    = "ADD";
+        constexpr std::string_view CMD_SHOW   = "SHOW";
+        constexpr std::string_view CMD_FIND   = "FIND";
         constexpr std::string_view CMD_REMOVE = "REMOVE";
-        constexpr std::string_view CMD_EDIT = "EDIT";
-        constexpr std::string_view CMD_OPEN = "OPEN";
-        constexpr std::string_view CMD_CLOSE = "CLOSE";
+        constexpr std::string_view CMD_EDIT   = "EDIT";
+        constexpr std::string_view CMD_OPEN   = "OPEN";
+        constexpr std::string_view CMD_CLOSE  = "CLOSE";
         constexpr std::string_view CMD_ASSIGN = "ASSIGN";
-        constexpr std::string_view CMD_DROP = "DROP";
+        constexpr std::string_view CMD_DROP   = "DROP";
 
         // Helper to check if command type matches
-        bool isCommandType(std::string_view cmd, std::string_view type)
-        {
-            return cmd == type;
-        }
+        bool isCommandType(std::string_view cmd, std::string_view type) { return cmd == type; }
 
         // Helper to check if command type is one of several
-        bool isCommandTypeOneOf(std::string_view cmd,
-            std::initializer_list<std::string_view> types)
+        bool isCommandTypeOneOf(std::string_view cmd, std::initializer_list<std::string_view> types)
         {
-            return std::any_of(types.begin(), types.end(),
-                [cmd](std::string_view type) { return cmd == type; });
+            return std::any_of(types.begin(), types.end(), [cmd](std::string_view type) { return cmd == type; });
         }
     }  // namespace
 
@@ -62,7 +57,7 @@ namespace Core::Commands
         const std::string commandType = tokenizedCommand.at(uint8_t(CommandTokensPosition::type));
 
         // Check simple commands (no additional arguments required)
-        if (isCommandTypeOneOf(commandType, {CMD_HELP, CMD_EXIT, CMD_LIST}))
+        if (isCommandTypeOneOf(commandType, { CMD_HELP, CMD_EXIT, CMD_LIST }))
         {
             LOG((*logger_), "Command is a simple command.");
             return true;
@@ -75,7 +70,7 @@ namespace Core::Commands
         }
 
         // Check normal commands (require a table target)
-        if (isCommandTypeOneOf(commandType, {CMD_ADD, CMD_SHOW, CMD_FIND, CMD_REMOVE, CMD_EDIT}))
+        if (isCommandTypeOneOf(commandType, { CMD_ADD, CMD_SHOW, CMD_FIND, CMD_REMOVE, CMD_EDIT }))
         {
             LOG((*logger_), "Command is a normal command.");
             const std::string commandTarget = tokenizedCommand.at(uint8_t(CommandTokensPosition::target));
@@ -88,7 +83,7 @@ namespace Core::Commands
         }
 
         // Check course management commands (require numeric course ID)
-        if (isCommandTypeOneOf(commandType, {CMD_OPEN, CMD_CLOSE}))
+        if (isCommandTypeOneOf(commandType, { CMD_OPEN, CMD_CLOSE }))
         {
             LOG((*logger_), "Command is course management.");
             try
@@ -112,7 +107,7 @@ namespace Core::Commands
         }
 
         // Check linking commands (ASSIGN, DROP)
-        if (isCommandTypeOneOf(commandType, {CMD_ASSIGN, CMD_DROP}))
+        if (isCommandTypeOneOf(commandType, { CMD_ASSIGN, CMD_DROP }))
         {
             LOG((*logger_), "Command is linking command.");
             const std::string linkTarget  = tokenizedCommand.at(uint8_t(CommandTokensPosition::linkTarget));
@@ -163,14 +158,11 @@ namespace Core::Commands
         const std::string commandType = tokens.at(uint8_t(CommandTokensPosition::type));
 
         // Simple commands
-        if (isCommandType(commandType, CMD_EXIT))
-            return std::make_unique<CommandExit>(logger_);
+        if (isCommandType(commandType, CMD_EXIT)) return std::make_unique<CommandExit>(logger_);
 
-        if (isCommandType(commandType, CMD_HELP))
-            return std::make_unique<CommandHelp>(logger_);
+        if (isCommandType(commandType, CMD_HELP)) return std::make_unique<CommandHelp>(logger_);
 
-        if (isCommandType(commandType, CMD_LIST))
-            return std::make_unique<CommandList>(logger_, sAdapter_);
+        if (isCommandType(commandType, CMD_LIST)) return std::make_unique<CommandList>(logger_, sAdapter_);
 
         const std::string commandTarget = tokens.at(uint8_t(CommandTokensPosition::target));
 
@@ -212,15 +204,13 @@ namespace Core::Commands
 
         if (isCommandType(commandType, CMD_OPEN))
         {
-            if (!validateCourseId(courseId, "open"))
-                return nullptr;
+            if (!validateCourseId(courseId, "open")) return nullptr;
             return std::make_unique<CommandOpen>(logger_, sessionData_, sAdapter_, courseId);
         }
 
         if (isCommandType(commandType, CMD_CLOSE))
         {
-            if (!validateCourseId(courseId, "close"))
-                return nullptr;
+            if (!validateCourseId(courseId, "close")) return nullptr;
             return std::make_unique<CommandClose>(logger_, sessionData_, sAdapter_, courseId);
         }
 
@@ -230,16 +220,14 @@ namespace Core::Commands
 
         if (isCommandType(commandType, CMD_ASSIGN))
         {
-            if (!validateCourseId(targetCourseId, "assign student to") ||
-                !validateStudentId(targetStudentId, "assign to course"))
+            if (!validateCourseId(targetCourseId, "assign student to") || !validateStudentId(targetStudentId, "assign to course"))
                 return nullptr;
             return std::make_unique<CommandAssign>(logger_, sAdapter_, targetCourseId, targetStudentId);
         }
 
         if (isCommandType(commandType, CMD_DROP))
         {
-            if (!validateCourseId(targetCourseId, "drop student from") ||
-                !validateStudentId(targetStudentId, "drop from course"))
+            if (!validateCourseId(targetCourseId, "drop student from") || !validateStudentId(targetStudentId, "drop from course"))
                 return nullptr;
             return std::make_unique<CommandDrop>(logger_, sAdapter_, targetCourseId, targetStudentId);
         }

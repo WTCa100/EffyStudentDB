@@ -54,7 +54,7 @@ There are a few management options present in this screen. Each of them triggers
 - **ADD** - allows the user to *add* entry to a given *table* <br>
 The user will be prompted to provide new information to create an entry to the database at *table* name that was provided <br>
 - **REMOVE** - allows the user to *remove* entry from a given *table* <br>
-The user will be prompted to provide filter information, on which entries shall be deleted. Filtered options will be displayed on the screen and a final approval prompt displayed. If the user agrees, everything listed will be deleted. <br>
+The user will be prompted to provide filter information, on which entries shall be deleted. Filtered options will be displayed on the screen, and a final approval promptwill be  displayed. If the user agrees, everything listed will be deleted. <br>
 - **EDIT** - allows the user to *edit* entry from a given *table* with new values <br>
 The user will be prompted to provide filter information, on which entries shall be modified, then a new prompt will be displayed, allowing the user to provide new information to those entries. <br> **NOTE** If a given column does not need to be modified, it can be left empty, as the program will automatically assign the original values to that column, and change only the ones that have a different value present. <br>
 - **ASSIGN** - allows the user to *assign* a student to a given *course* <br>
@@ -71,10 +71,9 @@ The user will be prompted to enter filter information for that specific *table* 
 - **SHOW** - Displays to the user every entry in a given table with no filters. (equivalent to an empty **FIND**)<br>
 - **HELP** - Displays to the user a full list of commands along with their syntax <br>
 
-### Student request resolver - WIP
+### Student request resolver
 The core functionality of EffyStudentDB is to resolve requests taken from the `STUDENTREQUEST` table. That table holds information on which students had the desire to join which course, based on their grades.
-In the first iteration, if a given student have the minimal points requirement met, it will be automatically placed inside the `COURSEATTENDEES` table. However, in further iterations, every student with more points will automatically replace students with the smallest amount of points - that way the course will not get overflown if the `maxStudents` are surpassed.
-#### THIS IS STILL IN PROGRESS
+In the first iteration, if a given student have the minimal points requirement met, it will be automatically placed inside the `COURSEATTENDEES` table. Each course contain information about which students are currently attending it, and thus it will replace an entry with the lowest possible score with a new value whenver it is needed.
 # Code & Framework
 ## Utilities
 This section will primarily focus on how the application handles SQL communication, file and folder creation. The core principle of the utilities section is that it operates on a `Manager`-like structure. There are a few managers who have their separate responsibilities, which they delegate further into the `CommandHandler`.
@@ -225,7 +224,7 @@ bool verifyCommand::execute()
 ### SQL Communication
 EffyStudentDB operates on a local `SQLite3` server file that is created every time the program cannot find it in the specified paths. The SQL communication is split into 2 sections:
 #### SQL Adapter
-The `SqlAdapter`'s main purpose is to translate information obtained from the `SqlManager` into C++ objects, which will be later used in core functionality processing, and it will also translate the C++ objects data into appropriate SQL queries. <br>
+The `SqlAdapter`'s primary purpose is to translate information obtained from the `SqlManager` into C++ objects, which will be used in core functionality processing, and it will also translate the data from these C++ objects into appropriate SQL queries. <br>
 Database getters are separated into each concrete type:
 ```C++
 std::vector<School> getSchools(std::string filter = "");
@@ -370,13 +369,35 @@ namespace Core::Types
 ### Management
 Every `Entry` is being stored inside the `SessionData` class, which only operates on the abstract interface. While being initialized, it populates its `entryList_` with all of the table names as keys. The value for each key is another map. `std::map<uint16_t, std::shared_ptr<Entry>>` aliased as `abstractTypeList`. It loads all the data from the database once. This means that each modification in the database made during the session must be reevaluated and repopulated. This is done inside the `Session` class. `Session` class also provides all of the data from the `SqlAdapter` to the `SessionData`, during the `fetchX` methods. The `Session` delegates the output stream job to the `menu` class and the input stream to the `InputHandler` functions. Once the user enters the `Manage database` option from the main menu, `session` will also handle every action that the user provides.
 #### Commands
-Every time a user enters an action, it will be turned into an `Action` object and labeled as one of 3 possible: `Short`, `Direct`, `Indirect`. Each of these types has its own operating process, and has to be defined inside the `action.hpp` file.
-- `Short` - commands that require only to display specific information, such as `HELP` or `SHOW`.
-- `Direct` - commands that directly operate on the `Core::Types`, such as `ADD` or `EDIT`.
-- `Indirect` - commands that indirectly operate on the `Core::Types`, such as `ASSIGN` or `CLOSE`.
-No matter if the command is `Direct` or `Indirect`, the `Session` object must always reevaluate and adjust the `SessionData` object to reflect the new state of the database. It is done by logically verifying and adjusting the appropriate `entryList_` index. This is done in post-processing methods such as `onAdd`, `onUpdate`, and `onDelete`.
+Every time a user enters an action, it will be turned into a `Command` object that is created via the `CommandFactory` based on the tokens provided by the user. There are several implicit types of commands, and each of them has a different type of handling:
+- `Simple`: These commands are single-token that the user had provided. These commands are mainly limited to simple meta-management actions. The commands are: `exit`, `help`, `list`
+- `Basic table-based`: These commands are made of 2 tokens, and state action type and action target. Some of the tokens are: `add`, `remove`, or `edit`.
+- `Course management commands`: Their purpose is solely on managing courses - opening them and closing them for the recuritment process. (`open` & `close`)
+- `Link-based`: They are used to assign or drop student from a given course. They consist of 3 tokens and are the longest possible commands. (`assign` & `drop`)
+
+Each command is a derrived of the `ICommand`, and are forced to define their `exec` and `name` methods. Each new command must derive from this class interface.
+```C++
+class ICommand
+{
+  protected:
+    std::shared_ptr<Utilities::Logger> logger_;
+
+  public:
+    ICommand(std::shared_ptr<Utilities::Logger> logger):
+        logger_(logger) {};
+    virtual bool exec()              = 0;
+    virtual ~ICommand()              = default;
+    virtual std::string name() const = 0;
+};
+```
+
+Commands are validated and constructed in the body of `makeCommand` in `CommandFactory`, this validation and assembly must be adjusted whenever a new command is introduced into the database tool. 
 ### Request resolver
-Work in progress
+Each students that wish to join a given course must create a unique StudentRequest, these will be used in this class. 
+`RequestResolver` fetches every student, course (along with its attendees and weights) and grade, and iterate it one by one, calculating the amount of points a given student will get if all of their present grades were summed up. The formula for score calculation looks as follows:<br>
+`[(1st subject grade * weight) + (2nd subject grade * weight) + ... + (N-th subject grade * weight)] / N` <br>
+If students `points >= Course::baseMinimalPoints_` then they will be added into a pending attendees list; however, if their position inside the `attendees_` = `min_` (`min_` meaning that their score is the lowest possible score inside the attendees list), they will be removed in the moment that another request will surpas the `baseMinimalPoints_`. 
+Each student present in `acceptedStudents_` pending list will be later on added to the database. If a student is not present inside such list, that means that they did not passed into any of the courses they wished for and thus their request will automatically be marked as denied.
 # Generator
 It's a Python module that is primarily used to generate testing entries for the `SQL` server. <br>
 The generator will handle every table, creating a predefined number of entries for each. The flow of the generator is simple, it will first handle simple table types, such as subjects or schools. It will load names from the constant list of names, insert them and finally assign them ID, returning to the main flow. Next the complex types are handled which require a little bit more work. First courses are handled, added, and an ID assigned, then the subject mapping is inserted into the database. Lastly, students are added. Names, emails, grades, and student requests are randomly generated, as well as which school a student attended. Each generation run will produce a set of entries and delete existing ones so that the database stays healthy with its data integrity. <br>

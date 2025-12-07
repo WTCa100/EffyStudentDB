@@ -6,8 +6,6 @@
 #include <iostream>
 #include <sstream>
 
-// @TODO Make a univeresal Sql Call to DB, that would just execute a given command
-
 namespace Utilities::Sql
 {
     using namespace Sql::Types;

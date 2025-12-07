@@ -60,7 +60,6 @@ namespace Core::Types
         std::shared_ptr<Grade> concrete = std::static_pointer_cast<Grade>(other);
         std::shared_ptr<Grade> refObj   = std::make_shared<Grade>();
 
-        // @TODO add function that will do the filling of a given type
         refObj->id_          = id_ == 0 ? concrete->id_ : id_;
         refObj->studentId_   = studentId_ == 0 ? concrete->studentId_ : studentId_;
         refObj->subjectId_   = subjectId_ == 0 ? concrete->subjectId_ : subjectId_;

@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include <vector>
 
-// @TODO Implement a way to handle Foreign key and References (like adding ON DELETE SET NULL etc.)
 
 namespace Utilities::Sql::Types
 {

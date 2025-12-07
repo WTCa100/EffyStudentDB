@@ -31,7 +31,6 @@ namespace Core::Commands
         std::shared_ptr<Display::Helper> displayHelper_;
 
         bool validateCommand(const std::vector<std::string>& tokenizedCommand);
-        static std::shared_ptr<Entry> makeConcreteType(const std::string& tableName);  // Isn't that straight up Entry factory?
       public:
         std::unique_ptr<ICommand> makeCommand(const std::string& command);
 

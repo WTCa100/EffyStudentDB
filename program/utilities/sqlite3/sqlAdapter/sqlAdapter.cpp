@@ -64,6 +64,18 @@ namespace Utilities::Sql
         return entries;
     }
 
+    std::vector<std::string> SqlAdapter::getTableNames() const
+    {
+        std::unordered_map<std::string, Utilities::Sql::Types::Table> schemas = sManager_->getTables();
+        std::vector<std::string> names(schemas.size(), "");
+        LOG((*logger_), "Got n=", schemas.size(), " tables schemas.");
+        for(const auto& schema : schemas)
+        {
+            names.push_back(schema.first);
+        }
+        return names;
+    }
+
     std::vector<Core::Types::School> SqlAdapter::getSchools(std::string filter)
     {
         std::vector<Core::Types::School> schools;

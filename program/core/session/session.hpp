@@ -41,20 +41,11 @@ class Session
     void fetchCourseSubjectWeight();
     void fetchCourses();
     void fetchSrequests();
-
     void dropAll();
-
-    // Some common procedures
-    void deleteCourseSubjectWeight(const std::shared_ptr<CourseSubjectWeight> targetWeight);
-    void deleteGrade(std::shared_ptr<Grade> targetGrade);
 
   public:
     void run();
-    bool handleCommand(const std::unique_ptr<Core::Commands::ICommand>& command);
-    bool handleIndirectAction(const Action& userAction);
-    bool handleDirectAction(const Action& userAction);
     void manageDatabase();
-    std::shared_ptr<Entry> makeConcreteType(const std::string& tableName) const;
 
     Session(std::shared_ptr<WsManager> wsMgr);
     ~Session();

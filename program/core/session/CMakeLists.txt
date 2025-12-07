@@ -14,4 +14,5 @@ target_link_libraries(Session PUBLIC
     Action
     Data
     RequestResolver
-    CommandFactory)
+    CommandFactory
+    EntryFactory)

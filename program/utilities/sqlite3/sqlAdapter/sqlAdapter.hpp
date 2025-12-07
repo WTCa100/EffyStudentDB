@@ -34,6 +34,7 @@ namespace Utilities::Sql
         SqlAdapter(std::shared_ptr<Logger> logger, std::shared_ptr<SqlManager> sManager);
         ~SqlAdapter() = default;
 
+        std::vector<std::string> getTableNames() const;
         std::vector<School> getSchools(std::string filter = "");
         std::vector<Student> getStudents(std::string filter = "");
         std::vector<Subject> getSubjects(std::string filter = "");

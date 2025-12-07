@@ -34,11 +34,17 @@ namespace Core::Commands
             return false;
         }
 
+        if (targetTableData->empty())
+        {
+            std::cout << "No entries were found!\n";
+            return true;
+        }
+
         for (const auto& dataEntry : *targetTableData)
         {
             const uint16_t& id = dataEntry.first;
             showEntry(id);
         }
-        return false;
+        return true;
     }
 }  // namespace Core::Commands

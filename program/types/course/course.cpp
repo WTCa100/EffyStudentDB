@@ -70,10 +70,10 @@ namespace Core::Types
         std::shared_ptr<Course> retObj   = std::make_shared<Course>();
         retObj->id_                      = id_ == 0 ? concrete->id_ : id_;
         retObj->name_                    = name_.empty() ? concrete->name_ : name_;
-        retObj->minStudents_             = minStudents_ == 0 ? concrete->minStudents_ : minStudents_;
-        retObj->maxStudents_             = maxStudents_ == 0 ? concrete->maxStudents_ : maxStudents_;
-        retObj->baseMinimalPoints_       = baseMinimalPoints_ == 0 ? concrete->baseMinimalPoints_ : baseMinimalPoints_;
-        retObj->averageStudentPoints_    = averageStudentPoints_ == 0 ? concrete->averageStudentPoints_ : averageStudentPoints_;
+        retObj->minStudents_             = minStudents_ == g_inputMissingValue ? concrete->minStudents_ : minStudents_;
+        retObj->maxStudents_             = maxStudents_ == g_inputMissingValue ? concrete->maxStudents_ : maxStudents_;
+        retObj->baseMinimalPoints_       = baseMinimalPoints_ == g_inputMissingValue ? concrete->baseMinimalPoints_ : baseMinimalPoints_;
+        retObj->averageStudentPoints_    = averageStudentPoints_ == g_inputMissingValue ? concrete->averageStudentPoints_ : averageStudentPoints_;
         retObj->isOpen_                  = isOpen_ == OpenState::notSet ? concrete->isOpen_ : isOpen_;
         retObj->recrutingTurn_           = recrutingTurn_ == turnNotSet ? concrete->recrutingTurn_ : recrutingTurn_;
         return retObj;

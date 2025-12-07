@@ -85,311 +85,6 @@ void Session::fetchSrequests()
     for (const auto& entry : dbSrequests) { sesData_->addEntry(std::make_shared<Srequest>(entry)); }
 }
 
-void Session::manageDatabase()
-{
-    using Core::Commands::CommandFactory;
-    using Core::Commands::ICommand;
-    fetchAll();
-    CommandFactory commandFactory = CommandFactory(logger_, sAdapter_, sesData_);
-    do {
-        LOG((*logger_), "Entered, database management");
-        std::string rawCommand            = Utilities::InputHandler::toUpper(Utilities::InputHandler::getStringBeauty("Command"));
-        std::unique_ptr<ICommand> command = commandFactory.makeCommand(rawCommand);
-
-        if (!command)
-        {
-            LOG((*logger_), "Got invalid command: \"", rawCommand, "\"");
-            std::cout << "Invalid command!\n";
-            continue;
-        }
-
-        if (command->name() == "exit") { break; }
-
-        if (command->exec())
-        {
-            LOG((*logger_), "Command: ", command->name(), " executed succesfully");
-            std::cout << "Command executed successfully!\n";
-        }
-        handleCommand(command);
-    } while (true);
-    dropAll();
-}
-
-bool Session::handleCommand([[maybe_unused]] const std::unique_ptr<Core::Commands::ICommand>& command)
-{
-    // if (Action::isCommandIndirect(userAction.getCommand())) { return handleIndirectAction(userAction); }
-    // else { return handleDirectAction(userAction); }
-    LOG((*logger_), "Handling abstract command.");
-
-    return true;
-}
-
-void Session::run()
-{
-    LOG((*logger_), "Main run function called");
-    bool exit = false;
-    do {
-        Core::Display::MainMenuOption op = display_.showMainMenu();
-        switch (op)
-        {
-            case Core::Display::MainMenuOption::manageDb : manageDatabase(); break;
-
-            case Core::Display::MainMenuOption::handleRqs :
-                {
-                    RequestResolver requestCalculator = RequestResolver(logger_, sAdapter_, sesData_);
-                    requestCalculator.run();
-                    break;
-                }
-            case Core::Display::MainMenuOption::exit : exit = true; LOG((*logger_), "Exiting application");
-            default : break;
-        }
-
-    } while (!exit);
-}
-
-bool Session::handleIndirectAction(const Action& userAction)
-{
-    LOG((*logger_), "Handling Indirect Action");
-    std::string userCommand = userAction.getCommand();
-    std::string userTarget  = userAction.getTarget();
-
-    if (userTarget != g_tableCourseAttendees)
-    {
-        LOG((*logger_), "Failed to handle action! User target != ", g_tableCourseAttendees, " while command = ", userCommand,
-            " Actual target = ", userTarget);
-        std::cout << "An error occured while handling your action.\n";
-        return false;
-    }
-
-    // For now the only indirect action we have would be assign and drop - they both have the same structure. command table
-    // (always the same here) studentId courseId This will probably never change thus this implementation choise
-    std::vector<std::string> userAdditionalValues = userAction.getAdditionalValues();
-    uint16_t studentId, courseId;
-    try
-    {
-        courseId = std::stoul(userAdditionalValues.at(0));
-    }
-    catch (const std::exception& e)
-    {
-        LOG((*logger_), "Failed to handle action! Exception thrown: ", e.what());
-        std::cout << "An error occured while handling your action.\n";
-        return false;
-    }
-    LOG((*logger_), "Extracted value: courseId=", courseId);
-
-    std::shared_ptr<Course> targetCourse = std::static_pointer_cast<Course>(sesData_->getEntry(courseId, g_tableCourses));
-    if (!targetCourse)
-    {
-        LOG((*logger_), "Failed to handle action! No course found in the database. Id=", courseId);
-        std::cout << "Error, no such course with ID " << courseId << "\n";
-        return false;
-    }
-
-    if (userCommand == Core::ActionType::Indirect::actionOpen)
-    {
-        if (sAdapter_->openCourse(courseId))
-        {
-            std::cout << "Successfully opened coruse " << targetCourse->name_ << " (" << courseId << ") \n";
-            targetCourse->isOpen_ = Utilities::Common::Constants::OpenState::opened;
-            return true;
-        }
-        else
-        {
-            LOG((*logger_), "Failed to open the course ", courseId, " at SQL level");
-            std::cout << "An error occured while handling your action.\n";
-            return false;
-        }
-    }
-
-    if (userCommand == Core::ActionType::Indirect::actionClose)
-    {
-        if (sAdapter_->closeCourse(courseId))
-        {
-            std::cout << "Successfully closed coruse " << targetCourse->name_ << " (" << courseId << ") \n";
-            targetCourse->isOpen_ = Utilities::Common::Constants::OpenState::closed;
-            return true;
-        }
-        else
-        {
-            LOG((*logger_), "Failed to close the course ", courseId, " at SQL level");
-            std::cout << "An error occured while handling your action.\n";
-            return false;
-        }
-    }
-
-    try
-    {
-        studentId = std::stoul(userAdditionalValues.at(1));
-    }
-    catch (const std::exception& e)
-    {
-        LOG((*logger_), "Failed to handle action! Exception thrown: ", e.what());
-        std::cout << "An error occured while handling your action.\n";
-        return false;
-    }
-
-    LOG((*logger_), "Extracted value: studentId=", studentId);
-
-    std::shared_ptr<Student> targetStudent = std::static_pointer_cast<Student>(sesData_->getEntry(studentId, g_tableStudents));
-    if (!targetStudent)
-    {
-        LOG((*logger_), "Failed to handle action! No student found in the database. Id=", studentId);
-        std::cout << "Error, no such student with ID " << studentId << "\n";
-        return false;
-    }
-
-    if (userCommand == Core::ActionType::Indirect::actionAssign)
-    {
-        if (sAdapter_->addAttendee(studentId, courseId))
-        {
-            LOG((*logger_), "Successfully added student ", studentId, " to course ", courseId);
-            std::cout << "Successfully added student " << targetStudent->firstName_ << " " << targetStudent->lastName_
-                      << " to the course \"" << targetCourse->name_ << "\"\n";
-        }
-        else { return false; }
-    }
-    else
-    {
-        if (sAdapter_->removeAttendee(studentId, courseId))
-        {
-            LOG((*logger_), "Successfully dropped student ", studentId, " from course ", courseId);
-            std::cout << "Successfully dropped student " << targetStudent->firstName_ << " " << targetStudent->lastName_
-                      << " from the course \"" << targetCourse->name_ << "\"\n";
-        }
-        else { return false; }
-    }
-    return true;
-}
-
-bool Session::handleDirectAction(const Action& userAction)
-{
-    LOG((*logger_), "Executing direct action");
-    // Action is correct here - guaranteed
-    std::string userCommand = userAction.getCommand();
-
-    LOG((*logger_), "Action got command: ", userCommand);
-    if (userCommand == Core::ActionType::Short::actionExit)
-    {
-        LOG((*logger_), "Normal exit");
-        std::cout << "Exiting management mode.\n";
-        return true;
-    }
-
-    std::string userTarget = userAction.getTarget();
-    LOG((*logger_), "Action got target: ", userTarget);
-
-    std::shared_ptr<Entry> concreteEntry = makeConcreteType(userTarget);
-
-    // Select correct function
-    if (userCommand == Core::ActionType::Direct::actionAdd)
-    {
-        LOG((*logger_), "Abstract add: ", userAction.getTarget());
-        std::cout << "New entry:\n";
-        concreteEntry.get()->userConstruct();
-        if (sAdapter_->addEntry(*concreteEntry))
-        {
-            sesData_->addEntry(concreteEntry);
-            std::cout << "Added new entry to table: " << userTarget << "\n";
-            return true;
-        }
-
-        std::cout << "Failed to add given entry due to database error.\n";
-        return false;
-    }
-
-    std::cout << "Matching values:\n";
-    std::unordered_map<std::string, std::string> attrs = concreteEntry->userConstruct(false);
-    std::string filter                                 = sAdapter_->makeFilter(attrs, Utilities::Sql::filterAnyMatch);
-
-    LOG((*logger_), "Filter to lookup: ", filter);
-    std::vector<std::shared_ptr<Entry>> affectedEntries = sAdapter_->getEntries(userTarget, filter);
-
-    LOG((*logger_), "Link affected entries with data sessions")
-    for (auto& e : affectedEntries) { *e = *e->mirrorMissing(sesData_->getEntry(e->id_, e->associatedTable_)); }
-
-    if (affectedEntries.empty())
-    {
-        std::cout << "No match was found in the database!\n";
-        return true;
-    }
-
-    // Nothing much has to be done while finding
-    std::cout << "Selected entries:\n";
-    display_.showSelection(affectedEntries);
-    if (userCommand == Core::ActionType::Direct::actionFind) { return true; }
-
-    if (userCommand == Core::ActionType::Direct::actionEdit || userCommand == Core::ActionType::Direct::actionRemove)
-    {
-        if (!display_.promptAlterAll(filter, affectedEntries.size()))
-        {
-            LOG((*logger_), "Aborting procedure");
-            return true;
-        }
-    }
-
-    // For each affected entry delete
-    if (userCommand == Core::ActionType::Direct::actionRemove)
-    {
-        for (const auto& val : affectedEntries)
-        {
-            if (sAdapter_->removeEntry(*val)) { sesData_->removeEntry(val->id_, userTarget); }
-        }
-        std::cout << "Removed entry from table " << userTarget << "\n";
-        return true;
-    }
-
-    // For each affected entry update
-    if (userCommand == Core::ActionType::Direct::actionEdit)
-    {
-        // Get new values 1st
-        std::cout << "Modifying existing values.\n";
-        std::shared_ptr<Entry> entriesNew                            = makeConcreteType(userTarget);
-        std::unordered_map<std::string, std::string> changesToCommit = entriesNew->userConstruct(false);
-        for (auto& val : affectedEntries)
-        {
-            std::shared_ptr<Entry> changedEntries = makeConcreteType(userTarget);
-            *changedEntries                       = *entriesNew->mirrorMissing(val);
-            // Make a copy of a given filter entry
-            if (sAdapter_->updateEntry(val->id_, changesToCommit, val->associatedTable_))
-            {
-                sesData_->updateEntry(val->id_, changedEntries);
-            }
-        }
-        std::cout << "Updated entry in table " << userTarget << "\n";
-        return true;
-    }
-
-    return false;
-}
-
-void Session::deleteCourseSubjectWeight(const std::shared_ptr<CourseSubjectWeight> targetWeight)
-{
-    LOG((*logger_), "Common CourseSubjectWeight deletion");
-    std::shared_ptr<abstractTypeList> weightCourses = sesData_->getEntries(g_tableCourses);
-    if (weightCourses->contains(targetWeight->courseId_)) { weightCourses->erase(targetWeight->courseId_); }
-}
-
-void Session::deleteGrade(std::shared_ptr<Grade> targetGrade)
-{
-    LOG((*logger_), "Common Grade deletion");
-    std::shared_ptr<abstractTypeList> gradeStudent = sesData_->getEntries(g_tableStudents);
-    if (gradeStudent->contains(targetGrade->studentId_)) { gradeStudent->erase(targetGrade->studentId_); }
-}
-
-std::shared_ptr<Entry> Session::makeConcreteType(const std::string& tableName) const
-{
-    LOG((*logger_), "Getting concrete type from target table: ", tableName);
-    std::shared_ptr<Entry> tmp;
-    // Extract concrete type
-    if (tableName == g_tableSchools) { tmp = std::make_shared<School>(); }
-    else if (tableName == g_tableStudents) { tmp = std::make_shared<Student>(); }
-    else if (tableName == g_tableSubjects) { tmp = std::make_shared<Subject>(); }
-    else if (tableName == g_tableCourses) { tmp = std::make_shared<Course>(); }
-    else if (tableName == g_tableGrades) { tmp = std::make_shared<Grade>(); }
-    else if (tableName == g_tableCourseSubjectWeight) { tmp = std::make_shared<CourseSubjectWeight>(); }
-    else { tmp = std::make_shared<Srequest>(); }
-    return tmp;
-}
 
 void Session::fetchGrades()
 {
@@ -465,6 +160,58 @@ void Session::fetchCourseSubjectWeight()
         }
         sesData_->addEntry(currentWeight);
     }
+}
+
+void Session::manageDatabase()
+{
+    using Core::Commands::CommandFactory;
+    using Core::Commands::ICommand;
+    fetchAll();
+    CommandFactory commandFactory = CommandFactory(logger_, sAdapter_, sesData_);
+    do {
+        LOG((*logger_), "Entered, database management");
+        std::string rawCommand            = Utilities::InputHandler::toUpper(Utilities::InputHandler::getStringBeauty("Command"));
+        std::unique_ptr<ICommand> command = commandFactory.makeCommand(rawCommand);
+
+        if (!command)
+        {
+            LOG((*logger_), "Got invalid command: \"", rawCommand, "\"");
+            std::cout << "Invalid command!\n";
+            continue;
+        }
+
+        if (command->name() == "exit") { break; }
+
+        if (command->exec())
+        {
+            LOG((*logger_), "Command: ", command->name(), " executed succesfully");
+            std::cout << "Command executed successfully!\n";
+        }
+    } while (true);
+    dropAll();
+}
+
+void Session::run()
+{
+    LOG((*logger_), "Main run function called");
+    bool exit = false;
+    do {
+        Core::Display::MainMenuOption op = display_.showMainMenu();
+        switch (op)
+        {
+            case Core::Display::MainMenuOption::manageDb : manageDatabase(); break;
+
+            case Core::Display::MainMenuOption::handleRqs :
+                {
+                    RequestResolver requestCalculator = RequestResolver(logger_, sAdapter_, sesData_);
+                    requestCalculator.run();
+                    break;
+                }
+            case Core::Display::MainMenuOption::exit : exit = true; LOG((*logger_), "Exiting application");
+            default : break;
+        }
+
+    } while (!exit);
 }
 
 Session::~Session() { LOG((*logger_), "Session teardown!"); }

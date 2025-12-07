@@ -8,7 +8,6 @@
 
 namespace Core::Types
 {
-
     struct Entry
     {
         uint16_t id_;
@@ -49,5 +48,4 @@ namespace Core::Types
 
         virtual Entry& operator= (const Entry& other) = 0;
     };
-
 }  // namespace Core::Types

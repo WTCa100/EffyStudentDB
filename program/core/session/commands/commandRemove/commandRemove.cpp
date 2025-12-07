@@ -1,9 +1,16 @@
 #include "commandRemove.hpp"
 
 #include "../../../../types/entryFactory.hpp"
-
+#include "../../../../utilities/inputHandler/inputHandler.hpp"
 namespace Core::Commands
 {
+    bool CommandRemove::prompt() const
+    {
+        LOG((*logger_), "Prompting the user to remove entries.");
+        std::cout << "Do you wish to remove selected entries?\n";
+        return Utilities::InputHandler::getYesOrNo() == 'Y';
+    }
+
     bool CommandRemove::exec()
     {
         const std::string& targetTable = targetEntry_->associatedTable_;
@@ -33,13 +40,21 @@ namespace Core::Commands
         }
 
         std::cout << "Got n = " << fetchedResult.size() << " entries.\n";
-        for (auto& e : fetchedResult)
+        if(prompt())
         {
-            std::cout << "Removing entry with id = " << e->id_ << std::endl;
-            if (sqlAdapter_->removeEntry(*e)) { sessionData_->removeEntry(e->id_, targetTable); }
+            for (auto& e : fetchedResult)
+            {
+                std::cout << "Removing entry with id = " << e->id_ << std::endl;
+                if (sqlAdapter_->removeEntry(*e)) { sessionData_->removeEntry(e->id_, targetTable); }
+            }
+    
+            std::cout << "Successfully removed " << fetchedResult.size() << " entries.\n";
         }
-
-        std::cout << "Successfully removed " << fetchedResult.size() << " entries.\n";
+        else
+        {
+            LOG((*logger_), "Command canceled - user aborted.");
+            std::cout << "Aborting deletion.\n";
+        }
         return true;
     }
 }  // namespace Core::Commands

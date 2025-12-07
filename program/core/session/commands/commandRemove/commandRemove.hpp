@@ -16,6 +16,7 @@ namespace Core::Commands
         std::shared_ptr<Utilities::Sql::SqlAdapter> sqlAdapter_;
         std::shared_ptr<SessionData> sessionData_;
         std::shared_ptr<Types::Entry> targetEntry_;
+        bool prompt() const;
 
       public:
         bool exec() override;

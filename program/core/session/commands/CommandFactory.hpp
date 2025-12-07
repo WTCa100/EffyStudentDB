@@ -31,7 +31,8 @@ namespace Core::Commands
         std::shared_ptr<Display::Helper> displayHelper_;
 
         bool validateCommand(const std::vector<std::string>& tokenizedCommand);
-
+        bool validateStudentId(uint16_t studentId, const std::string& operation);
+        bool validateCourseId(uint16_t courseId, const std::string& operation);
       public:
         std::unique_ptr<ICommand> makeCommand(const std::string& command);
 

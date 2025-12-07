@@ -4,7 +4,6 @@
 #include "../../utilities/sqlite3/sqlAdapter/sqlAdapter.hpp"
 #include "../../utilities/workspaceManager/wsManager.hpp"
 #include "../menu/menu.hpp"
-#include "action/action.hpp"
 #include "commands/ICommand.hpp"
 #include "data/data.hpp"
 #include "requestResolver/requestResolver.hpp"
@@ -12,7 +11,6 @@
 #include <memory>
 #include <type_traits>
 
-using Core::Action;
 using Core::Display::Menu;
 using Utilities::Logger;
 using Utilities::Sql::SqlAdapter;

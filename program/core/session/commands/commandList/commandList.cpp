@@ -12,10 +12,7 @@ namespace Core::Commands
             std::cout << "Could not load schema data information.\n";
             return false;
         }
-        for(const auto& name : tablesNames)
-        {
-            std::cout << name << std::endl;
-        }
+        for (const auto& name : tablesNames) { std::cout << name << std::endl; }
         return true;
     }
-} // namespace Core::Command
+}  // namespace Core::Commands

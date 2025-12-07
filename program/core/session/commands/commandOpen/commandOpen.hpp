@@ -7,13 +7,14 @@
 #include <memory>
 
 namespace Core::Commands
-{ 
+{
     class CommandOpen : public ICommand
     {
       private:
         std::shared_ptr<SessionData> sessionData_;
         std::shared_ptr<Utilities::Sql::SqlAdapter> sAdapter_;
         const uint16_t targetCourseId_;
+
       public:
         bool exec() override;
 
@@ -29,5 +30,5 @@ namespace Core::Commands
             targetCourseId_(targetCourseId) {};
         ~CommandOpen() = default;
     };
-    
-} // namespace Core::Commands
+
+}  // namespace Core::Commands

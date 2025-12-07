@@ -7,17 +7,17 @@ namespace Core::Commands
     bool CommandEdit::exec()
     {
         const std::string& targetTable = targetEntry_->associatedTable_;
-        const std::string& filter = sqlAdapter_->makeFilter(targetFilter_);
+        const std::string& filter      = sqlAdapter_->makeFilter(targetFilter_);
 
         LOG((*logger_), "Executing CommandEdit with the following data: ", targetTable, " filter");
-        if(targetFilter_.empty())
+        if (targetFilter_.empty())
         {
             LOG((*logger_), "Filter value empty.");
             std::cout << "Fitler value must not be empty!\n";
             return false;
         }
 
-        if(targetFilter_.empty())
+        if (targetFilter_.empty())
         {
             LOG((*logger_), "Associated table empty.");
             std::cout << "Associated table must not be empty!\n";
@@ -26,20 +26,20 @@ namespace Core::Commands
 
         std::vector<std::shared_ptr<Types::Entry>> fetchedResult = sqlAdapter_->getEntries(targetTable, filter);
         LOG((*logger_), "Result size = ", fetchedResult.size())
-        if(fetchedResult.empty())
+        if (fetchedResult.empty())
         {
             std::cout << "No entries with given filter were found!\n";
-            return true; // No such entries in the database - but this command did not failed.
+            return true;  // No such entries in the database - but this command did not failed.
         }
 
         std::cout << "Got n = " << fetchedResult.size() << " entries.\n";
-        std::shared_ptr<Entry> updatedValues = Core::Types::EntryFactory::getEntry(targetTable);
+        std::shared_ptr<Entry> updatedValues                         = Core::Types::EntryFactory::getEntry(targetTable);
         std::unordered_map<std::string, std::string> changesToCommit = updatedValues->userConstruct(false);
-        for(auto& e : fetchedResult)
+        for (auto& e : fetchedResult)
         {
             std::cout << "Updating entry with id = " << e->id_ << std::endl;
             std::shared_ptr<Entry> currentEntry = Core::Types::EntryFactory::getEntry(targetTable);
-            currentEntry = updatedValues->mirrorMissing(e);
+            currentEntry                        = updatedValues->mirrorMissing(e);
             if (sqlAdapter_->updateEntry(e->id_, changesToCommit, targetTable))
             {
                 sessionData_->updateEntry(e->id_, currentEntry);
@@ -48,4 +48,4 @@ namespace Core::Commands
 
         return true;
     }
-} // namespace Core::Commands
+}  // namespace Core::Commands

@@ -7,14 +7,15 @@
 #include <memory>
 
 namespace Core::Commands
-{ 
+{
     class CommandClose : public ICommand
     {
-    private:
+      private:
         std::shared_ptr<SessionData> sessionData_;
         std::shared_ptr<Utilities::Sql::SqlAdapter> sAdapter_;
         const uint16_t targetCourseId_;
-    public:
+
+      public:
         bool exec() override;
 
         inline std::string name() const override { return "close"; }
@@ -29,5 +30,5 @@ namespace Core::Commands
             targetCourseId_(targetCourseId) {};
         ~CommandClose() = default;
     };
-    
-} // namespace Core::Commands
+
+}  // namespace Core::Commands

@@ -1,12 +1,12 @@
 #include "entryFactory.hpp"
 
 #include "course/course.hpp"
+#include "courseSubjectWeight/courseSubjectWeight.hpp"
+#include "grade/grade.hpp"
 #include "school/school.hpp"
+#include "student/student.hpp"
 #include "studentRequest/request.hpp"
 #include "subject/subject.hpp"
-#include "grade/grade.hpp"
-#include "student/student.hpp"
-#include "courseSubjectWeight/courseSubjectWeight.hpp"
 
 namespace Core::Types
 {
@@ -24,4 +24,4 @@ namespace Core::Types
         else { tmp = std::make_shared<Core::Types::Request::Srequest>(); }
         return tmp;
     }
-} // namespace Core::Types
+}  // namespace Core::Types

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "entry.hpp"
 #include "../utilities/common/constants.hpp"
 #include "../utilities/logger/logger.hpp"
+#include "entry.hpp"
 
 #include <memory>
 
@@ -10,12 +10,12 @@ namespace Core::Types
 {
     struct EntryFactory
     {
-    public:
+      public:
         static std::shared_ptr<Entry> getEntry(const std::string& tableName);
+
         explicit EntryFactory() {}
+
         ~EntryFactory() = default;
     };
-    
 
-    
-} // namespace Core
+}  // namespace Core::Types

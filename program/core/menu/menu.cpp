@@ -4,8 +4,7 @@
 
 namespace Core::Display
 {
-    Menu::Menu(
-        std::shared_ptr<Utilities::Logger> logger):
+    Menu::Menu(std::shared_ptr<Utilities::Logger> logger):
         logger_(logger)
     {
         LOG((*logger_), "Menu object created");

@@ -72,10 +72,12 @@ namespace Core::Types
         retObj->name_                    = name_.empty() ? concrete->name_ : name_;
         retObj->minStudents_             = minStudents_ == g_inputMissingValue ? concrete->minStudents_ : minStudents_;
         retObj->maxStudents_             = maxStudents_ == g_inputMissingValue ? concrete->maxStudents_ : maxStudents_;
-        retObj->baseMinimalPoints_       = baseMinimalPoints_ == g_inputMissingValue ? concrete->baseMinimalPoints_ : baseMinimalPoints_;
-        retObj->averageStudentPoints_    = averageStudentPoints_ == g_inputMissingValue ? concrete->averageStudentPoints_ : averageStudentPoints_;
-        retObj->isOpen_                  = isOpen_ == OpenState::notSet ? concrete->isOpen_ : isOpen_;
-        retObj->recrutingTurn_           = recrutingTurn_ == turnNotSet ? concrete->recrutingTurn_ : recrutingTurn_;
+        retObj->baseMinimalPoints_ =
+            baseMinimalPoints_ == g_inputMissingValue ? concrete->baseMinimalPoints_ : baseMinimalPoints_;
+        retObj->averageStudentPoints_ =
+            averageStudentPoints_ == g_inputMissingValue ? concrete->averageStudentPoints_ : averageStudentPoints_;
+        retObj->isOpen_        = isOpen_ == OpenState::notSet ? concrete->isOpen_ : isOpen_;
+        retObj->recrutingTurn_ = recrutingTurn_ == turnNotSet ? concrete->recrutingTurn_ : recrutingTurn_;
         return retObj;
     }
 

@@ -85,7 +85,6 @@ void Session::fetchSrequests()
     for (const auto& entry : dbSrequests) { sesData_->addEntry(std::make_shared<Srequest>(entry)); }
 }
 
-
 void Session::fetchGrades()
 {
     LOG((*logger_), "Fetching grades");

@@ -1,20 +1,21 @@
 #include "CommandFactory.hpp"
 
+#include "../../../types/entryFactory.hpp"
 #include "../../../utilities/common/stringManip.hpp"
 #include "../../../utilities/inputHandler/inputHandler.hpp"
-#include "../../../types/entryFactory.hpp"
 #include "commandAdd/commandAdd.hpp"
-#include "commandExit/commandExit.hpp"
-#include "commandHelp/commandHelp.hpp"
-#include "commandShow/commandShow.hpp"
-#include "commandDrop/commandDrop.hpp"
-#include "commandFind/commandFind.hpp"
-#include "commandOpen/commandOpen.hpp"
-#include "commandClose/commandClose.hpp"
-#include "commandEdit/commandEdit.hpp"
 #include "commandAssign/commandAssign.hpp"
-#include "commandRemove/commandRemove.hpp"
+#include "commandClose/commandClose.hpp"
+#include "commandDrop/commandDrop.hpp"
+#include "commandEdit/commandEdit.hpp"
+#include "commandExit/commandExit.hpp"
+#include "commandFind/commandFind.hpp"
+#include "commandHelp/commandHelp.hpp"
 #include "commandList/commandList.hpp"
+#include "commandOpen/commandOpen.hpp"
+#include "commandRemove/commandRemove.hpp"
+#include "commandShow/commandShow.hpp"
+
 namespace Core::Commands
 {
 
@@ -42,7 +43,8 @@ namespace Core::Commands
             return false;
         }
         // Second check if its a normal command and if its valid.
-        if (commandType == "ADD" || commandType == "SHOW" || commandType == "FIND" || commandType == "REMOVE" || commandType == "EDIT")
+        if (commandType == "ADD" || commandType == "SHOW" || commandType == "FIND" || commandType == "REMOVE" ||
+            commandType == "EDIT")
         {
             LOG((*logger_), "Command is a normal command.");
             const std::string commandTarget = tokenizedCommand.at(uint8_t(CommandTokensPosition::target));
@@ -61,10 +63,11 @@ namespace Core::Commands
             LOG((*logger_), "Command is course management.");
             try
             {
-                [[maybe_unused]] const uint16_t targetCourse = static_cast<uint16_t>(std::stoul(tokenizedCommand.at(uint8_t(CommandTokensPosition::target))));
+                [[maybe_unused]] const uint16_t targetCourse =
+                    static_cast<uint16_t>(std::stoul(tokenizedCommand.at(uint8_t(CommandTokensPosition::target))));
                 return true;
             }
-            catch(const std::exception& e)
+            catch (const std::exception& e)
             {
                 std::cout << "Error: " << e.what() << '\n';
                 return false;
@@ -110,7 +113,7 @@ namespace Core::Commands
             return std::make_unique<CommandExit>(logger_);
         }
         else if (commandType == "HELP") { return std::make_unique<CommandHelp>(logger_); }
-        else if (commandType == "LIST") { return std::make_unique<CommandList>(logger_, sAdapter_);}
+        else if (commandType == "LIST") { return std::make_unique<CommandList>(logger_, sAdapter_); }
 
         const std::string commandTarget = tokens.at(uint8_t(CommandTokensPosition::target));
         if (commandType == "ADD")
@@ -122,14 +125,14 @@ namespace Core::Commands
 
         if (commandType == "EDIT")
         {
-            std::shared_ptr<Entry> editedEntryFilteredValues = Core::Types::EntryFactory::getEntry(commandTarget);
+            std::shared_ptr<Entry> editedEntryFilteredValues         = Core::Types::EntryFactory::getEntry(commandTarget);
             std::unordered_map<std::string, std::string> filterInput = editedEntryFilteredValues->userConstruct(false);
             return std::make_unique<CommandEdit>(logger_, sAdapter_, sessionData_, editedEntryFilteredValues, filterInput);
         }
 
         if (commandType == "FIND")
         {
-            std::shared_ptr<Entry> targetEntry = Core::Types::EntryFactory::getEntry(commandTarget);
+            std::shared_ptr<Entry> targetEntry                       = Core::Types::EntryFactory::getEntry(commandTarget);
             std::unordered_map<std::string, std::string> filterInput = targetEntry->userConstruct(false);
             return std::make_unique<CommandFind>(logger_, sAdapter_, displayHelper_, filterInput, targetEntry);
         }
@@ -193,7 +196,7 @@ namespace Core::Commands
         if (commandType == "OPEN")
         {
             const uint16_t targetCourseId = uint16_t(std::stoul(tokens.at(uint8_t(CommandTokensPosition::target))));
-            if(!sessionData_->isPresent(targetCourseId, g_tableCourses))
+            if (!sessionData_->isPresent(targetCourseId, g_tableCourses))
             {
                 LOG((*logger_), "No such course with id: ", targetCourseId);
                 std::cout << "Could not open course. " << targetCourseId << " is not a valid course ID!\n";
@@ -205,7 +208,7 @@ namespace Core::Commands
         if (commandType == "CLOSE")
         {
             const uint16_t targetCourseId = uint16_t(std::stoul(tokens.at(uint8_t(CommandTokensPosition::target))));
-            if(!sessionData_->isPresent(targetCourseId, g_tableCourses))
+            if (!sessionData_->isPresent(targetCourseId, g_tableCourses))
             {
                 LOG((*logger_), "No such course with id: ", targetCourseId);
                 std::cout << "Could not close course. " << targetCourseId << " is not a valid course ID!\n";

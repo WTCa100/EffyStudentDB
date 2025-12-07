@@ -10,8 +10,9 @@ namespace Core::Commands
         if (sAdapter_->closeCourse(targetCourseId_))
         {
             LOG((*logger_), "Course with id =", targetCourseId_, " has been opened!");
-            
-            std::shared_ptr<Course> targetCourse = std::static_pointer_cast<Course>(sessionData_->getEntry(targetCourseId_, g_tableCourses));
+
+            std::shared_ptr<Course> targetCourse =
+                std::static_pointer_cast<Course>(sessionData_->getEntry(targetCourseId_, g_tableCourses));
             targetCourse->isOpen_ = Utilities::Common::Constants::OpenState::closed;
             std::cout << "Closed course!\n";
             return true;
@@ -21,5 +22,5 @@ namespace Core::Commands
         std::cout << "Could not open course!\n";
         return false;
     }
-    
-} // namespace Core::Command
+
+}  // namespace Core::Commands

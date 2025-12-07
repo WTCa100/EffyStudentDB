@@ -3,7 +3,6 @@
 #include "../../utilities/inputHandler/inputHandler.hpp"
 #include "../../utilities/logger/logger.hpp"
 
-
 #include <memory>
 
 namespace Core::Display

@@ -54,7 +54,7 @@ There are a few management options present in this screen. Each of them triggers
 - **ADD** - allows the user to *add* entry to a given *table* <br>
 The user will be prompted to provide new information to create an entry to the database at *table* name that was provided <br>
 - **REMOVE** - allows the user to *remove* entry from a given *table* <br>
-The user will be prompted to provide filter information, on which entries shall be deleted. Filtered options will be displayed on the screen, and a final approval promptwill be  displayed. If the user agrees, everything listed will be deleted. <br>
+The user will be prompted to provide filter information, on which entries shall be deleted. Filtered options will be displayed on the screen, and a final approval prompt will be  displayed. If the user agrees, everything listed will be deleted. <br>
 - **EDIT** - allows the user to *edit* entry from a given *table* with new values <br>
 The user will be prompted to provide filter information, on which entries shall be modified, then a new prompt will be displayed, allowing the user to provide new information to those entries. <br> **NOTE** If a given column does not need to be modified, it can be left empty, as the program will automatically assign the original values to that column, and change only the ones that have a different value present. <br>
 - **ASSIGN** - allows the user to *assign* a student to a given *course* <br>
